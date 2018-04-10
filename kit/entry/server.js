@@ -240,7 +240,7 @@ export function createReactHandler(css = [], scripts = [], chunkManifest = {}) {
 function verifyToken(token) {
   try {
     const currentTimeStamp = Math.floor(Date.now()/1000);
-    const tokenVerify = jwt.verify(token, config.token);
+    const tokenVerify = jwt.verify(token, 'nasasifra');
     if((tokenVerify.exp - currentTimeStamp) <= 600) {
       const newToken = jwt.sign({id: tokenVerify.id, username: tokenVerify.username, email: tokenVerify.email}, 'nasasifra', {expiresIn: 1800});
       return newToken;

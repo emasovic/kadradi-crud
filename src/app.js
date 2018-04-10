@@ -22,6 +22,7 @@ import config from 'kit/config';
 
 // Example counter reducer.  This simply increments the counter by +1
 import counterReducer from 'reducers/counter';
+import tokenReducer from 'reducers/token';
 
 // Main component -- i.e. the 'root' React component in our app
 import Main from 'components/main';
@@ -39,6 +40,7 @@ import './styles.global.css';
 // `seamless-immutable` by the kit's Redux init code, so plain objects are
 // automatically immutable by default
 config.addReducer('counter', counterReducer, { count: 0 });
+config.addReducer('token', tokenReducer, { token: '' });
 
 /* GRAPHQL */
 
