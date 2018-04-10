@@ -261,16 +261,18 @@ const router = (new KoaRouter())
     ctx.body = 'pong';
   })
 
+  // AUTHENTIFICATION
+
   .post('/login', async(ctx, next) => {
     const username = ctx.request.body.username;
     const password = ctx.request.body.password;
-    const user = db.models.admin.find({where: {username: username, password: password}})
+    const user = await db.models.admin.find({where: {username: username, password: password}})
     if(user != null) {
       let token;
       if(ctx.request.body.rememberMe) {
-        token = jwt.sign({id: user.id, username: user.username, email: user.email}, 'nasasifra')
+        token = jwt.sign({id: user.id, username: user.username}, 'nasasifra')
       } else {
-        token = jwt.sign({id: user.id, username: user.username, email: user.email}, 'nasasifra', {expiresIn: 1800})
+        token = jwt.sign({id: user.id, username: user.username}, 'nasasifra', {expiresIn: 1800})
       }
       ctx.body = JSON.stringify({success: true, token: token});
     } else {
@@ -279,7 +281,7 @@ const router = (new KoaRouter())
   })
 
   .post('/checkToken', async(ctx, next) => {
-      const newToken = verifyToken(ctx.request.body.token);
+      const newToken = verifyToken(ctx.request.body.token, 'nasasifra');
       ctx.body = JSON.stringify({success: true, token: newToken})
   })
 
