@@ -510,6 +510,9 @@ const Admin = db.define('admin', {
   },
   password: {
     type: Sequelize.STRING
+  },
+  email: {
+      type: Sequelize.STRING
   }
 })
 

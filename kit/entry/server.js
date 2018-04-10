@@ -103,6 +103,9 @@ import PATHS from 'config/paths';
 //IMPORT POSTGRESQL DATABASE
 import db from '../../db/db';
 
+//IMPORT JSONWEBTOKEN
+import jwt from 'jsonwebtoken';
+
 // ----------------------
 
 // Create a network layer based on settings.  This is an immediate function
@@ -234,6 +237,23 @@ export function createReactHandler(css = [], scripts = [], chunkManifest = {}) {
   };
 }
 
+function verifyToken(token) {
+  try {
+    const currentTimeStamp = Math.floor(Date.now()/1000);
+    const tokenVerify = jwt.verify(token, config.token);
+    if((tokenVerify.exp - currentTimeStamp) <= 600) {
+      const newToken = jwt.sign({id: tokenVerify.id, username: tokenVerify.username, email: tokenVerify.email}, 'nasasifra', {expiresIn: 1800});
+      tokenVerify.newToken = newToken;
+      return tokenVerify;
+    } else {
+      return tokenVerify;
+    }
+  } catch(err) {
+    return err;
+  }
+}
+
+
 // Build the router, based on our app's settings.  This will define which
 // Koa route handlers
 const router = (new KoaRouter())
@@ -242,11 +262,37 @@ const router = (new KoaRouter())
     ctx.body = 'pong';
   })
 
+  .post('/login', async(ctx, next) => {
+    const username = ctx.request.body.username;
+    const password = ctx.request.body.password;
+    const user = db.models.admin.find({where: {username: username, password: password}})
+    if(user != null) {
+      let token;
+      if(ctx.request.body.rememberMe) {
+        token = jwt.sign({id: user.id, username: user.username, email: user.email}, 'nasasifra')
+      } else {
+        token = jwt.sign({id: user.id, username: user.username, email: user.email}, 'nasasifra', {expiresIn: 1800})
+      }
+      ctx.body = JSON.stringify({success: true, token: token});
+    } else {
+      ctx.body = JSON.stringify({error: 'User not found', success: false});
+    }
+  })
+
+  .post('/checkToken', async(ctx, next) => {
+    const token = jwt.verify(ctx.request.body.token, 'nasasifra');
+    ctx.body = "DOBAR DOBAR"
+    
+  })
+
+
   // Favicon.ico.  By default, we'll serve this as a 204 No Content.
   // If /favicon.ico is available as a static file, it'll try that first
   .get('/favicon.ico', async ctx => {
     ctx.status = 204;
   });
+
+  
 
 // Build the app instance, which we'll use to define middleware for Koa
 // as a precursor to handling routes
