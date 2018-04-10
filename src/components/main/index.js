@@ -50,7 +50,8 @@ import { Redirect, history } from 'kit/lib/routing';
 // per file, or in the case of <Home>, <Page> and <WhenFound>, we can group
 // multiple components per file where it makes sense to do so
 import GraphQLMessage from 'components/graphql';
-import { Home, Page, WhenNotFound } from 'components/routes';
+import Home from '../home/index';
+import NotFound from '../notFound/index';
 import ReduxCounter from 'components/redux';
 import Stats from 'components/stats';
 import Styles from 'components/styles';
@@ -78,33 +79,9 @@ export default () => (
       <meta name="description" content="ReactQL starter kit app" />
       {/* <base href="http://localhost:8081/" /> */}
     </Helmet>
-    <div className={css.hello}>
-      <img src={logo} alt="ReactQL" className={css.logo} />
-    </div>
-    <hr />
-    <GraphQLMessage />
-    <hr />
-    <ul>
-      <li><Link to="/">Home</Link></li>
-      <li><Link to="/page/about">About</Link></li>
-      <li><Link to="/page/contact">Contact</Link></li>
-      <li><Link to="/old/path">Redirect from /old/path &#8594; /new/path</Link></li>
-    </ul>
-    Change routes anywhere &mdash; <button onClick={changeRoute}>Like here (About)</button>
-    <hr />
     <Switch>
       <Route exact path="/" component={Home} />
-      <Route path="/page/:name" component={Page} />
-      <Redirect from="/old/path" to="/new/path" />
-      <Route component={WhenNotFound} />
+      <Route component={NotFound} />
     </Switch>
-    <hr />
-    <ReduxCounter />
-    <hr />
-    <p>Runtime info:</p>
-    <Stats />
-    <hr />
-    <p>Stylesheet examples:</p>
-    <Styles />
   </div>
 );
