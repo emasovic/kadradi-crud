@@ -99,6 +99,10 @@ import config from 'kit/config';
 // so we can serve static files
 import PATHS from 'config/paths';
 
+
+//IMPORT POSTGRESQL DATABASE
+import db from '../../db/db';
+
 // ----------------------
 
 // Create a network layer based on settings.  This is an immediate function
