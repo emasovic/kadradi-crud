@@ -243,10 +243,9 @@ function verifyToken(token) {
     const tokenVerify = jwt.verify(token, config.token);
     if((tokenVerify.exp - currentTimeStamp) <= 600) {
       const newToken = jwt.sign({id: tokenVerify.id, username: tokenVerify.username, email: tokenVerify.email}, 'nasasifra', {expiresIn: 1800});
-      tokenVerify.newToken = newToken;
-      return tokenVerify;
+      return newToken;
     } else {
-      return tokenVerify;
+      return token;
     }
   } catch(err) {
     return err;
@@ -280,9 +279,8 @@ const router = (new KoaRouter())
   })
 
   .post('/checkToken', async(ctx, next) => {
-    const token = jwt.verify(ctx.request.body.token, 'nasasifra');
-    ctx.body = "DOBAR DOBAR"
-    
+      const newToken = verifyToken(ctx.request.body.token);
+      ctx.body = JSON.stringify({success: true, token: newToken})
   })
 
 
