@@ -84,6 +84,7 @@
     "apollo-server-koa": "^1.2.0",
     "boxen": "^1.2.2",
     "chalk": "^2.3.0",
+    "faker": "^4.1.0",
     "graphql": "^0.11.7",
     "history": "^4.7.2",
     "ip": "^1.1.5",
@@ -96,7 +97,9 @@
     "koa-send": "^4.1.1",
     "koa-sslify": "^2.1.2",
     "microseconds": "^0.1.0",
+    "pg": "^7.4.1",
     "prop-types": "^15.6.0",
+    "random-id": "0.0.2",
     "react": "^16.1.1",
     "react-apollo": "^1.4.16",
     "react-dom": "^16.1.1",
@@ -108,7 +111,8 @@
     "redux": "^3.7.2",
     "redux-thunk": "^2.2.0",
     "regenerator-runtime": "^0.11.0",
-    "seamless-immutable": "^7.1.2"
+    "seamless-immutable": "^7.1.2",
+    "sequelize": "^4.37.6"
   },
   "engines": {
     "node": ">=7",
