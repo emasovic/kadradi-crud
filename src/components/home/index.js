@@ -1,35 +1,37 @@
 import React from 'react';
-import {Grid, Input, Button } from 'semantic-ui-react';
 import css from './styles.scss';
-import post from '../fetch/post'
+import post from '../fetch/post';
+import { connect } from 'react-redux';
+import Login from './login';
+
+@connect(state => ({ token: state.token }))
 
 class Home extends React.Component {
-	constructor(props) {
-		super(props);
-		this.state = {
-			s: ''
-		}
-	}
-	componentWillMount() {
-		if(localStorage.token) {
-			console.log('IMA TOKENA')
-			// AKO IMA PROVERAVAMO SA SERVEROM DA LI JE VALIDAN
-			const response = post.secure('/checkToken',{});
-			if(response.success) {
-				localStorage.setItem('token', response.token)
-			} else {
-				localStorage.removeItem('token')
-			}
-		}
-	}
+	async componentWillMount() {
+		if (localStorage.getItem('token')) {
+			const response = await post.secure('/checkToken', {});
+			console.log('RESPONSE', response)
+      if (response.success) {
+				this.props.dispatch({
+          type: "USER_TOKEN",
+          token: response.token,
+        })
+      } else {
+        localStorage.removeItem('token')
+      }
+    }
+  }
 	render() {
-		return(
-			<div className={css.wrapper}>
-				<div className={css.holder}>
-						<Input focus placeholder='Username...' style={{marginRight:'10px'}}/>
-						<Input type='password' focus placeholder='Password...' style={{marginRight:'10px'}}/>
-						<Button>Submit</Button>
-				</div>
+		let token = this.props.token.token;
+		console.log('TOKEEEEEEEEEEEEEEEEN', localStorage.getItem('token'))
+    console.log('OVO JE TOKEN IZ REDUXA', this.props.token.token)
+		return (
+			<div>
+				{
+					token === '' ?
+					<Login /> :
+					'NASTAVITE DA KORISTITE APPLIKACIJU'
+				}
 			</div>
 		)
 	}

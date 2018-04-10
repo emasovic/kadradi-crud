@@ -97,6 +97,7 @@
     "koa-router": "^7.3.0",
     "koa-send": "^4.1.1",
     "koa-sslify": "^2.1.2",
+    "md5": "^2.2.1",
     "microseconds": "^0.1.0",
     "pg": "^7.4.1",
     "prop-types": "^15.6.0",

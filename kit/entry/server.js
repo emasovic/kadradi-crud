@@ -240,7 +240,7 @@ export function createReactHandler(css = [], scripts = [], chunkManifest = {}) {
 function verifyToken(token) {
   try {
     const currentTimeStamp = Math.floor(Date.now()/1000);
-    const tokenVerify = jwt.verify(token, config.token);
+    const tokenVerify = jwt.verify(token, 'nasasifra');
     if((tokenVerify.exp - currentTimeStamp) <= 600) {
       const newToken = jwt.sign({id: tokenVerify.id, username: tokenVerify.username, email: tokenVerify.email}, 'nasasifra', {expiresIn: 1800});
       return newToken;
@@ -264,13 +264,13 @@ const router = (new KoaRouter())
   .post('/login', async(ctx, next) => {
     const username = ctx.request.body.username;
     const password = ctx.request.body.password;
-    const user = db.models.admin.find({where: {username: username, password: password}})
+    const user = await db.models.admin.find({where: {username: username, password: password}})
     if(user != null) {
       let token;
       if(ctx.request.body.rememberMe) {
-        token = jwt.sign({id: user.id, username: user.username, email: user.email}, 'nasasifra')
+        token = jwt.sign({id: user.id, username: user.username}, 'nasasifra')
       } else {
-        token = jwt.sign({id: user.id, username: user.username, email: user.email}, 'nasasifra', {expiresIn: 1800})
+        token = jwt.sign({id: user.id, username: user.username}, 'nasasifra', {expiresIn: 1800})
       }
       ctx.body = JSON.stringify({success: true, token: token});
     } else {
