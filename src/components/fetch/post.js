@@ -11,12 +11,12 @@ export default {
             body: JSON.stringify(payload),
         }).then((response) => response.text())
         .then((responseText) => {
-            if(responseText.newToken) {
+            send = JSON.parse(responseText);
+            if(send.newToken) {
                 localStorage.setItem("token", responseText.newToken);
             }
-            send = JSON.parse(responseText);
         })
-        return a;
+        return send;
     },
 
     async unsecure(uri, payload) {
