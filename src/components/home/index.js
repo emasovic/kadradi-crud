@@ -1,6 +1,7 @@
 import React from 'react';
 import {Grid, Input, Button } from 'semantic-ui-react';
 import css from './styles.scss';
+import post from '../fetch/post'
 
 class Home extends React.Component {
 	constructor(props) {
@@ -10,12 +11,18 @@ class Home extends React.Component {
 		}
 	}
 	componentWillMount() {
-		localStorage.setItem('myCat', 'Tom');
-
+		if(localStorage.token) {
+			console.log('IMA TOKENA')
+			// AKO IMA PROVERAVAMO SA SERVEROM DA LI JE VALIDAN
+			const response = post.secure('/checkToken',{});
+			if(response.success) {
+				localStorage.setItem('token', response.token)
+			} else {
+				localStorage.removeItem('token')
+			}
+		}
 	}
 	render() {
-		let cat = localStorage.getItem("myCat");
-		console.log('macka', cat)
 		return(
 			<div className={css.wrapper}>
 				<div className={css.holder}>
