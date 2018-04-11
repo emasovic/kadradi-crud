@@ -243,7 +243,7 @@ function verifyToken(token) {
     const tokenVerify = jwt.verify(token, 'nasasifra');
     if((tokenVerify.exp - currentTimeStamp) <= 600) {
       console.log('manje je')
-      const newToken = jwt.sign({id: tokenVerify.id, username: tokenVerify.username, email: tokenVerify.email}, 'nasasifra', {expiresIn: 1800});
+      const newToken = jwt.sign({id: tokenVerify.id, username: tokenVerify.username, email: tokenVerify.email}, 'nasasifra', {expiresIn: 10});
       return newToken;
     } else {
       return token;
@@ -271,7 +271,7 @@ const router = (new KoaRouter())
       if(ctx.request.body.rememberMe) {
         token = jwt.sign({id: user.id, username: user.username}, 'nasasifra')
       } else {
-        token = jwt.sign({id: user.id, username: user.username}, 'nasasifra', {expiresIn: 1800})
+        token = jwt.sign({id: user.id, username: user.username}, 'nasasifra', {expiresIn: 10})
       }
       ctx.body = JSON.stringify({success: true, token: token});
     } else {
