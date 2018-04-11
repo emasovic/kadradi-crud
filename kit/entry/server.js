@@ -262,6 +262,8 @@ const router = (new KoaRouter())
     ctx.body = 'pong';
   })
 
+  // AUTHENTIFICATION
+
   .post('/login', async(ctx, next) => {
     const username = ctx.request.body.username;
     const password = ctx.request.body.password;
