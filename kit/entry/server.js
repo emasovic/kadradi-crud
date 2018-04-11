@@ -242,6 +242,7 @@ function verifyToken(token) {
     const currentTimeStamp = Math.floor(Date.now()/1000);
     const tokenVerify = jwt.verify(token, 'nasasifra');
     if((tokenVerify.exp - currentTimeStamp) <= 600) {
+      console.log('manje je')
       const newToken = jwt.sign({id: tokenVerify.id, username: tokenVerify.username, email: tokenVerify.email}, 'nasasifra', {expiresIn: 1800});
       return newToken;
     } else {
@@ -280,7 +281,11 @@ const router = (new KoaRouter())
 
   .post('/checkToken', async(ctx, next) => {
       const newToken = verifyToken(ctx.request.body.token);
-      ctx.body = JSON.stringify({success: true, token: newToken})
+      if(newToken.name === 'TokenExpiredError'){
+        ctx.body = JSON.stringify({success: false, message: 'Token has expired!'})
+      } else {
+          ctx.body = JSON.stringify({success: true, token: newToken})
+      }
   })
 
 
