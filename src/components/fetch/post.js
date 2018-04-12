@@ -2,6 +2,7 @@ const server = 'http://localhost:8081';
 
 export default {
     async secure(uri, payload) {
+        console.log("USAO U SECURE")
         let send;
         payload.token = localStorage.getItem("token");
         await fetch(server+uri, {
@@ -12,8 +13,15 @@ export default {
         }).then((response) => response.text())
         .then((responseText) => {
             send = JSON.parse(responseText);
-            if(send.newToken) {
-                localStorage.setItem("token", responseText.newToken);
+            if(send.token.success) {
+                if(send.token.token != localStorage.getItem("token")) {
+                    localStorage.setItem("token", send.token.token);
+                    PubSub.publish('TOKEN', {success: true, token: send.token.token})
+                } else {
+                    PubSub.publish('TOKEN', {success: true, token: send.token.token})
+                }
+            } else {
+                PubSub.publish('TOKEN', {success: false})
             }
         })
         return send;

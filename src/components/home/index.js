@@ -4,32 +4,44 @@ import post from '../fetch/post';
 import { connect } from 'react-redux';
 import Login from './login';
 import Crud from '../crud/index';
+import PubSub from 'pubsub-js';
 
 @connect(state => ({ token: state.token }))
 
 class Home extends React.Component {
+
 	async componentWillMount() {
 		if (localStorage.getItem('token')) {
-			const response = await post.secure('/checkToken', {});
-			console.log('RESPONSE', response)
-      if (response.success) {
-				this.props.dispatch({
-          type: "USER_TOKEN",
-          token: response.token,
-        })
-      } else {
-        localStorage.removeItem('token')
-      }
-    }
-  }
+			console.log('usao u mount')
+			post.secure('/checkToken', {});
+		}
+	}
 	render() {
+		let ovajProps = this.props;
+		let tokenManipulate = function (msg, data) {
+			if (data.success) {
+				console.log("Evo ga tebra")
+				ovajProps.dispatch({
+					type: "USER_TOKEN",
+					token: data.token,
+				})
+			} else {
+				console.log("SAD NIJE BRT")
+				ovajProps.dispatch({
+					type: "USER_TOKEN",
+					token: "",
+				})
+			}
+		}
+
+		let ovoJeToken = PubSub.subscribe('TOKEN', tokenManipulate)
 		let token = this.props.token.token;
 		return (
 			<div>
 				{
 					token === '' ?
-					<Login /> :
-					<Crud />
+						<Login /> :
+						<Crud />
 				}
 			</div>
 		)

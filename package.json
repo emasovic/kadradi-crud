@@ -101,6 +101,7 @@
     "microseconds": "^0.1.0",
     "pg": "^7.4.1",
     "prop-types": "^15.6.0",
+    "pubsub-js": "^1.6.0",
     "random-id": "0.0.2",
     "react": "^16.1.1",
     "react-apollo": "^1.4.16",

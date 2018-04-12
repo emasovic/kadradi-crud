@@ -241,15 +241,20 @@ function verifyToken(token) {
   try {
     const currentTimeStamp = Math.floor(Date.now()/1000);
     const tokenVerify = jwt.verify(token, 'nasasifra');
-    if((tokenVerify.exp - currentTimeStamp) <= 600) {
+    let response = {};
+    if((tokenVerify.exp - currentTimeStamp) <= 10) {
       console.log('manje je')
-      const newToken = jwt.sign({id: tokenVerify.id, username: tokenVerify.username, email: tokenVerify.email}, 'nasasifra', {expiresIn: 10});
-      return newToken;
+      const newToken = jwt.sign({id: tokenVerify.id, username: tokenVerify.username, email: tokenVerify.email}, 'nasasifra', {expiresIn: 20});
+      return {success: true, token: newToken};
     } else {
-      return token;
+      if(tokenVerify.name === 'TokenExpiredError') {
+        return {success: false}
+      } else {
+        return {success: true, token: token}
+      }
     }
   } catch(err) {
-    return err;
+    return {success: false};
   }
 }
 
@@ -273,7 +278,7 @@ const router = (new KoaRouter())
       if(ctx.request.body.rememberMe) {
         token = jwt.sign({id: user.id, username: user.username}, 'nasasifra')
       } else {
-        token = jwt.sign({id: user.id, username: user.username}, 'nasasifra', {expiresIn: 10})
+        token = jwt.sign({id: user.id, username: user.username}, 'nasasifra', {expiresIn: 20})
       }
       ctx.body = JSON.stringify({success: true, token: token});
     } else {
@@ -283,13 +288,8 @@ const router = (new KoaRouter())
 
   .post('/checkToken', async(ctx, next) => {
       const newToken = verifyToken(ctx.request.body.token);
-      if(newToken.name === 'TokenExpiredError'){
-        ctx.body = JSON.stringify({success: false, message: 'Token has expired!'})
-      } else {
-          ctx.body = JSON.stringify({success: true, token: newToken})
-      }
+      ctx.body = JSON.stringify({token: newToken});
   })
-
 
   // Favicon.ico.  By default, we'll serve this as a 204 No Content.
   // If /favicon.ico is available as a static file, it'll try that first
