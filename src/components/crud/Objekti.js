@@ -40,7 +40,7 @@ class Objekti extends Component {
     });
     if (response.token.success) {
       let pages = []
-      for(let i = 1; i <= response.pagesLength; i++ ) {
+      for (let i = 1; i <= response.pagesLength; i++) {
         let page = {
           number: i
         }
@@ -65,6 +65,12 @@ class Objekti extends Component {
       })
     }
   }
+  deleteObj = async (objectId) => {
+    let response = await post.secure('/deleteObject', {
+      token: this.props.token,
+      objectId
+    });
+  }
   componentWillMount() {
     this.getAllObjCategories()
   }
@@ -77,36 +83,46 @@ class Objekti extends Component {
           fluid search selection
           onChange={this.categoryObjpage1}
           options={this.state.categories} />
-        <Table compact celled definition>
-          <Table.Header>
-            <Table.Row>
-              <Table.HeaderCell>Name</Table.HeaderCell>
-            </Table.Row>
-          </Table.Header>
-          <Table.Body>
-            {
-              this.state.objects.length ?
-                this.state.objects.map((item, key) => {
-                  return (
-                    <Table.Row key={item.id}>
-                      <Table.Cell>{item.name}</Table.Cell>
-                    </Table.Row>
-                  )
-                })
-                : 'No results'
-            }
-          </Table.Body>
-        </Table>
-        <Menu borderless>
+        {
+          this.state.objects.length ?
+            <Table compact celled definition>
+              <Table.Header>
+                <Table.Row>
+                  <Table.HeaderCell>Name</Table.HeaderCell>
+                  <Table.HeaderCell>Actions</Table.HeaderCell>
+                </Table.Row>
+              </Table.Header>
+              <Table.Body>
+                {
+                  this.state.objects.map((item, key) => {
+                    return (
+                      <Table.Row key={item.id}>
+                        <Table.Cell>{item.name}</Table.Cell>
+                        <Table.Cell>
+                          edit | 
+                          <Button icon onClick={() => this.deleteObj(item.id)}>
+                            <Icon name='delete' />
+                          </Button>
+                        </Table.Cell>
+                      </Table.Row>
+                    )
+                  })
+                }
+              </Table.Body>
+            </Table> : null
+        }
         {
           this.state.pages.length ?
-          this.state.pages.map((item, key) => {
-            return(
-              <Menu.Item name={item.number} onClick={() => this.categoryObjpageN(item.number)} />
-            )
-          }) : null
+            <Menu borderless>
+              {
+                this.state.pages.map((item, key) => {
+                  return (
+                    <Menu.Item name={item.number.toString()} onClick={() => this.categoryObjpageN(item.number)} />
+                  )
+                })
+              }
+            </Menu> : null
         }
-      </Menu>
       </div>
     );
   }
