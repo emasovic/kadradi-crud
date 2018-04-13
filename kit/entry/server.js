@@ -301,10 +301,15 @@ const router = (new KoaRouter())
   })
   .post('/objectsFromCategories', async (ctx, next) => {
     const categoryId = ctx.request.body.categoryId;
-    const newToken = verifyToken(ctx.request.body.token)
+    const newToken = verifyToken(ctx.request.body.token);
+    const page = ctx.request.body.page;
+    const limit = 3;
+    const offset = limit*(page-1)
     if (newToken.success) {
       const categories = await db.models.objectCl.findAll({
         attributes: ['name', 'id'],
+        limit: limit,
+        offset: offset,
         where: { objectCategoryId: categoryId }
       });
       ctx.body = JSON.stringify({ objects: categories, token: newToken });
