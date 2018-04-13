@@ -39,9 +39,17 @@ class Objekti extends Component {
       page: 1
     });
     if (response.token.success) {
+      let pages = []
+      for(let i = 1; i <= response.pagesLength; i++ ) {
+        let page = {
+          number: i
+        }
+        pages.push(page)
+      }
       this.setState({
         objects: response.objects,
-        categoryId: value
+        categoryId: value,
+        pages
       })
     }
   }
@@ -49,11 +57,11 @@ class Objekti extends Component {
     let response = await post.secure('/objectsFromCategories', {
       token: this.props.token,
       categoryId: this.state.categoryId,
-      page: pageNumber
+      page: name
     });
     if (response.token.success) {
       this.setState({
-        objects: [...this.state.objects, ...response.objects]
+        objects: response.objects
       })
     }
   }
@@ -93,7 +101,9 @@ class Objekti extends Component {
         {
           this.state.pages.length ?
           this.state.pages.map((item, key) => {
-            <Menu.Item name={item.number} onClick={() => this.categoryObjpageN(item.number)} />
+            return(
+              <Menu.Item name={item.number} onClick={() => this.categoryObjpageN(item.number)} />
+            )
           }) : null
         }
       </Menu>

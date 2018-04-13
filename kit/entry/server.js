@@ -244,7 +244,7 @@ function verifyToken(token) {
     let response = {};
     if ((tokenVerify.exp - currentTimeStamp) <= 10) {
       console.log('manje je')
-      const newToken = jwt.sign({ id: tokenVerify.id, username: tokenVerify.username, email: tokenVerify.email }, 'nasasifra', { expiresIn: 60*10 });
+      const newToken = jwt.sign({ id: tokenVerify.id, username: tokenVerify.username, email: tokenVerify.email }, 'nasasifra', { expiresIn: 60 * 10 });
       return { success: true, token: newToken };
     } else {
       if (tokenVerify.name === 'TokenExpiredError') {
@@ -278,7 +278,7 @@ const router = (new KoaRouter())
       if (ctx.request.body.rememberMe) {
         token = jwt.sign({ id: user.id, username: user.username }, 'nasasifra')
       } else {
-        token = jwt.sign({ id: user.id, username: user.username }, 'nasasifra', { expiresIn: 60*10 })
+        token = jwt.sign({ id: user.id, username: user.username }, 'nasasifra', { expiresIn: 60 * 10 })
       }
       ctx.body = JSON.stringify({ success: true, token: token });
     } else {
@@ -296,7 +296,7 @@ const router = (new KoaRouter())
       const categories = await db.models.objectCategories.findAll();
       ctx.body = JSON.stringify({ categories: categories, token: newToken });
     } else {
-      ctx.body = JSON.stringify({categories: [], token: newToken})
+      ctx.body = JSON.stringify({ categories: [], token: newToken })
     }
   })
   .post('/objectsFromCategories', async (ctx, next) => {
@@ -304,18 +304,21 @@ const router = (new KoaRouter())
     const newToken = verifyToken(ctx.request.body.token);
     const page = ctx.request.body.page;
     const limit = 3;
-    const offset = limit*(page-1)
-    console.log("OFSET", offset)
+    const offset = limit * (page - 1)
+    const pages = await db.models.objectCl.findAndCountAll({
+      where: { objectCategoryId: categoryId }
+    });
+    const pagesLength = Math.ceil(pages.count / limit);
     if (newToken.success) {
-      const categories = await db.models.objectCl.findAll({
+      const objects = await db.models.objectCl.findAll({
         attributes: ['name', 'id'],
         limit: limit,
         offset: offset,
         where: { objectCategoryId: categoryId }
       });
-      ctx.body = JSON.stringify({ objects: categories, token: newToken });
+      ctx.body = JSON.stringify({ objects, pagesLength, token: newToken });
     } else {
-      ctx.body = JSON.stringify({ objects: [], token: newToken})
+      ctx.body = JSON.stringify({ objects: [], token: newToken })
     }
   })
   // Favicon.ico.  By default, we'll serve this as a 204 No Content.
