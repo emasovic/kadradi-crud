@@ -301,13 +301,14 @@ const router = (new KoaRouter())
   })
   .post('/objectsFromCategories', async (ctx, next) => {
     const categoryId = ctx.request.body.categoryId;
+    const newToken = verifyToken(ctx.request.body.token)
     if (newToken.success) {
-      const categories = await db.models.objectCategories.find({
-        where: { parentCategoryId: categoryId }
+      const categories = await db.models.objectCl.findAll({
+        where: { objectCategoryId: categoryId }
       });
       ctx.body = JSON.stringify({ objects: categories, token: newToken });
     } else {
-      ctx.body = JSON.stringify({categories: [], token: newToken})
+      ctx.body = JSON.stringify({ objects: [], token: newToken})
     }
   })
   // Favicon.ico.  By default, we'll serve this as a 204 No Content.
