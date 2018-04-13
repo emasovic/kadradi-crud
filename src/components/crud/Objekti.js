@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Grid, Menu, Tab, Button, Dropdown, Table, Icon } from 'semantic-ui-react';
 import post from '../fetch/post';
+import { withRouter } from 'react-router';
 
 class Objekti extends Component {
   constructor(props) {
@@ -10,6 +11,7 @@ class Objekti extends Component {
       objects: [],
       pages: [],
       categoryId: 0,
+      pageNumber: 1,
       activeItem: '1',
     }
   }
@@ -61,21 +63,30 @@ class Objekti extends Component {
     });
     if (response.token.success) {
       this.setState({
-        objects: response.objects
+        objects: response.objects,
+        activeItem: name.toString(),
+        pageNumber: name
       })
     }
+  }
+  editObj = (objectId) => {
+    this.props.history.push(`/edit/${objectId}`);
   }
   deleteObj = async (objectId) => {
     let response = await post.secure('/deleteObject', {
       token: this.props.token,
       objectId
     });
+    if (response.deleted) {
+      this.categoryObjpageN(this.state.pageNumber)
+    }
+    console.log("RESPONSE", response)
   }
   componentWillMount() {
     this.getAllObjCategories()
   }
   render() {
-    console.log("STEJT", this.state)
+    console.log("STEJT", this)
     let activeItem = this.state.activeItem
     return (
       <div style={{ height: '100vh' }}>
@@ -83,6 +94,12 @@ class Objekti extends Component {
           fluid search selection
           onChange={this.categoryObjpage1}
           options={this.state.categories} />
+        {
+          this.state.categoryId != 0 ?
+            <Button floated='left' icon labelPosition='left' primary size='small'>
+              <Icon name='user' /> Add New
+            </Button> : null
+        }
         {
           this.state.objects.length ?
             <Table compact celled definition>
@@ -99,7 +116,9 @@ class Objekti extends Component {
                       <Table.Row key={item.id}>
                         <Table.Cell>{item.name}</Table.Cell>
                         <Table.Cell>
-                          edit | 
+                          <Button icon onClick={() => this.editObj(item.id)}>
+                            <Icon name='edit' />
+                          </Button>
                           <Button icon onClick={() => this.deleteObj(item.id)}>
                             <Icon name='delete' />
                           </Button>
@@ -117,7 +136,9 @@ class Objekti extends Component {
               {
                 this.state.pages.map((item, key) => {
                   return (
-                    <Menu.Item name={item.number.toString()} onClick={() => this.categoryObjpageN(item.number)} />
+                    <Menu.Item name={item.number.toString()}
+                      active={this.state.activeItem === item.number.toString()}
+                      onClick={() => this.categoryObjpageN(item.number)} />
                   )
                 })
               }
@@ -127,4 +148,4 @@ class Objekti extends Component {
     );
   }
 }
-export default Objekti;
+export default withRouter(Objekti);

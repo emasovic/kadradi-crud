@@ -322,7 +322,17 @@ const router = (new KoaRouter())
     }
   })
 
-  .post('/deleteObject', async (ctx, next) => {
+  .post('/objectById', async (ctx, next) => {
+    const objectId = ctx.request.body.objectId;
+    const newToken = verifyToken(ctx.request.body.token);
+    if(newToken.success) {
+      const objectById = await db.models.objectCl.find({where: {id: objectId}});
+      ctx.body = JSON.stringify({objectById, token: newToken})
+    } else {
+      ctx.body = JSON.stringify({objectById: [], token: newToken})
+    }
+  })
+  .post('/editObject', async (ctx, next) => {
     const objectId = ctx.request.body.objectId;
     const newToken = verifyToken(ctx.request.body.token);
     if(newToken.success) {
@@ -334,6 +344,15 @@ const router = (new KoaRouter())
       }
     } else {
       ctx.body = JSON.stringify({deleted: false, token: newToken})
+    }
+  })
+  .post('/allUsers', async (ctx, next) => {
+    const newToken = verifyToken(ctx.request.body.token)
+    if (newToken.success) {
+      const users = await db.models.person.findAll();
+      ctx.body = JSON.stringify({ users, token: newToken });
+    } else {
+      ctx.body = JSON.stringify({ users: [], token: newToken })
     }
   })
 
