@@ -304,6 +304,7 @@ const router = (new KoaRouter())
     const newToken = verifyToken(ctx.request.body.token)
     if (newToken.success) {
       const categories = await db.models.objectCl.findAll({
+        attributes: ['name', 'id'],
         where: { objectCategoryId: categoryId }
       });
       ctx.body = JSON.stringify({ objects: categories, token: newToken });
