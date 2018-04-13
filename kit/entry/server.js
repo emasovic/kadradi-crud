@@ -321,6 +321,22 @@ const router = (new KoaRouter())
       ctx.body = JSON.stringify({ objects: [], token: newToken })
     }
   })
+
+  .post('/deleteObject', async (ctx, next) => {
+    const objectId = ctx.request.body.objectId;
+    const newToken = verifyToken(ctx.request.body.token);
+    if(newToken.success) {
+      const deleteObject = await db.models.objectCl.destroy({where: {id: objectId}});
+      if(deleteObject) {
+        ctx.body = JSON.stringify({deleted: true, token: newToken})
+      } else {
+        ctx.body = JSON.stringify({deleted: false, token: newToken})
+      }
+    } else {
+      ctx.body = JSON.stringify({deleted: false, token: newToken})
+    }
+  })
+
   // Favicon.ico.  By default, we'll serve this as a 204 No Content.
   // If /favicon.ico is available as a static file, it'll try that first
   .get('/favicon.ico', async ctx => {
