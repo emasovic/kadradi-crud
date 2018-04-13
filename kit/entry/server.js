@@ -298,7 +298,17 @@ const router = (new KoaRouter())
     } else {
       ctx.body = JSON.stringify({categories: [], token: newToken})
     }
-
+  })
+  .post('/objectsFromCategories', async (ctx, next) => {
+    const categoryId = ctx.request.body.categoryId;
+    if (newToken.success) {
+      const categories = await db.models.objectCategories.find({
+        where: { parentCategoryId: categoryId }
+      });
+      ctx.body = JSON.stringify({ objects: categories, token: newToken });
+    } else {
+      ctx.body = JSON.stringify({categories: [], token: newToken})
+    }
   })
   // Favicon.ico.  By default, we'll serve this as a 204 No Content.
   // If /favicon.ico is available as a static file, it'll try that first
