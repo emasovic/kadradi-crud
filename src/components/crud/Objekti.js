@@ -7,8 +7,10 @@ class Objekti extends Component {
     let categories = await post.secure('/allCategories', {
       token: this.props.token
     });
+    console.log("CATEGORIES", categories)
   }
   componentWillMount() {
+    this.getAllObjCategories()
   }
   render() {
     return (
