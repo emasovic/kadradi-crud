@@ -244,7 +244,7 @@ function verifyToken(token) {
     let response = {};
     if ((tokenVerify.exp - currentTimeStamp) <= 10) {
       console.log('manje je')
-      const newToken = jwt.sign({ id: tokenVerify.id, username: tokenVerify.username, email: tokenVerify.email }, 'nasasifra', { expiresIn: 20 });
+      const newToken = jwt.sign({ id: tokenVerify.id, username: tokenVerify.username, email: tokenVerify.email }, 'nasasifra', { expiresIn: 60*10 });
       return { success: true, token: newToken };
     } else {
       if (tokenVerify.name === 'TokenExpiredError') {
@@ -278,7 +278,7 @@ const router = (new KoaRouter())
       if (ctx.request.body.rememberMe) {
         token = jwt.sign({ id: user.id, username: user.username }, 'nasasifra')
       } else {
-        token = jwt.sign({ id: user.id, username: user.username }, 'nasasifra', { expiresIn: 20 })
+        token = jwt.sign({ id: user.id, username: user.username }, 'nasasifra', { expiresIn: 60*10 })
       }
       ctx.body = JSON.stringify({ success: true, token: token });
     } else {
