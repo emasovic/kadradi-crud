@@ -9,7 +9,6 @@ import PubSub from 'pubsub-js';
 @connect(state => ({ token: state.token }))
 
 class Home extends React.Component {
-
 	async componentWillMount() {
 		if (localStorage.getItem('token')) {
 			console.log('usao u mount')
@@ -33,7 +32,6 @@ class Home extends React.Component {
 				})
 			}
 		}
-
 		let ovoJeToken = PubSub.subscribe('TOKEN', tokenManipulate)
 		let token = this.props.token.token;
 		return (

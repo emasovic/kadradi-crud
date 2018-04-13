@@ -4,7 +4,6 @@ import randomid from 'random-id'
 const datum = new Date().toDateString();
 
 export const dataArr = {
-
   Locations: [
     {
       name: 'Beograd',
@@ -221,9 +220,6 @@ export const dataArr = {
     {
       name: 'Državne ustanove'
     },
-
-
-
   ],
   CategoriesArr: [
     {
@@ -499,7 +495,6 @@ export const dataArr = {
       channel: randomid(16)
     }
   ],
-
   UserProfile: [
     {
       personId: 1,
@@ -620,7 +615,6 @@ export const dataArr = {
       objectClId: 4
     }
   ],
-
   FileCategory: [
     {
       type: 'profile',
