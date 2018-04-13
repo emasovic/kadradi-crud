@@ -8,7 +8,7 @@ class Objekti extends Component {
     this.state = {
       categories: [],
       objects: [],
-      pageNumber: 1,
+      pages: [],
       categoryId: 0,
       activeItem: '1',
     }
@@ -36,7 +36,7 @@ class Objekti extends Component {
     let response = await post.secure('/objectsFromCategories', {
       token: this.props.token,
       categoryId: value,
-      pageNumber: 1
+      page: 1
     });
     if (response.token.success) {
       this.setState({
@@ -46,26 +46,14 @@ class Objekti extends Component {
     }
   }
   categoryObjpageN = async (name) => {
-    let pageNumber = this.state.pageNumber
-    if(name == 'More') {
-      pageNumber = pageNumber + 1
-      this.setState({
-        pageNumber
-      })
-    } else {
-      pageNumber = pageNumber - 1
-      this.setState({
-        pageNumber
-      })
-    }
     let response = await post.secure('/objectsFromCategories', {
       token: this.props.token,
-      categoryId: value,
+      categoryId: this.state.categoryId,
       page: pageNumber
     });
     if (response.token.success) {
       this.setState({
-        objects: response.objects
+        objects: [...this.state.objects, ...response.objects]
       })
     }
   }
@@ -102,8 +90,12 @@ class Objekti extends Component {
           </Table.Body>
         </Table>
         <Menu borderless>
-        <Menu.Item name='Less' active={activeItem === '1'} onClick={() => this.categoryObjpageN('Less')} />
-        <Menu.Item name='More' active={activeItem === '2'} onClick={() => this.categoryObjpageN('More')} />
+        {
+          this.state.pages.length ?
+          this.state.pages.map((item, key) => {
+            <Menu.Item name={item.number} onClick={() => this.categoryObjpageN(item.number)} />
+          }) : null
+        }
       </Menu>
       </div>
     );

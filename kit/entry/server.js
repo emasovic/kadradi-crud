@@ -305,6 +305,7 @@ const router = (new KoaRouter())
     const page = ctx.request.body.page;
     const limit = 3;
     const offset = limit*(page-1)
+    console.log("OFSET", offset)
     if (newToken.success) {
       const categories = await db.models.objectCl.findAll({
         attributes: ['name', 'id'],
