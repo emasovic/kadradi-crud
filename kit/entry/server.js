@@ -146,8 +146,8 @@ export function staticMiddleware() {
             root: PATHS.public,
             immutable: true,
           } : {
-            root: PATHS.distDev,
-          },
+              root: PATHS.distDev,
+            },
         );
       }
     } catch (e) { /* Errors will fall through */ }
@@ -239,22 +239,22 @@ export function createReactHandler(css = [], scripts = [], chunkManifest = {}) {
 
 function verifyToken(token) {
   try {
-    const currentTimeStamp = Math.floor(Date.now()/1000);
+    const currentTimeStamp = Math.floor(Date.now() / 1000);
     const tokenVerify = jwt.verify(token, 'nasasifra');
     let response = {};
-    if((tokenVerify.exp - currentTimeStamp) <= 10) {
+    if ((tokenVerify.exp - currentTimeStamp) <= 10) {
       console.log('manje je')
-      const newToken = jwt.sign({id: tokenVerify.id, username: tokenVerify.username, email: tokenVerify.email}, 'nasasifra', {expiresIn: 20});
-      return {success: true, token: newToken};
+      const newToken = jwt.sign({ id: tokenVerify.id, username: tokenVerify.username, email: tokenVerify.email }, 'nasasifra', { expiresIn: 20 });
+      return { success: true, token: newToken };
     } else {
-      if(tokenVerify.name === 'TokenExpiredError') {
-        return {success: false}
+      if (tokenVerify.name === 'TokenExpiredError') {
+        return { success: false }
       } else {
-        return {success: true, token: token}
+        return { success: true, token: token }
       }
     }
-  } catch(err) {
-    return {success: false};
+  } catch (err) {
+    return { success: false };
   }
 }
 
@@ -269,35 +269,45 @@ const router = (new KoaRouter())
 
   // AUTHENTIFICATION
 
-  .post('/login', async(ctx, next) => {
+  .post('/login', async (ctx, next) => {
     const username = ctx.request.body.username;
     const password = ctx.request.body.password;
-    const user = await db.models.admin.find({where: {username: username, password: password}})
-    if(user != null) {
+    const user = await db.models.admin.find({ where: { username: username, password: password } })
+    if (user != null) {
       let token;
-      if(ctx.request.body.rememberMe) {
-        token = jwt.sign({id: user.id, username: user.username}, 'nasasifra')
+      if (ctx.request.body.rememberMe) {
+        token = jwt.sign({ id: user.id, username: user.username }, 'nasasifra')
       } else {
-        token = jwt.sign({id: user.id, username: user.username}, 'nasasifra', {expiresIn: 20})
+        token = jwt.sign({ id: user.id, username: user.username }, 'nasasifra', { expiresIn: 20 })
       }
-      ctx.body = JSON.stringify({success: true, token: token});
+      ctx.body = JSON.stringify({ success: true, token: token });
     } else {
-      ctx.body = JSON.stringify({error: 'User not found', success: false});
+      ctx.body = JSON.stringify({ error: 'User not found', success: false });
     }
   })
 
-  .post('/checkToken', async(ctx, next) => {
-      const newToken = verifyToken(ctx.request.body.token);
-      ctx.body = JSON.stringify({token: newToken});
+  .post('/checkToken', async (ctx, next) => {
+    const newToken = verifyToken(ctx.request.body.token);
+    ctx.body = JSON.stringify({ token: newToken });
   })
+  .post('/allCategories', async (ctx, next) => {
+    const newToken = verifyToken(ctx.request.body.token)
+    if (newToken.success) {
+      const categories = await db.models.objectCategories.findAll();
+      ctx.body = JSON.stringify({ categories: categories, token: newToken });
+    } else {
+      ctx.body = JSON.stringify({categories: [], token: newToken})
+    }
 
+  })
   // Favicon.ico.  By default, we'll serve this as a 204 No Content.
   // If /favicon.ico is available as a static file, it'll try that first
   .get('/favicon.ico', async ctx => {
     ctx.status = 204;
   });
 
-  
+
+
 
 // Build the app instance, which we'll use to define middleware for Koa
 // as a precursor to handling routes
