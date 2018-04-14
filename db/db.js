@@ -601,7 +601,7 @@ const Inbox = db.define('inbox', {
   }
 })
 
-db.sync({ force: false }).then(async () => {
+// db.sync({ force: false }).then(async () => {
 
   // await Promise.all(dataArr.Locations.map(async item => {
   //   await Locations.create(item)
@@ -728,9 +728,9 @@ db.sync({ force: false }).then(async () => {
   // }))
 
   // Admin.create({username: "admin", password: "f1dc735ee3581693489eaf286088b916"})  
-}).then(() => {
+// }).then(() => {
   // calculateAverageForAll();
-});
+// });
 
 
 export default db;

@@ -323,11 +323,43 @@ const router = (new KoaRouter())
   })
 
   .post('/objectById', async (ctx, next) => {
-    const objectId = ctx.request.body.objectId;
+    const objectId = 1;
     const newToken = verifyToken(ctx.request.body.token);
     if(newToken.success) {
-      const objectById = await db.models.objectCl.find({where: {id: objectId}});
-      ctx.body = JSON.stringify({objectById, token: newToken})
+      if(objectId) {
+        const objectCl = await db.models.objectCl.find({where: {id: objectId}});
+        const objectCategories = await db.models.objectCategories.findAll({
+          attributes: ['nameM', 'id']
+        });
+        const objectPhones = await db.models.objectPhones.find({where: {objectInfoId: objectId}});
+        let objectPhonesArr = 
+        !objectPhones.length ? [] : 
+        objectPhones.map(item => {
+          return(
+            {
+              id: item.id,
+              desc: item.desct,
+              number: item.number,
+
+            }
+          )
+        })
+        let objectCategoriesArr = objectCategories.map(item => {
+          return(
+            {
+              id: item.id,
+              name: item.nameM
+            }
+          )
+        })
+        const objectInfo = await db.models.objectInfo.find({where: {objectClId: objectId}});
+        const objectLocation = await db.models.objectLocation.find({where: {objectClId: objectId}});
+        const objectById = {objectCl: objectCl.dataValues, objectInfo:objectInfo.dataValues, 
+          objectLocation:objectLocation.dataValues, objectCategoriesArr, objectPhones:objectPhones.dataValues};
+        ctx.body = JSON.stringify({objectById, token: newToken})
+        // console.log("KATEGORIJE", objectCategories)
+        console.log('elvis prisli', objectById)
+      }
     } else {
       ctx.body = JSON.stringify({objectById: [], token: newToken})
     }
@@ -356,11 +388,40 @@ const router = (new KoaRouter())
     }
   })
 
+  .post('/editObject', async (ctx, next) => {
+    let niz = [
+      {
+        name: 'name',
+        value: 'Elvis',
+      },
+      {
+        name: 'id',
+        value: '8',
+      },
+    ]
+    const objectId = ctx.request.body.editedObjects;
+    const newToken = verifyToken(ctx.request.body.token);
+    if(newToken.success) {
+      let change = niz.map((item, key) => {
+        let objectCl;
+        let sectorWorkTime;
+        if(item.name == 'name') {
+          objectCl
+        }
+      })
+      ctx.body = JSON.stringify({ token: newToken });
+    } else {
+      ctx.body = JSON.stringify({ token: newToken })
+    }
+  })
+
   // Favicon.ico.  By default, we'll serve this as a 204 No Content.
   // If /favicon.ico is available as a static file, it'll try that first
   .get('/favicon.ico', async ctx => {
     ctx.status = 204;
   });
+
+
 
 
 
