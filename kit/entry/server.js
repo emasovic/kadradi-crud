@@ -401,6 +401,37 @@ const router = (new KoaRouter())
     }
   })
 
+
+  /*
+    ------------------------------
+    OVO JE METODA ZA EDITOVANJE KORISNIKA
+    ------------------------------
+  */
+
+  .post('/editUser', async (ctx, next) => {
+    const newToken = verifyToken(ctx.request.body.token)
+    if(newToken.success) {
+      let userArgs = {};
+      if(ctx.request.body.firstName) {
+        userArgs.firstName = ctx.request.body.firstName;
+      }
+      if(ctx.request.body.lastName) {
+        userArgs.lastName = ctx.request.body.lastName;
+      }
+      if(ctx.request.body.email) {
+        userArgs.email = ctx.request.body.email;
+      }
+      const userUpdate = await db.models.person.update(userArgs, {where: {id: ctx.request.body.userId}})
+      if(userUpdate) {
+        ctx.body = JSON.stringify({updated: true, token: newToken})
+      } else {
+        ctx.body = JSON.stringify({updated: false, token: newToken})
+      }
+    } else {
+      ctx.body = JSON.stringify({updated: false, token: newToken})
+    }
+  })
+
   // Favicon.ico.  By default, we'll serve this as a 204 No Content.
   // If /favicon.ico is available as a static file, it'll try that first
   .get('/favicon.ico', async ctx => {
