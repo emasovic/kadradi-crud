@@ -16,7 +16,7 @@ class Korisnici extends React.Component{
   getAllUsers = async () => {
     let response = await post.secure('/allUsers',{});
     if (response.token.success) {
-      let users=response.users.map(item =>{
+      let users=response.users.map(item => {
         return {
           userId:item.id,
           userFirstName:item.firstName,
