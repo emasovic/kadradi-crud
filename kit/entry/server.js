@@ -332,7 +332,7 @@ const router = (new KoaRouter())
       ctx.body = JSON.stringify({objectById: [], token: newToken})
     }
   })
-  .post('/editObject', async (ctx, next) => {
+  .post('/deleteObject', async (ctx, next) => {
     const objectId = ctx.request.body.objectId;
     const newToken = verifyToken(ctx.request.body.token);
     if(newToken.success) {
