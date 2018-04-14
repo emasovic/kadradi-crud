@@ -332,7 +332,7 @@ const router = (new KoaRouter())
       ctx.body = JSON.stringify({objectById: [], token: newToken})
     }
   })
-  .post('/editObject', async (ctx, next) => {
+  .post('/deleteObject', async (ctx, next) => {
     const objectId = ctx.request.body.objectId;
     const newToken = verifyToken(ctx.request.body.token);
     if(newToken.success) {
@@ -346,11 +346,34 @@ const router = (new KoaRouter())
       ctx.body = JSON.stringify({deleted: false, token: newToken})
     }
   })
+
+  /* 
+  //////////////////////////////////
+          USER CONTROLL
+  //////////////////////////////////
+  */
+
+//steva gej
+  /*
+    --------------------------
+        { page: int! }
+    --------------------------
+  */
   .post('/allUsers', async (ctx, next) => {
     const newToken = verifyToken(ctx.request.body.token)
     if (newToken.success) {
-      const users = await db.models.person.findAll();
-      ctx.body = JSON.stringify({ users, token: newToken });
+      const page = ctx.body.request.page;
+      const limit = 3;
+      const offset = limit * (page - 1);
+      const pages = await db.models.person.findAndCountAll();
+      const pagesLength = Math.ceil(pages.count / limit);
+      const persons = await db.models.person.findAll({
+        attributes: ['id', 'firstName', 'lastName', 'email'],
+        order: [['lastName', 'ASC']],
+        limit: limit,
+        offset: offset,
+      });
+      ctx.body = JSON.stringify({ users: persons, pages, token: newToken });
     } else {
       ctx.body = JSON.stringify({ users: [], token: newToken })
     }
