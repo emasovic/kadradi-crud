@@ -378,40 +378,58 @@ const router = (new KoaRouter())
       ctx.body = JSON.stringify({deleted: false, token: newToken})
     }
   })
+
+  /* 
+  //////////////////////////////////
+          USER CONTROLL
+  //////////////////////////////////
+  */
+
+//sane gej
+  /*
+    --------------------------
+        { page: int! }
+    --------------------------
+  */
   .post('/allUsers', async (ctx, next) => {
     const newToken = verifyToken(ctx.request.body.token)
     if (newToken.success) {
-      const users = await db.models.person.findAll();
-      ctx.body = JSON.stringify({ users, token: newToken });
+      const page = ctx.request.body.page;
+      const limit = 3;
+      const offset = limit * (page - 1);
+      const pages = await db.models.person.findAndCountAll();
+      const pagesLength = Math.ceil(pages.count / limit);
+      const persons = await db.models.person.findAll({
+        attributes: ['id', 'firstName', 'lastName', 'email'],
+        order: [['lastName', 'ASC']],
+        limit: limit,
+        offset: offset,
+      });
+      ctx.body = JSON.stringify({ users: persons, pages:pages.count, token: newToken });
     } else {
       ctx.body = JSON.stringify({ users: [], token: newToken })
     }
   })
 
-  .post('/editObject', async (ctx, next) => {
-    let niz = [
-      {
-        name: 'name',
-        value: 'Elvis',
-      },
-      {
-        name: 'id',
-        value: '8',
-      },
-    ]
-    const objectId = ctx.request.body.editedObjects;
-    const newToken = verifyToken(ctx.request.body.token);
+  /* 
+    ------------------------
+    OVO JE METODA ZA BRISANJE KORISNIKA
+    -------------------------
+
+  */
+
+  .post('/deleteUser', async (ctx, next) => {
+    const newToken = verifyToken(ctx.request.body.token)
     if(newToken.success) {
-      let change = niz.map((item, key) => {
-        let objectCl;
-        let sectorWorkTime;
-        if(item.name == 'name') {
-          objectCl
-        }
-      })
-      ctx.body = JSON.stringify({ token: newToken });
+      const userId = ctx.request.body.userId;
+      const izbrisi = await db.models.person.destroy({where: {id: userId}});
+      if(izbrisi) {
+        ctx.body = JSON.stringify({deleted: true, token: newToken})
+      } else {
+        ctx.body = JSON.stringify({deleted: false, token: newToken})
+      }
     } else {
-      ctx.body = JSON.stringify({ token: newToken })
+      ctx.body = JSON.stringify({deleted: false, token: newToken})
     }
   })
 
