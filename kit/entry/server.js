@@ -373,7 +373,7 @@ const router = (new KoaRouter())
         limit: limit,
         offset: offset,
       });
-      ctx.body = JSON.stringify({ users: persons, pages, token: newToken });
+      ctx.body = JSON.stringify({ users: persons, pages:pages.count, token: newToken });
     } else {
       ctx.body = JSON.stringify({ users: [], token: newToken })
     }
