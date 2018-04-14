@@ -362,7 +362,7 @@ const router = (new KoaRouter())
   .post('/allUsers', async (ctx, next) => {
     const newToken = verifyToken(ctx.request.body.token)
     if (newToken.success) {
-      const page = ctx.body.request.page;
+      const page = ctx.request.body.page;
       const limit = 3;
       const offset = limit * (page - 1);
       const pages = await db.models.person.findAndCountAll();
