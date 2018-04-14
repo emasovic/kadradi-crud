@@ -379,6 +379,28 @@ const router = (new KoaRouter())
     }
   })
 
+  /* 
+    ------------------------
+    OVO JE METODA ZA BRISANJE KORISNIKA
+    -------------------------
+
+  */
+
+  .post('/deleteUser', async (ctx, next) => {
+    const newToken = verifyToken(ctx.request.body.token)
+    if(newToken.success) {
+      const userId = ctx.request.body.userId;
+      const izbrisi = await db.models.person.destroy({where: {id: userId}});
+      if(izbrisi) {
+        ctx.body = JSON.stringify({deleted: true, token: newToken})
+      } else {
+        ctx.body = JSON.stringify({deleted: false, token: newToken})
+      }
+    } else {
+      ctx.body = JSON.stringify({deleted: false, token: newToken})
+    }
+  })
+
   // Favicon.ico.  By default, we'll serve this as a 204 No Content.
   // If /favicon.ico is available as a static file, it'll try that first
   .get('/favicon.ico', async ctx => {
