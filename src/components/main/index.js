@@ -55,7 +55,7 @@ import NotFound from '../notFound/index';
 import ReduxCounter from 'components/redux';
 import Stats from 'components/stats';
 import Styles from 'components/styles';
-import EditObject from '../objects/EditObject';
+import EditObject from '../crud/objects/EditObject';
 
 // Styles
 import css from './main.scss';

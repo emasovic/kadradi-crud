@@ -1,7 +1,17 @@
 import React from 'react';
-import post from '../fetch/post';
+import post from '../../fetch/post';
+import { Input } from 'semantic-ui-react';
 
 class EditObject extends React.Component{
+  constructor(props) {
+    super(props);
+      this.state =  {
+        city: '',
+        id: null,
+        location: null,
+        
+      }
+  }
 
   componentWillMount() {
     this.getObjectById();
@@ -22,7 +32,7 @@ class EditObject extends React.Component{
     console.log('props', this.props)
     return(
 			<div>
-				edit page
+				<Input  />
 			</div>
     )
   }

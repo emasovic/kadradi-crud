@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Grid, Menu, Tab, Button, Dropdown, Table, Icon } from 'semantic-ui-react';
-import post from '../fetch/post';
+import post from '../../fetch/post';
 import { withRouter } from 'react-router';
 
 class Objekti extends Component {

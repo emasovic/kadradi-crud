@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Grid, Container, Tab , Button} from 'semantic-ui-react';
-import Objekti from './Objekti';
+import Objekti from './objects/Objekti';
 import Korisnici from './Korisnici';
 import post from '../fetch/post';
 
