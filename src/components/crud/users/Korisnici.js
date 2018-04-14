@@ -13,8 +13,13 @@ class Korisnici extends React.Component{
   componentWillMount() {
     this.getAllUsers();
   }
+  deleteUser = async (userId) => {
+    let response = await post.secure('/deleteUser', {
+      userId
+    });
+  }
   getAllUsers = async () => {
-    let response = await post.secure('/allUsers',{});
+    let response = await post.secure('/allUsers',{page:1});
     if (response.token.success) {
       let users=response.users.map(item => {
         return {
@@ -54,7 +59,7 @@ class Korisnici extends React.Component{
                           <Button icon onClick={() => this.editObj(item.userId)}>
                             <Icon name='edit' />
                           </Button>
-                          <Button icon onClick={() => this.deleteObj(item.userId)}>
+                          <Button icon onClick={() => this.deleteUser(item.userId)}>
                             <Icon name='delete' />
                           </Button>
                         </Table.Cell>
