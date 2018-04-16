@@ -427,6 +427,22 @@ const router = (new KoaRouter())
     }
   })
 
+  /*
+  -----------------------------
+  INFORMACIJE JEDNOG KORISNIKA
+  -----------------------------
+  */
+
+  .post('/singleUser', async(ctx, next) => {
+    const newToken = verifyToken(ctx.request.body.token)
+    if(newToken.success) {
+      const user = await db.models.person.find({where: {id: ctx.request.body.userId}});
+      ctx.body = JSON.stringify({user: user, token: newToken})
+    } else {
+      ctx.body = JSON.stringify({user: {}, token: newToken})
+    }
+  })
+
   /* 
     ------------------------
     OVO JE METODA ZA BRISANJE KORISNIKA
@@ -501,7 +517,7 @@ const router = (new KoaRouter())
     ////////////////////////////////////
   */
 
-  .post('/owningRequest', async (ctx, next) => {
+  .post('/owningRequests', async (ctx, next) => {
     const newToken = verifyToken(ctx.request.body.token)
     if(newToken.success) {
       const requests = await db.models.owningRequest.findAll({
@@ -541,6 +557,56 @@ const router = (new KoaRouter())
       ctx.body = JSON.stringify({requests: [], token: newToken})
     }
   })
+
+  /*
+    ------------------------------
+    ZA PRIHVATANJE ZAHTEVA POSEDOVANJA
+    -------------------------------
+
+    SALJE SE requestId kao parametar
+  */
+
+  .post('/acceptOwningRequest', async (ctx, next) => {
+    const newToken = verifyToken(ctx.request.body.token)
+    if(newToken.success) {
+      const request = await db.models.owningRequest.find({where: {id: ctx.request.body.requestId}})
+      if(request != null) {
+        const requestDelete = await db.models.owningRequest.destroy({where: {id: ctx.request.body.requestId}})
+        const objectUpdate = await db.models.objectCl.update({personId: request.personId}, {where: {id: request.objectClId}})
+        if(objectUpdate != null) {
+          ctx.body = JSON.stringify({updated: true, token: newToken})
+        } else {
+          ctx.body = JSON.stringify({updated:false, token: newToken})
+        }
+      } else {
+        ctx.body = JSON.stringify({updated: false, token: newToken})
+      }
+    }
+  })
+
+  /*
+  ------------------------------------
+  ZA ODBIJANJE ZAHTEVA POSEDOVANJA
+  ------------------------------------
+
+  SALJE SE requestId kao parametar
+  */
+  .post('/declineOwningRequest', async(ctx, next) => {
+    const newToken = verifyToken(ctx.request.body.token)
+    if(newToken.success) {
+      const request = await db.models.owningRequest.destroy({where: {id: ctx.request.body.requestId}})
+      if(request != null) {
+        ctx.body = JSON.stringify({deleted: true, token: newToken})
+      } else {
+        ctx.body = JSON.stringify({deleted: false, token: newToken})
+      }
+    } else {
+      ctx.body = JSON.stringify({deleted: false, token: newToken})
+    }
+  })
+
+
+  
 
 
   // Favicon.ico.  By default, we'll serve this as a 204 No Content.
