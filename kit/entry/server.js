@@ -299,6 +299,11 @@ const router = (new KoaRouter())
       ctx.body = JSON.stringify({ categories: [], token: newToken })
     }
   })
+    /*
+    ------------------------------
+    OVO JE METODA ZA IZLISTAVANJE OBJEKATA IZ KATEGORIJA
+    ------------------------------
+  */
   .post('/objectsFromCategories', async (ctx, next) => {
     const categoryId = ctx.request.body.categoryId;
     const newToken = verifyToken(ctx.request.body.token);
@@ -322,8 +327,14 @@ const router = (new KoaRouter())
     }
   })
 
+
+  /*
+    ------------------------------
+    OVO JE METODA ZA UZIMANJE OBJEKATA PO ID-U
+    ------------------------------
+  */
   .post('/objectById', async (ctx, next) => {
-    const objectId = 1;
+    const objectId = ctx.request.body.objectId;
     const newToken = verifyToken(ctx.request.body.token);
     if(newToken.success) {
       if(objectId) {
@@ -364,6 +375,11 @@ const router = (new KoaRouter())
       ctx.body = JSON.stringify({objectById: [], token: newToken})
     }
   })
+    /*
+    ------------------------------
+    OVO JE METODA ZA BRISANJE OBJEKATA
+    ------------------------------
+  */
   .post('/deleteObject', async (ctx, next) => {
     const objectId = ctx.request.body.objectId;
     const newToken = verifyToken(ctx.request.body.token);
@@ -405,9 +421,25 @@ const router = (new KoaRouter())
         limit: limit,
         offset: offset,
       });
-      ctx.body = JSON.stringify({ users: persons, pages:pages.count, token: newToken });
+      ctx.body = JSON.stringify({ users: persons, pages:pagesLength, token: newToken });
     } else {
       ctx.body = JSON.stringify({ users: [], token: newToken })
+    }
+  })
+
+  /*
+  -----------------------------
+  INFORMACIJE JEDNOG KORISNIKA
+  -----------------------------
+  */
+
+  .post('/singleUser', async(ctx, next) => {
+    const newToken = verifyToken(ctx.request.body.token)
+    if(newToken.success) {
+      const user = await db.models.person.find({where: {id: ctx.request.body.userId}});
+      ctx.body = JSON.stringify({user: user, token: newToken})
+    } else {
+      ctx.body = JSON.stringify({user: {}, token: newToken})
     }
   })
 
@@ -432,6 +464,150 @@ const router = (new KoaRouter())
       ctx.body = JSON.stringify({deleted: false, token: newToken})
     }
   })
+  /*
+    ------------------------------
+    OVO JE METODA ZA EDITOVANJE OBJEKATA
+    ------------------------------
+  */
+ .post('/editObject', async (ctx, next) => {
+  const newToken = verifyToken(ctx.request.body.token)
+  let objectArr = ctx.request.body.objectArr;
+  if(newToken.success) {
+
+    ctx.body = JSON.stringify({ token: newToken})
+  } else {
+    ctx.body = JSON.stringify({ token: newToken})
+  }
+})
+
+  /*
+    ------------------------------
+    OVO JE METODA ZA EDITOVANJE KORISNIKA
+    ------------------------------
+  */
+
+  .post('/editUser', async (ctx, next) => {
+    const newToken = verifyToken(ctx.request.body.token)
+    if(newToken.success) {
+      let userArgs = {};
+      if(ctx.request.body.firstName) {
+        userArgs.firstName = ctx.request.body.firstName;
+      }
+      if(ctx.request.body.lastName) {
+        userArgs.lastName = ctx.request.body.lastName;
+      }
+      if(ctx.request.body.email) {
+        userArgs.email = ctx.request.body.email;
+      }
+      const userUpdate = await db.models.person.update(userArgs, {where: {id: ctx.request.body.userId}})
+      if(userUpdate) {
+        ctx.body = JSON.stringify({updated: true, token: newToken})
+      } else {
+        ctx.body = JSON.stringify({updated: false, token: newToken})
+      }
+    } else {
+      ctx.body = JSON.stringify({updated: false, token: newToken})
+    }
+  })
+
+
+  /*
+    ////////////////////////////////////
+    ZAHTEVI ZA POSEDOVANJE NEKOG OBJEKTA
+    ////////////////////////////////////
+  */
+
+  .post('/owningRequests', async (ctx, next) => {
+    const newToken = verifyToken(ctx.request.body.token)
+    if(newToken.success) {
+      const requests = await db.models.owningRequest.findAll({
+        attributes: ['id', 'personId', 'objectClId']
+      })
+      let korisnici = [];
+      let objekti = [];
+
+      await Promise.all(requests.map(async item => {
+        const korisnik = korisnici.find(function (kor) {return kor.id === item.personId})
+        const objekat = objekti.find(function (obj) {return obj.id === item.objectClId})
+        if(korisnik) {
+          item.user = korisnik
+        } else {
+          const userDb = await db.models.person.find({where: {id: item.personId}, attributes: ['id', 'firstName', 'lastName', 'email']})
+          if(userDb) {
+            item.user = userDb;
+            korisnici.push(userDb)
+          } else {
+            item.user = {}
+          }
+        }
+        if(objekat) {
+          item.objekat = objekat
+        } else {
+          const objekatDb = await db.models.objectCl.find({where: {id: item.objectClId}, attributes: ['name', 'id']})
+          if(objekatDb) {
+            item.objekat = objekatDb
+            objekti.push(objekatDb)
+          } else {
+            item.objekat = {};
+          }
+        }
+      }))
+      ctx.body = JSON.stringify({requests, token: newToken})
+    } else {
+      ctx.body = JSON.stringify({requests: [], token: newToken})
+    }
+  })
+
+  /*
+    ------------------------------
+    ZA PRIHVATANJE ZAHTEVA POSEDOVANJA
+    -------------------------------
+
+    SALJE SE requestId kao parametar
+  */
+
+  .post('/acceptOwningRequest', async (ctx, next) => {
+    const newToken = verifyToken(ctx.request.body.token)
+    if(newToken.success) {
+      const request = await db.models.owningRequest.find({where: {id: ctx.request.body.requestId}})
+      if(request != null) {
+        const requestDelete = await db.models.owningRequest.destroy({where: {id: ctx.request.body.requestId}})
+        const objectUpdate = await db.models.objectCl.update({personId: request.personId}, {where: {id: request.objectClId}})
+        if(objectUpdate != null) {
+          ctx.body = JSON.stringify({updated: true, token: newToken})
+        } else {
+          ctx.body = JSON.stringify({updated:false, token: newToken})
+        }
+      } else {
+        ctx.body = JSON.stringify({updated: false, token: newToken})
+      }
+    }
+  })
+
+  /*
+  ------------------------------------
+  ZA ODBIJANJE ZAHTEVA POSEDOVANJA
+  ------------------------------------
+
+  SALJE SE requestId kao parametar
+  */
+  .post('/declineOwningRequest', async(ctx, next) => {
+    const newToken = verifyToken(ctx.request.body.token)
+    if(newToken.success) {
+      const request = await db.models.owningRequest.destroy({where: {id: ctx.request.body.requestId}})
+      if(request != null) {
+        ctx.body = JSON.stringify({deleted: true, token: newToken})
+      } else {
+        ctx.body = JSON.stringify({deleted: false, token: newToken})
+      }
+    } else {
+      ctx.body = JSON.stringify({deleted: false, token: newToken})
+    }
+  })
+
+
+  
+
 
   // Favicon.ico.  By default, we'll serve this as a 204 No Content.
   // If /favicon.ico is available as a static file, it'll try that first
