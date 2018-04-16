@@ -32,7 +32,7 @@ class EditObject extends React.Component{
     console.log('props', this.props)
     return(
 			<div>
-				<Input  />
+				<Input />
 			</div>
     )
   }
