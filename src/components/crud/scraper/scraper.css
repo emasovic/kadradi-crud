@@ -1,0 +1,6 @@
+.map{
+  width: 100%;
+  height: calc(100vh-70px);
+  position: relative;
+  border-left: 1px rgb(219, 219, 219) solid;
+}

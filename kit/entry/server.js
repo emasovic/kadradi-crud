@@ -103,8 +103,16 @@ import PATHS from 'config/paths';
 //IMPORT POSTGRESQL DATABASE
 import db from '../../db/db';
 
+//SCRAPING
+import scrap from './scrapping';
+import PubSub from 'pubsub-js';
+
 //IMPORT JSONWEBTOKEN
 import jwt from 'jsonwebtoken';
+
+//IMPORT ZA GOOGLE PLACES
+import GooglePlaces from 'node-googleplaces';
+const googlePlaces = new GooglePlaces('AIzaSyDImc0NawEJTQwlDskJBSL7cidhVvlccvQ')
 
 // ----------------------
 
@@ -299,11 +307,11 @@ const router = (new KoaRouter())
       ctx.body = JSON.stringify({ categories: [], token: newToken })
     }
   })
-    /*
-    ------------------------------
-    OVO JE METODA ZA IZLISTAVANJE OBJEKATA IZ KATEGORIJA
-    ------------------------------
-  */
+  /*
+  ------------------------------
+  OVO JE METODA ZA IZLISTAVANJE OBJEKATA IZ KATEGORIJA
+  ------------------------------
+*/
   .post('/objectsFromCategories', async (ctx, next) => {
     const categoryId = ctx.request.body.categoryId;
     const newToken = verifyToken(ctx.request.body.token);
@@ -351,11 +359,11 @@ const router = (new KoaRouter())
   .post('/objectById', async (ctx, next) => {
     const objectId = ctx.request.body.objectId;
     const newToken = verifyToken(ctx.request.body.token);
-    if(newToken.success) {
-      if(objectId) {
-        const objectCl = await db.models.objectCl.find({where: {id: objectId}});
+    if (newToken.success) {
+      if (objectId) {
+        const objectCl = await db.models.objectCl.find({ where: { id: objectId } });
         const objectCategories = await db.models.objectCategories.findAll({
-          attributes: ['nameM', 'id']
+          attributes: ['nameJ', 'id']
         });
         const objectPhones = await db.models.objectPhones.find({where: {objectInfoId: objectId}});
         let objectPhonesArr = 
@@ -383,29 +391,29 @@ const router = (new KoaRouter())
         const objectById = {objectCl, objectInfo, objectLocation, objectCategoriesArr, objectPhones};
         ctx.body = JSON.stringify({objectById, token: newToken})
         // console.log("KATEGORIJE", objectCategories)
-        console.log('elvis prisli', objectById)
+        // console.log('elvis prisli', objectById)
       }
     } else {
-      ctx.body = JSON.stringify({objectById: [], token: newToken})
+      ctx.body = JSON.stringify({ objectById: [], token: newToken })
     }
   })
-    /*
-    ------------------------------
-    OVO JE METODA ZA BRISANJE OBJEKATA
-    ------------------------------
-  */
+  /*
+  ------------------------------
+  OVO JE METODA ZA BRISANJE OBJEKATA
+  ------------------------------
+*/
   .post('/deleteObject', async (ctx, next) => {
     const objectId = ctx.request.body.objectId;
     const newToken = verifyToken(ctx.request.body.token);
-    if(newToken.success) {
-      const deleteObject = await db.models.objectCl.destroy({where: {id: objectId}});
-      if(deleteObject) {
-        ctx.body = JSON.stringify({deleted: true, token: newToken})
+    if (newToken.success) {
+      const deleteObject = await db.models.objectCl.destroy({ where: { id: objectId } });
+      if (deleteObject) {
+        ctx.body = JSON.stringify({ deleted: true, token: newToken })
       } else {
-        ctx.body = JSON.stringify({deleted: false, token: newToken})
+        ctx.body = JSON.stringify({ deleted: false, token: newToken })
       }
     } else {
-      ctx.body = JSON.stringify({deleted: false, token: newToken})
+      ctx.body = JSON.stringify({ deleted: false, token: newToken })
     }
   })
 
@@ -415,7 +423,7 @@ const router = (new KoaRouter())
   //////////////////////////////////
   */
 
-//sane gej
+  //sane gej
   /*
     --------------------------
         { page: int! }
@@ -435,9 +443,25 @@ const router = (new KoaRouter())
         limit: limit,
         offset: offset,
       });
-      ctx.body = JSON.stringify({ users: persons, pages:pagesLength, token: newToken });
+      ctx.body = JSON.stringify({ users: persons, pages: pagesLength, token: newToken });
     } else {
       ctx.body = JSON.stringify({ users: [], token: newToken })
+    }
+  })
+
+  /*
+  -----------------------------
+  INFORMACIJE JEDNOG KORISNIKA
+  -----------------------------
+  */
+
+  .post('/singleUser', async (ctx, next) => {
+    const newToken = verifyToken(ctx.request.body.token)
+    if (newToken.success) {
+      const user = await db.models.person.find({ where: { id: ctx.request.body.userId } });
+      ctx.body = JSON.stringify({ user: user, token: newToken })
+    } else {
+      ctx.body = JSON.stringify({ user: {}, token: newToken })
     }
   })
 
@@ -450,16 +474,16 @@ const router = (new KoaRouter())
 
   .post('/deleteUser', async (ctx, next) => {
     const newToken = verifyToken(ctx.request.body.token)
-    if(newToken.success) {
+    if (newToken.success) {
       const userId = ctx.request.body.userId;
-      const izbrisi = await db.models.person.destroy({where: {id: userId}});
-      if(izbrisi) {
-        ctx.body = JSON.stringify({deleted: true, token: newToken})
+      const izbrisi = await db.models.person.destroy({ where: { id: userId } });
+      if (izbrisi) {
+        ctx.body = JSON.stringify({ deleted: true, token: newToken })
       } else {
-        ctx.body = JSON.stringify({deleted: false, token: newToken})
+        ctx.body = JSON.stringify({ deleted: false, token: newToken })
       }
     } else {
-      ctx.body = JSON.stringify({deleted: false, token: newToken})
+      ctx.body = JSON.stringify({ deleted: false, token: newToken })
     }
   })
    /*
@@ -570,25 +594,25 @@ const router = (new KoaRouter())
 
   .post('/editUser', async (ctx, next) => {
     const newToken = verifyToken(ctx.request.body.token)
-    if(newToken.success) {
+    if (newToken.success) {
       let userArgs = {};
-      if(ctx.request.body.firstName) {
+      if (ctx.request.body.firstName) {
         userArgs.firstName = ctx.request.body.firstName;
       }
-      if(ctx.request.body.lastName) {
+      if (ctx.request.body.lastName) {
         userArgs.lastName = ctx.request.body.lastName;
       }
-      if(ctx.request.body.email) {
+      if (ctx.request.body.email) {
         userArgs.email = ctx.request.body.email;
       }
-      const userUpdate = await db.models.person.update(userArgs, {where: {id: ctx.request.body.userId}})
-      if(userUpdate) {
-        ctx.body = JSON.stringify({updated: true, token: newToken})
+      const userUpdate = await db.models.person.update(userArgs, { where: { id: ctx.request.body.userId } })
+      if (userUpdate) {
+        ctx.body = JSON.stringify({ updated: true, token: newToken })
       } else {
-        ctx.body = JSON.stringify({updated: false, token: newToken})
+        ctx.body = JSON.stringify({ updated: false, token: newToken })
       }
     } else {
-      ctx.body = JSON.stringify({updated: false, token: newToken})
+      ctx.body = JSON.stringify({ updated: false, token: newToken })
     }
   })
 
@@ -601,7 +625,7 @@ const router = (new KoaRouter())
 
   .post('/owningRequest', async (ctx, next) => {
     const newToken = verifyToken(ctx.request.body.token)
-    if(newToken.success) {
+    if (newToken.success) {
       const requests = await db.models.owningRequest.findAll({
         attributes: ['id', 'personId', 'objectClId']
       })
@@ -609,24 +633,24 @@ const router = (new KoaRouter())
       let objekti = [];
 
       await Promise.all(requests.map(async item => {
-        const korisnik = korisnici.find(function (kor) {return kor.id === item.personId})
-        const objekat = objekti.find(function (obj) {return obj.id === item.objectClId})
-        if(korisnik) {
+        const korisnik = korisnici.find(function (kor) { return kor.id === item.personId })
+        const objekat = objekti.find(function (obj) { return obj.id === item.objectClId })
+        if (korisnik) {
           item.user = korisnik
         } else {
-          const userDb = await db.models.person.find({where: {id: item.personId}, attributes: ['id', 'firstName', 'lastName', 'email']})
-          if(userDb) {
+          const userDb = await db.models.person.find({ where: { id: item.personId }, attributes: ['id', 'firstName', 'lastName', 'email'] })
+          if (userDb) {
             item.user = userDb;
             korisnici.push(userDb)
           } else {
             item.user = {}
           }
         }
-        if(objekat) {
+        if (objekat) {
           item.objekat = objekat
         } else {
-          const objekatDb = await db.models.objectCl.find({where: {id: item.objectClId}, attributes: ['name', 'id']})
-          if(objekatDb) {
+          const objekatDb = await db.models.objectCl.find({ where: { id: item.objectClId }, attributes: ['name', 'id'] })
+          if (objekatDb) {
             item.objekat = objekatDb
             objekti.push(objekatDb)
           } else {
@@ -634,11 +658,87 @@ const router = (new KoaRouter())
           }
         }
       }))
-      ctx.body = JSON.stringify({requests, token: newToken})
+      ctx.body = JSON.stringify({ requests, token: newToken })
     } else {
-      ctx.body = JSON.stringify({requests: [], token: newToken})
+      ctx.body = JSON.stringify({ requests: [], token: newToken })
     }
   })
+
+  /*
+    ------------------------------
+    ZA PRIHVATANJE ZAHTEVA POSEDOVANJA
+    -------------------------------
+
+    SALJE SE requestId kao parametar
+  */
+
+  .post('/acceptOwningRequest', async (ctx, next) => {
+    const newToken = verifyToken(ctx.request.body.token)
+    if (newToken.success) {
+      const request = await db.models.owningRequest.find({ where: { id: ctx.request.body.requestId } })
+      if (request != null) {
+        const requestDelete = await db.models.owningRequest.destroy({ where: { id: ctx.request.body.requestId } })
+        const objectUpdate = await db.models.objectCl.update({ personId: request.personId }, { where: { id: request.objectClId } })
+        if (objectUpdate != null) {
+          ctx.body = JSON.stringify({ updated: true, token: newToken })
+        } else {
+          ctx.body = JSON.stringify({ updated: false, token: newToken })
+        }
+      } else {
+        ctx.body = JSON.stringify({ updated: false, token: newToken })
+      }
+    }
+  })
+
+  /*
+  ------------------------------------
+  ZA ODBIJANJE ZAHTEVA POSEDOVANJA
+  ------------------------------------
+
+  SALJE SE requestId kao parametar
+  */
+  .post('/declineOwningRequest', async (ctx, next) => {
+    const newToken = verifyToken(ctx.request.body.token)
+    if (newToken.success) {
+      const request = await db.models.owningRequest.destroy({ where: { id: ctx.request.body.requestId } })
+      if (request != null) {
+        ctx.body = JSON.stringify({ deleted: true, token: newToken })
+      } else {
+        ctx.body = JSON.stringify({ deleted: false, token: newToken })
+      }
+    } else {
+      ctx.body = JSON.stringify({ deleted: false, token: newToken })
+    }
+  })
+
+  /*
+    ////////////////////////////
+    /// TESTIRANJE ////////////
+    //////////////////////////
+  */
+
+  .post('/startScraping', async (ctx, next) => {
+    scrap.startScraping(ctx.request.body.categoryId, ctx.request.body.lat, ctx.request.body.lng, ctx.request.body.radius);
+    ctx.body = "AJDE STARTOVAN JE SKREJPING";
+  })
+
+  .post('/stopScraping', async (ctx, next) => {
+    scrap.stopScraping();
+    ctx.body = "SCRAPING JE STAO"
+  })
+
+  .get('/searchobjects', async ctx => {
+    const parameters = {
+      location: '44.793923, 20.446009',
+      // types: "bakery",
+      radius: 1000
+    };
+    googlePlaces.nearbySearch(parameters, (err, res) => {
+      console.log(res.body.results[0].geometry);
+    });
+  
+  })
+
 
 
   // Favicon.ico.  By default, we'll serve this as a 204 No Content.
@@ -814,17 +914,26 @@ const listen = () => {
   // Spawn the listeners.
   const servers = [];
 
+  const server1 = http.createServer(app.callback())
+  const server2 = https.createServer(config.sslOptions, app.callback())
+
   // Plain HTTP
   if (config.enableHTTP) {
+    let io = require('socket.io')(server1)
+    io.on('connection', function(socket){
+      let newObject = PubSub.subscribe('object_found', function(msg,data) {
+        io.emit('object_found', data);
+      });
+    });
     servers.push(
-      http.createServer(app.callback()).listen(process.env.PORT),
+      server1.listen(process.env.PORT),
     );
   }
 
   // SSL -- only enable this if we have an `SSL_PORT` set on the environment
   if (process.env.SSL_PORT) {
     servers.push(
-      https.createServer(config.sslOptions, app.callback()).listen(process.env.SSL_PORT),
+      server2.listen(proces.env.SSL_PORT),
     );
   }
 
