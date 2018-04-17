@@ -9,10 +9,9 @@ class EditObject extends React.Component{
         city: '',
         id: null,
         location: null,
-        
+
       }
   }
-
   componentWillMount() {
     this.getObjectById();
   }
