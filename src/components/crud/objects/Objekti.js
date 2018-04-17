@@ -80,17 +80,9 @@ class Objekti extends Component {
     if (response.deleted) {
       this.categoryObjpageN(this.state.pageNumber)
     }
-    console.log("RESPONSE", response)
-  }
-  proba = async () => {
-    let response = await post.secure('/addObject', {
-      token: this.props.token,
-    });
-    console.log('EEEEEEEEEJJJJJJJJ', response)
   }
   componentWillMount() {
     this.getAllObjCategories()
-    this.proba()
   }
   render() {
     return (
