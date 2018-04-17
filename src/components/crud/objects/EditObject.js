@@ -1,6 +1,7 @@
 import React from 'react';
 import post from '../../fetch/post';
 import { Input, Button, Dropdown } from 'semantic-ui-react';
+import { stat } from 'fs';
 
 class EditObject extends React.Component {
   constructor(props) {
@@ -17,6 +18,10 @@ class EditObject extends React.Component {
       verified: '',
       webSiteUrl: '',
       city: '',
+      streetAddress: '',
+      par: [],
+      childLocation: [],
+      newVal: 0,
     }
   }
   objectEdit = (e) => {
@@ -88,6 +93,11 @@ class EditObject extends React.Component {
         webSiteUrl: response.objectById.objectInfo.websiteUrl,
         city: response.objectById.objectLocation.city
       })
+      this.setParentObj(response.objectById.locations);
+      console.log("JEL GA IMA OVDE bRE?", response.objectById.locations);
+      console.log('RESPONSE', response)
+    } else {
+      console.log('stajebreovo')
     }
     console.log('RESPONSE',response)
   }
@@ -97,12 +107,50 @@ class EditObject extends React.Component {
     })
   }
 
-  prepareToEditObject = async () => {
-    let {objToEdit} = this.state
-    let objectClArr = {};
+ 
+  setParentObj = (parrent) => {
+    let obArr = [];
+    let nekiObj = {
+      key: 2,
+      value: 2,
+      text: "Novi sad",
+      parrentLocation: 0,
+    }
+    for(let child in parrent){
+      console.log("PARRENT LOCATION: ", parrent[child].text);
+      if(parrent[child].parrentLocation === 0){
+        obArr[child] = parrent[child];
+      }
+    }   
+    let newArr = [...obArr,nekiObj];
+    this.setState({
+      par : newArr,
+    });
+  }
+  setLo = (e, { value }) => {
+    let arr = this.state.objToEdit.locations.filter(word => word.parrentLocation == value)
+    this.setState({
+      childLocation: arr
+    })
+  }
+  // findChildLocation = (parrent, parrentKey) => {
+  //   let obb = [];
+  //   for (let child in parrent){
+  //     if(parrent[child].parrentLocation === parrentKey){
+  //       obb[child] = parrent[child];
+  //     }
+  //   }
+  //   this.setState({
+  //     childLocation: obb,
+  //   });
+  // }
 
-    let objectLocationArr = {};
-    let objectClKeys = Object.keys(objToEdit.objectCl)
+    
+prepareToEditObject = async () => {
+  let {objToEdit} = this.state
+  let objectClArr = {};
+  let objectLocationArr = {};
+  let objectClKeys = Object.keys(objToEdit.objectCl)
     let objectInfoKeys = Object.keys(objToEdit.objectInfo)
     let objectPhones = Object.keys(objToEdit.objectPhones)
     // let objectPhones = Object.keys(objToEdit.objectPhones[0])
@@ -153,13 +201,15 @@ class EditObject extends React.Component {
          onChange={this.setCategoryObj}
          options={this.state.objToEdit.objectCategoriesArr} /><br />
          <Dropdown
-          value={this.state.locationId} 
           selection 
           onChange={this.setCategoryObj}
-          options={this.state.objToEdit.locations} /><br />
-         {/* <Dropdown
-         selection
-          /><br /> */}
+          options={this.state.childLocation} /><br />
+         <Dropdown
+          selection
+          value= {this.state.newVal}
+          options={this.state.par}
+          onChange={this.setLo}
+        /><br />
         <Input label='personId: ' name='personId' value={this.state.personId} onChange={this.objectEdit} /><br />
         <Input label='shortDescription: ' name='shortDescription' value={this.state.shortDescription} onChange={this.objectEdit} /><br />
         <Input label='streetAddress: ' name='address' value={this.state.address} onChange={this.objectEdit} /><br />
