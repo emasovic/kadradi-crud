@@ -14,7 +14,6 @@ class EditObject extends React.Component {
       personId: '',
       shortDescription: '',
       streetAddress: '',
-
     }
   }
   objectEdit = (e) => {
