@@ -1,18 +1,20 @@
 import React from 'react';
 import post from '../../fetch/post';
-import { Input, Button } from 'semantic-ui-react';
+import { Input, Button, Dropdown } from 'semantic-ui-react';
 
 class EditObject extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       objToEdit: {},
+      objectCategoriesArr: [],
       locationId: '',
       name: '',
       objectCategoryId: '',
       personId: '',
       shortDescription: '',
       streetAddress: '',
+
     }
   }
   objectEdit = (e) => {
@@ -71,6 +73,12 @@ class EditObject extends React.Component {
       console.log('stajebreovo')
     }
   }
+  setCategoryObj = async (e, { value }) => {
+    this.setState({
+      objectCategoryId: value
+    })
+  }
+
   prepareToEditObject = () => {
     let {objToEdit} = this.state
     let objectArr = [];
@@ -84,6 +92,7 @@ class EditObject extends React.Component {
     objectClKeys.map((item, key) => {
       if (objectCl[item] != this.state[item]) {
         let obj = {
+          key: key,
           name: item,
           value: this.state[item],
         }
@@ -94,15 +103,29 @@ class EditObject extends React.Component {
   }
 
   render() {
-    console.log('STRIPTIZETA', this.state.objToEdit)
+    console.log("STEJT ", this.state)
+    console.log('STRIPTIZETA', this.state.objectCategoriesArr)
+    console.log("LOC", this.state.objToEdit.locations)
     return (
       <div>
-        <Input label='locationId: ' name='locationId' value={this.state.locationId} onChange={this.objectEdit} /><br />
+        {/* <Input label='locationId: ' name='locationId' value={this.state.locationId} onChange={this.objectEdit} /><br /> */}
         <Input label='Name: ' name='name' value={this.state.name} onChange={this.objectEdit} /><br />
-        <Input label='objectCategoryId: ' name='objectCategoryId' value={this.state.objectCategoryId} onChange={this.objectEdit} /><br />
+        <Dropdown
+         value={this.state.objectCategoryId} 
+         selection 
+         onChange={this.setCategoryObj}
+         options={this.state.objToEdit.objectCategoriesArr} /><br />
+         <Dropdown
+          value={this.state.locationId} 
+          selection 
+          onChange={this.setCategoryObj}
+          options={this.state.objToEdit.locations} /><br />
+         <Dropdown
+         selection
+          /><br />
         <Input label='personId: ' name='personId' value={this.state.personId} onChange={this.objectEdit} /><br />
         <Input label='shortDescription: ' name='shortDescription' value={this.state.shortDescription} onChange={this.objectEdit} /><br />
-        <Input label='streetAdress: ' name='streetAddress' value={this.state.streetAddress} onChange={this.objectEdit} /><br />
+        <Input label='streetAdress: ' name='streetAddress'  onChange={this.objectEdit} /><br />
         <Button primary onClick={() => this.prepareToEditObject()}>Save</Button>
       </div>
     )
