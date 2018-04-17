@@ -335,7 +335,22 @@ const router = (new KoaRouter())
     }
   })
 
-
+   /*
+    ------------------------------
+    OVO JE METODA ZA DODAVANJE OBJEKATA
+    ------------------------------
+  */
+ .post('/categoriesArray', async (ctx, next) => {
+  const newToken = verifyToken(ctx.request.body.token);
+  if(newToken.success) {
+    const objectCategories = await db.models.objectCategories.findAll({
+      attributes: ['nameM', 'id']
+    });
+    ctx.body = JSON.stringify({categoriesArray: objectCategories, token: newToken})
+  } else {
+      ctx.body = JSON.stringify({categoriesArray: [], token: newToken})
+    }
+  })
   /*
     ------------------------------
     OVO JE METODA ZA UZIMANJE OBJEKATA PO ID-U
@@ -483,21 +498,105 @@ const router = (new KoaRouter())
       ctx.body = JSON.stringify({ deleted: false, token: newToken })
     }
   })
+   /*
+    ------------------------------
+    OVO JE METODA ZA DODAVANJE OBJEKATA
+    ------------------------------
+  */
+.post('/addObject', async (ctx, next) => {
+  const newToken = verifyToken(ctx.request.body.token);
+  // let objectClArr = ctx.request.body.objectClArr;
+  // let objectInfoArr = ctx.request.body.objectInfoArr;
+  // let objectLocation = ctx.request.body.objectLocationArr;
+  // let objectPhones = ctx.request.body.objectPhone;
+
+  let objectClArr = {
+    name: "Sane gay",
+    objectCategoryId: 10,
+    shortDescription: "hihihi"
+  }
+  let objectInfoArr = {};
+  let objectLocationArr = {};
+  if(newToken.success) {
+    // const obId = await db.models.objectCl.create(objectClArr)
+    // if(obId) {
+    //   ctx.body = JSON.stringify({ odg: 'upisao', token: newToken})
+    // } else {
+    //   ctx.body = JSON.stringify({ odg: 'nije upisao', token: newToken})
+    // }
+
+    try {
+
+      const obId = await db.models.objectCl.create(objectClArr)
+
+      objectInfoArr = {...objectInfoArr, objectClId: obId.id}
+      objectLocationArr = {...objectLocationArr, objectClId: obId.id}
+
+      await db.models.objectInfo.create(objectInfoArr);
+      await db.models.objectLocation.create(objectLocationArr)
+
+      // objectPhonesArr.map(async item => {
+      //   item = {...item, objectClId: obId.id}
+      //   await db.models.objectPhones.create(item);
+      // })
+  
+      ctx.body = JSON.stringify({ update: true, token: newToken})
+    } catch (err) {
+      await transaction.rollback();
+      ctx.body = JSON.stringify({ update: false, token: newToken})
+    }
+  } else {
+    ctx.body = JSON.stringify({ odg: 'greska', token: newToken})
+  }
+})
+
   /*
     ------------------------------
     OVO JE METODA ZA EDITOVANJE OBJEKATA
     ------------------------------
   */
-  .post('/editObject', async (ctx, next) => {
-    const newToken = verifyToken(ctx.request.body.token)
-    let objectArr = ctx.request.body.objectArr;
-    if (newToken.success) {
+ .post('/editObject', async (ctx, next) => {
+  const newToken = verifyToken(ctx.request.body.token)
+  // let objectArr = ctx.request.body.objectArr;
+  const objectId = ctx.request.body.objectId;
+  // let objectClArr = ['name', 'shortDescription', 'verified', 'objectCategoryId'];
+  // let objectInfoArr = ['websiteUrl', 'hasRestaurant', 'popularBeacauseOf'];
+  // let objectLocationArr = ['adress'];
+  // let objectPhonesArr = ['desc', 'number'];
 
-      ctx.body = JSON.stringify({ token: newToken })
-    } else {
-      ctx.body = JSON.stringify({ token: newToken })
+  let objectClArr = {
+    name: 'Stefannnnnnnn'
+  };
+  let objectInfoArr = {};
+  let objectLocationArr = {};
+  let objectPhonesArr = [
+    {
+      number: '12313',
+      id: 1,
     }
-  })
+  ];
+  // let objectClArr = ctx.request.body.objectClArr;
+  // let objectInfoArr = ctx.request.body.objectInfoArr;
+  // let objectLocation = ctx.request.body.objectLocationArr;
+  // let objectPhones = ctx.request.body.objectPhone;
+  if(newToken.success) {
+    try {
+      await db.models.objectCl.update(objectClArr, {where: {id: objectId}})
+      await db.models.objectInfo.update(objectInfoArr, {where: {id: objectId}})
+      await db.models.objectLocation.update(objectLocationArr, {where: {id: objectId}})
+      objectPhonesArr.map(async item => {
+        await db.models.objectPhones.update(item, {where: {id: item.id}})
+      })
+      ctx.body = JSON.stringify({ update: true, token: newToken})
+    } catch (err) {
+      await transaction.rollback();
+      ctx.body = JSON.stringify({ update: false, token: newToken})
+    }
+    ctx.body = JSON.stringify({ token: newToken})
+  } else {
+    ctx.body = JSON.stringify({ token: newToken})
+  }
+})
 
   /*
     ------------------------------
@@ -536,7 +635,7 @@ const router = (new KoaRouter())
     ////////////////////////////////////
   */
 
-  .post('/owningRequests', async (ctx, next) => {
+  .post('/owningRequest', async (ctx, next) => {
     const newToken = verifyToken(ctx.request.body.token)
     if (newToken.success) {
       const requests = await db.models.owningRequest.findAll({
