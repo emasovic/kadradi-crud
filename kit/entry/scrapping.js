@@ -10,56 +10,58 @@ let lat = 0.0;
 let lng = 0.0;
 let radius = 1000;
 let category = {
-    google: 'bakery',
-    base: 1
+  google: 'bakery',
+  base: 1
 }
 
 
 async function startScraping(categoryId, latitude, longitue, distance) {
-    isScraping = true;
-    const categoryFromBase = await db.models.objectCategories.find({ where: { id: categoryId } });
-    category.google = categoryFromBase.googleType;
-    category.base = categoryId;
-    lat = latitude;
-    lng = longitue;
-    radius = distance;
-    scrap();
+  isScraping = true;
+  const categoryFromBase = await db.models.objectCategories.find({ where: { id: categoryId } });
+  category.google = categoryFromBase.googleType;
+  category.base = categoryId;
+  lat = latitude;
+  lng = longitue;
+  radius = distance * 1000;
+  scrap();
 }
 
 async function scrap(nextPage) {
-    if (isScraping) {
-        let parameters = {}
-        if (nextPage) {
-            parameters = {
-                location: lat.toString() + ', ' + lng.toString(),
-                type: category.google,
-                radius: radius,
-                next_page_token: nextPage
-            }
-        } else {
-            parameters = {
-                location: lat.toString() + ', ' + lng.toString(),
-                type: category.google,
-                radius: radius
-            }
-        }
-        googlePlaces.nearbySearch(parameters, async (err, res) => {
-            await Promise.all(res.body.results.map(item => {
-                console.log(item.types)
-                PubSub.publish('object_found', { id: item.id, name: item.name, vicinity: item.vicinity, lat: item.geometry.location.lat, lng: item.geometry.location.lng });
-            }))
-            if (res.body.next_page_token) {
-                setTimeout(function(){ scrap(res.body.next_page_token); }, 1000);
-            }
-        });
+  if (isScraping) {
+    console.log("KRENUO SAM")
+    let parameters = {}
+    if (nextPage) {
+      parameters = {
+        location: lat.toString() + ', ' + lng.toString(),
+        // type: category.google,
+        radius: radius,
+        next_page_token: nextPage
+      }
+    } else {
+      parameters = {
+        location: lat.toString() + ', ' + lng.toString(),
+        // type: category.google,
+        radius: radius
+      }
     }
+    googlePlaces.nearbySearch(parameters, async (err, res) => {
+      console.log(res.body)
+      await Promise.all(res.body.results.map(item => {
+        console.log(item.types)
+        PubSub.publish('object_found', { id: item.id, name: item.name, vicinity: item.vicinity, lat: item.geometry.location.lat, lng: item.geometry.location.lng });
+      }))
+      if (res.body.next_page_token) {
+        setTimeout(function () { scrap(res.body.next_page_token); }, 1000);
+      }
+    });
+  }
 }
 
 function stopScraping() {
-    isScraping = false;
+  isScraping = false;
 }
 
 export default {
-    startScraping,
-    stopScraping
+  startScraping,
+  stopScraping
 }
