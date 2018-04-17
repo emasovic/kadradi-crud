@@ -307,6 +307,11 @@ const router = (new KoaRouter())
       ctx.body = JSON.stringify({ categories: [], token: newToken })
     }
   })
+  /*
+  ------------------------------
+  OVO JE METODA ZA IZLISTAVANJE OBJEKATA IZ KATEGORIJA
+  ------------------------------
+*/
   .post('/objectsFromCategories', async (ctx, next) => {
     const categoryId = ctx.request.body.categoryId;
     const newToken = verifyToken(ctx.request.body.token);
@@ -330,50 +335,70 @@ const router = (new KoaRouter())
     }
   })
 
+
+  /*
+    ------------------------------
+    OVO JE METODA ZA UZIMANJE OBJEKATA PO ID-U
+    ------------------------------
+  */
   .post('/objectById', async (ctx, next) => {
-    const objectId = 1;
+    const objectId = ctx.request.body.objectId;
     const newToken = verifyToken(ctx.request.body.token);
     if (newToken.success) {
       if (objectId) {
         const objectCl = await db.models.objectCl.find({ where: { id: objectId } });
         const objectCategories = await db.models.objectCategories.findAll({
-          attributes: ['nameM', 'id']
+          attributes: ['nameJ', 'id']
         });
+        let locations = await db.models.locations.findAll();
+        locations = locations.map(item => {
+          return(
+            {
+              key: item.id,
+              value: item.id,
+              text: item.name,
+              parrentLocation: item.parrentLocation
+            }
+          )
+        })
         const objectPhones = await db.models.objectPhones.find({ where: { objectInfoId: objectId } });
-        let objectPhonesArr =
-          !objectPhones.length ? [] :
-            objectPhones.map(item => {
-              return (
-                {
-                  id: item.id,
-                  desc: item.desct,
-                  number: item.number,
+        // let objectPhonesArr = 
+        // !objectPhones.length ? [] : 
+        // objectPhones.map(item => {
+        //   return(
+        //     {
+        //       id: item.id,
+        //       desc: item.desct,
+        //       number: item.number,
 
-                }
-              )
-            })
+        //     }
+        //   )
+        // })
         let objectCategoriesArr = objectCategories.map(item => {
           return (
             {
-              id: item.id,
-              name: item.nameM
+              key: item.id,
+              value: item.id,
+              text: item.nameJ
             }
           )
         })
         const objectInfo = await db.models.objectInfo.find({ where: { objectClId: objectId } });
         const objectLocation = await db.models.objectLocation.find({ where: { objectClId: objectId } });
-        const objectById = {
-          objectCl: objectCl.dataValues, objectInfo: objectInfo.dataValues,
-          objectLocation: objectLocation.dataValues, objectCategoriesArr, objectPhones: objectPhones.dataValues
-        };
+        const objectById = { objectCl, objectInfo, objectLocation, objectCategoriesArr, objectPhones, locations };
         ctx.body = JSON.stringify({ objectById, token: newToken })
         // console.log("KATEGORIJE", objectCategories)
-        console.log('elvis prisli', objectById)
+        // console.log('elvis prisli', objectById)
       }
     } else {
       ctx.body = JSON.stringify({ objectById: [], token: newToken })
     }
   })
+  /*
+  ------------------------------
+  OVO JE METODA ZA BRISANJE OBJEKATA
+  ------------------------------
+*/
   .post('/deleteObject', async (ctx, next) => {
     const objectId = ctx.request.body.objectId;
     const newToken = verifyToken(ctx.request.body.token);
@@ -458,7 +483,21 @@ const router = (new KoaRouter())
       ctx.body = JSON.stringify({ deleted: false, token: newToken })
     }
   })
+  /*
+    ------------------------------
+    OVO JE METODA ZA EDITOVANJE OBJEKATA
+    ------------------------------
+  */
+  .post('/editObject', async (ctx, next) => {
+    const newToken = verifyToken(ctx.request.body.token)
+    let objectArr = ctx.request.body.objectArr;
+    if (newToken.success) {
 
+      ctx.body = JSON.stringify({ token: newToken })
+    } else {
+      ctx.body = JSON.stringify({ token: newToken })
+    }
+  })
 
   /*
     ------------------------------
