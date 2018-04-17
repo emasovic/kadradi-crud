@@ -506,13 +506,6 @@ const router = (new KoaRouter())
   let objectInfoArr = {};
   let objectLocationArr = {};
   if(newToken.success) {
-    // const obId = await db.models.objectCl.create(objectClArr)
-    // if(obId) {
-    //   ctx.body = JSON.stringify({ odg: 'upisao', token: newToken})
-    // } else {
-    //   ctx.body = JSON.stringify({ odg: 'nije upisao', token: newToken})
-    // }
-
     try {
 
       const obId = await db.models.objectCl.create(objectClArr)
@@ -523,10 +516,10 @@ const router = (new KoaRouter())
       await db.models.objectInfo.create(objectInfoArr);
       await db.models.objectLocation.create(objectLocationArr)
 
-      // objectPhonesArr.map(async item => {
-      //   item = {...item, objectClId: obId.id}
-      //   await db.models.objectPhones.create(item);
-      // })
+      objectPhonesArr.map(async item => {
+        item = {...item, objectClId: obId.id}
+        await db.models.objectPhones.create(item);
+      })
   
       ctx.body = JSON.stringify({ update: true, token: newToken})
     } catch (err) {
