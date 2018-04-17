@@ -86,8 +86,6 @@ class Objekti extends Component {
     this.getAllObjCategories()
   }
   render() {
-    console.log("STEJT", this)
-    let activeItem = this.state.activeItem
     return (
       <div style={{ height: '100vh' }}>
         <Dropdown placeholder='Izaberite kategoriju'

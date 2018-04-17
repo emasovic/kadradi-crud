@@ -299,6 +299,11 @@ const router = (new KoaRouter())
       ctx.body = JSON.stringify({ categories: [], token: newToken })
     }
   })
+    /*
+    ------------------------------
+    OVO JE METODA ZA IZLISTAVANJE OBJEKATA IZ KATEGORIJA
+    ------------------------------
+  */
   .post('/objectsFromCategories', async (ctx, next) => {
     const categoryId = ctx.request.body.categoryId;
     const newToken = verifyToken(ctx.request.body.token);
@@ -322,8 +327,14 @@ const router = (new KoaRouter())
     }
   })
 
+
+  /*
+    ------------------------------
+    OVO JE METODA ZA UZIMANJE OBJEKATA PO ID-U
+    ------------------------------
+  */
   .post('/objectById', async (ctx, next) => {
-    const objectId = 1;
+    const objectId = ctx.request.body.objectId;
     const newToken = verifyToken(ctx.request.body.token);
     if(newToken.success) {
       if(objectId) {
@@ -364,6 +375,11 @@ const router = (new KoaRouter())
       ctx.body = JSON.stringify({objectById: [], token: newToken})
     }
   })
+    /*
+    ------------------------------
+    OVO JE METODA ZA BRISANJE OBJEKATA
+    ------------------------------
+  */
   .post('/deleteObject', async (ctx, next) => {
     const objectId = ctx.request.body.objectId;
     const newToken = verifyToken(ctx.request.body.token);
@@ -448,7 +464,21 @@ const router = (new KoaRouter())
       ctx.body = JSON.stringify({deleted: false, token: newToken})
     }
   })
+  /*
+    ------------------------------
+    OVO JE METODA ZA EDITOVANJE OBJEKATA
+    ------------------------------
+  */
+ .post('/editObject', async (ctx, next) => {
+  const newToken = verifyToken(ctx.request.body.token)
+  let objectArr = ctx.request.body.objectArr;
+  if(newToken.success) {
 
+    ctx.body = JSON.stringify({ token: newToken})
+  } else {
+    ctx.body = JSON.stringify({ token: newToken})
+  }
+})
 
   /*
     ------------------------------
