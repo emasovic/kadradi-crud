@@ -36,7 +36,7 @@ class Korisnici extends React.Component {
     let response = await post.secure('/deleteUser', {
       userId
     })
-    if (response.deleted) {
+    if (response.deleted){
       this.displayPage(this.state.activePage)
     }
   }

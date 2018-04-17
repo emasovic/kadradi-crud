@@ -7,28 +7,28 @@ class EditUser extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            singleUser:{},
-            firstName:"",
-            lastName:"",
-            email:""
+            singleUser: {},
+            firstName: "",
+            lastName: "",
+            email: ""
         }
     }
     componentWillMount() {
         this.getSingleUser();
     }
     getSingleUser = async () => {
-        let response = await post.secure('/singleUser',{userId:this.props.match.params.id})
+        let response = await post.secure('/singleUser', { userId: this.props.match.params.id })
         if (response.token.success) {
             this.setState({
-              singleUser:{
-                  userId:response.user.id,
-                  firstName:response.user.firstName,
-                  lastName:response.user.lastName,
-                  email:response.user.email
-              },
-              firstName:response.user.firstName,
-              lastName:response.user.lastName,
-              email:response.user.email
+                singleUser: {
+                    userId: response.user.id,
+                    firstName: response.user.firstName,
+                    lastName: response.user.lastName,
+                    email: response.user.email
+                },
+                firstName: response.user.firstName,
+                lastName: response.user.lastName,
+                email: response.user.email
             })
         }
     }
@@ -36,32 +36,32 @@ class EditUser extends React.Component {
         const target = event.target;
         const value = target.value;
         const name = target.name;
-        this.setState({[name]: value});
-      }
-    editUser = async () => {
-     let singleUser = this.state.singleUser
-     if(this.state.firstName.toLowerCase() !== singleUser.firstName.toLowerCase() || this.state.lastName.toLowerCase() !== singleUser.lastName.toLowerCase()){
-         await post.secure('/editUser', {
-            userId:this.props.match.params.id,
-            firstName:this.state.firstName,
-            lastName:this.state.lastName,
-            email:this.state.email
-            
-        })
-    }else{
-        console.log("NEMA IZMENA")
+        this.setState({ [name]: value });
     }
-}
-        render() {
-            console.log('KORISNIKI STATE',this.state)
-            return (
-                <div>
-                    <Input label={"Edit Name"} value={this.state.firstName} onChange={this.handleInput} name={"firstName"}/><br />
-                    <Input label={"Edit Last Name"} value={this.state.lastName} onChange={this.handleInput} name={"lastName"}/><br />
-                    <Input label={"Edit Email"} value={this.state.email} onChange={this.handleInput} name={"email"}/><br />
-                    <Button onClick={this.editUser}>Save</Button>
-                </div>
-            )
+    editUser = async () => {
+        let singleUser = this.state.singleUser
+        if (this.state.firstName.toLowerCase() !== singleUser.firstName.toLowerCase() || this.state.lastName.toLowerCase() !== singleUser.lastName.toLowerCase() || this.state.email.toLowerCase() !== singleUser.email.toLowerCase()) {
+            let response = await post.secure('/editUser', {
+                userId: this.props.match.params.id,
+                firstName: this.state.firstName,
+                lastName: this.state.lastName,
+                email: this.state.email
+
+            })
+            if (response.token.success) {
+                this.getSingleUser()
+            }
         }
     }
- export default EditUser;
+    render() {
+        return (
+            <div>
+                <Input label={"Edit Name"} value={this.state.firstName} onChange={this.handleInput} name={"firstName"} /><br />
+                <Input label={"Edit Last Name"} value={this.state.lastName} onChange={this.handleInput} name={"lastName"} /><br />
+                <Input label={"Edit Email"} value={this.state.email} onChange={this.handleInput} name={"email"} /><br />
+                <Button onClick={this.editUser}>Save</Button>
+            </div>
+        )
+    }
+}
+export default EditUser;
