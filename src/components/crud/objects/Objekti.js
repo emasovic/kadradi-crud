@@ -80,7 +80,6 @@ class Objekti extends Component {
     if (response.deleted) {
       this.categoryObjpageN(this.state.pageNumber)
     }
-    console.log("RESPONSE", response)
   }
   componentWillMount() {
     this.getAllObjCategories()

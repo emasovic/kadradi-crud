@@ -103,8 +103,16 @@ import PATHS from 'config/paths';
 //IMPORT POSTGRESQL DATABASE
 import db from '../../db/db';
 
+//SCRAPING
+import scrap from './scrapping';
+import PubSub from 'pubsub-js';
+
 //IMPORT JSONWEBTOKEN
 import jwt from 'jsonwebtoken';
+
+//IMPORT ZA GOOGLE PLACES
+import GooglePlaces from 'node-googleplaces';
+const googlePlaces = new GooglePlaces('AIzaSyDImc0NawEJTQwlDskJBSL7cidhVvlccvQ')
 
 // ----------------------
 
@@ -327,7 +335,22 @@ const router = (new KoaRouter())
     }
   })
 
-
+   /*
+    ------------------------------
+    OVO JE METODA ZA DODAVANJE OBJEKATA
+    ------------------------------
+  */
+ .post('/categoriesArray', async (ctx, next) => {
+  const newToken = verifyToken(ctx.request.body.token);
+  if(newToken.success) {
+    const objectCategories = await db.models.objectCategories.findAll({
+      attributes: ['nameM', 'id']
+    });
+    ctx.body = JSON.stringify({categoriesArray: objectCategories, token: newToken})
+  } else {
+      ctx.body = JSON.stringify({categoriesArray: [], token: newToken})
+    }
+  })
   /*
     ------------------------------
     OVO JE METODA ZA UZIMANJE OBJEKATA PO ID-U
@@ -344,7 +367,7 @@ const router = (new KoaRouter())
         });
         let locations = await db.models.locations.findAll();
         locations = locations.map(item => {
-          return(
+          return (
             {
               key: item.id,
               value: item.id,
@@ -475,21 +498,105 @@ const router = (new KoaRouter())
       ctx.body = JSON.stringify({ deleted: false, token: newToken })
     }
   })
+   /*
+    ------------------------------
+    OVO JE METODA ZA DODAVANJE OBJEKATA
+    ------------------------------
+  */
+.post('/addObject', async (ctx, next) => {
+  const newToken = verifyToken(ctx.request.body.token);
+  // let objectClArr = ctx.request.body.objectClArr;
+  // let objectInfoArr = ctx.request.body.objectInfoArr;
+  // let objectLocation = ctx.request.body.objectLocationArr;
+  // let objectPhones = ctx.request.body.objectPhone;
+
+  let objectClArr = {
+    name: "Sane gay",
+    objectCategoryId: 10,
+    shortDescription: "hihihi"
+  }
+  let objectInfoArr = {};
+  let objectLocationArr = {};
+  if(newToken.success) {
+    // const obId = await db.models.objectCl.create(objectClArr)
+    // if(obId) {
+    //   ctx.body = JSON.stringify({ odg: 'upisao', token: newToken})
+    // } else {
+    //   ctx.body = JSON.stringify({ odg: 'nije upisao', token: newToken})
+    // }
+
+    try {
+
+      const obId = await db.models.objectCl.create(objectClArr)
+
+      objectInfoArr = {...objectInfoArr, objectClId: obId.id}
+      objectLocationArr = {...objectLocationArr, objectClId: obId.id}
+
+      await db.models.objectInfo.create(objectInfoArr);
+      await db.models.objectLocation.create(objectLocationArr)
+
+      // objectPhonesArr.map(async item => {
+      //   item = {...item, objectClId: obId.id}
+      //   await db.models.objectPhones.create(item);
+      // })
+  
+      ctx.body = JSON.stringify({ update: true, token: newToken})
+    } catch (err) {
+      await transaction.rollback();
+      ctx.body = JSON.stringify({ update: false, token: newToken})
+    }
+  } else {
+    ctx.body = JSON.stringify({ odg: 'greska', token: newToken})
+  }
+})
+
   /*
     ------------------------------
     OVO JE METODA ZA EDITOVANJE OBJEKATA
     ------------------------------
   */
-  .post('/editObject', async (ctx, next) => {
-    const newToken = verifyToken(ctx.request.body.token)
-    let objectArr = ctx.request.body.objectArr;
-    if (newToken.success) {
+ .post('/editObject', async (ctx, next) => {
+  const newToken = verifyToken(ctx.request.body.token)
+  // let objectArr = ctx.request.body.objectArr;
+  const objectId = ctx.request.body.objectId;
+  // let objectClArr = ['name', 'shortDescription', 'verified', 'objectCategoryId'];
+  // let objectInfoArr = ['websiteUrl', 'hasRestaurant', 'popularBeacauseOf'];
+  // let objectLocationArr = ['adress'];
+  // let objectPhonesArr = ['desc', 'number'];
 
-      ctx.body = JSON.stringify({ token: newToken })
-    } else {
-      ctx.body = JSON.stringify({ token: newToken })
+  let objectClArr = {
+    name: 'Stefannnnnnnn'
+  };
+  let objectInfoArr = {};
+  let objectLocationArr = {};
+  let objectPhonesArr = [
+    {
+      number: '12313',
+      id: 1,
     }
-  })
+  ];
+  // let objectClArr = ctx.request.body.objectClArr;
+  // let objectInfoArr = ctx.request.body.objectInfoArr;
+  // let objectLocation = ctx.request.body.objectLocationArr;
+  // let objectPhones = ctx.request.body.objectPhone;
+  if(newToken.success) {
+    try {
+      await db.models.objectCl.update(objectClArr, {where: {id: objectId}})
+      await db.models.objectInfo.update(objectInfoArr, {where: {id: objectId}})
+      await db.models.objectLocation.update(objectLocationArr, {where: {id: objectId}})
+      objectPhonesArr.map(async item => {
+        await db.models.objectPhones.update(item, {where: {id: item.id}})
+      })
+      ctx.body = JSON.stringify({ update: true, token: newToken})
+    } catch (err) {
+      await transaction.rollback();
+      ctx.body = JSON.stringify({ update: false, token: newToken})
+    }
+    ctx.body = JSON.stringify({ token: newToken})
+  } else {
+    ctx.body = JSON.stringify({ token: newToken})
+  }
+})
 
   /*
     ------------------------------
@@ -528,7 +635,7 @@ const router = (new KoaRouter())
     ////////////////////////////////////
   */
 
-  .post('/owningRequests', async (ctx, next) => {
+  .post('/owningRequest', async (ctx, next) => {
     const newToken = verifyToken(ctx.request.body.token)
     if (newToken.success) {
       const requests = await db.models.owningRequest.findAll({
@@ -616,7 +723,63 @@ const router = (new KoaRouter())
     }
   })
 
+  /*
+    ////////////////////////////
+    /// TESTIRANJE ////////////
+    //////////////////////////
+  */
 
+  .post('/mapFetch', async (ctx, next) => {
+    const newToken = verifyToken(ctx.request.body.token)
+    if (newToken.success) {
+      let objekti = [];
+      await fetch('https://kadradi-backend.ml/graphql', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query: 'query nearestObjects($lat: Float!, $lng: Float!, $distance: Float!, $categoryId: Int!) { nearestObjects(categoryId: $categoryId, lat: $lat, lng: $lng, distance: $distance) { name, objectLocations { lat, lng} }}',
+          variables: { lat: ctx.request.body.lat, lng: ctx.request.body.lng, distance: ctx.request.body.radius, categoryId: ctx.request.body.categoryId }
+        },
+        ),
+
+      })
+        .then(res => res.json())
+        .then(res => {
+          Promise.all(res.data.nearestObjects.map(item => {
+            objekti.push({name: item.name, lat: item.objectLocations.lat, lng: item.objectLocations.lng })
+          }))
+        });
+      ctx.body = { objects: objekti, token: newToken }
+    } else {
+      ctx.body = { objects: [], token: newToken}
+    }
+
+  })
+
+  .post('/startScraping', async (ctx, next) => {
+    const newToken = verifyToken(ctx.request.body.token);
+    if (newToken.success) {
+      scrap.startScraping(ctx.request.body.categoryId, ctx.request.body.lat, ctx.request.body.lng, ctx.request.body.radius);
+      ctx.body = JSON.stringify({ success: true, token: newToken });
+    }
+
+  })
+  .post('/stopScraping', async (ctx, next) => {
+    scrap.stopScraping();
+    ctx.body = "SCRAPING JE STAO"
+  })
+
+  .get('/searchobjects', async ctx => {
+    const parameters = {
+      location: '44.793923, 20.446009',
+      // types: "bakery",
+      radius: 1000
+    };
+    googlePlaces.nearbySearch(parameters, (err, res) => {
+      console.log(res.body.results[0].geometry);
+    });
+
+  })
 
 
 
@@ -793,17 +956,26 @@ const listen = () => {
   // Spawn the listeners.
   const servers = [];
 
+  const server1 = http.createServer(app.callback())
+  const server2 = https.createServer(config.sslOptions, app.callback())
+
   // Plain HTTP
   if (config.enableHTTP) {
+    let io = require('socket.io')(server1)
+    io.on('connection', function (socket) {
+      let newObject = PubSub.subscribe('object_found', function (msg, data) {
+        io.emit('object_found', data);
+      });
+    });
     servers.push(
-      http.createServer(app.callback()).listen(process.env.PORT),
+      server1.listen(process.env.PORT),
     );
   }
 
   // SSL -- only enable this if we have an `SSL_PORT` set on the environment
   if (process.env.SSL_PORT) {
     servers.push(
-      https.createServer(config.sslOptions, app.callback()).listen(process.env.SSL_PORT),
+      server2.listen(proces.env.SSL_PORT),
     );
   }
 
