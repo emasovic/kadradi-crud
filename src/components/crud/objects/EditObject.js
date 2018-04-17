@@ -113,13 +113,13 @@ class EditObject extends React.Component {
         <Dropdown
          value={this.state.objectCategoryId} 
          selection 
-         onChange={this.setCategoryObj}
-         options={this.state.objToEdit.objectCategoriesArr} /><br />
+         options={this.state.objToEdit.objectCategoriesArr} 
+         onChange={this.setCategoryObj}/><br />
          <Dropdown
           value={this.state.locationId} 
           selection 
-          onChange={this.setCategoryObj}
-          options={this.state.objToEdit.locations} /><br />
+          options={this.state.objToEdit.locations}
+          onChange={this.setCategoryObj} /><br />
          <Dropdown
          selection
           /><br />

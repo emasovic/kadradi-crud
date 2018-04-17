@@ -72,6 +72,9 @@ class Objekti extends Component {
   editObj = (objectId) => {
     this.props.history.push(`/edit/${objectId}`);
   }
+  addObject = () => {
+    this.props.history.push(`/addObject/`)
+  }
   deleteObj = async (objectId) => {
     let response = await post.secure('/deleteObject', {
       token: this.props.token,
@@ -94,7 +97,7 @@ class Objekti extends Component {
           options={this.state.categories} />
         {
           this.state.categoryId != 0 ?
-            <Button floated='left' icon labelPosition='left' primary size='small'>
+            <Button floated='left' icon labelPosition='left' primary size='small' onClick={this.addObject}>
               <Icon name='user' /> Add New
             </Button> : null
         }

@@ -56,7 +56,9 @@ import ReduxCounter from 'components/redux';
 import Stats from 'components/stats';
 import Styles from 'components/styles';
 import EditObject from '../crud/objects/EditObject';
+import AddObject from '../crud/objects/AddObject'
 import EditUser from '../crud/users/EditUser';
+
 
 // Styles
 import css from './main.scss';
@@ -85,6 +87,7 @@ export default () => (
       <Route exact path="/" component={Home} />
       <Route exact path="/edit/:id" component={EditObject} />
       <Route exact path="/editUsers/:id" component={EditUser} />
+      <Route exact path="/addObject/" component={AddObject} />
       <Route component={NotFound} />
     </Switch>
   </div>
