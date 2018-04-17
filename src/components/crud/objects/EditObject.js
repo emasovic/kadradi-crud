@@ -1,6 +1,7 @@
 import React from 'react';
 import post from '../../fetch/post';
 import { Input, Button, Dropdown } from 'semantic-ui-react';
+import { stat } from 'fs';
 
 class EditObject extends React.Component {
   constructor(props) {
@@ -14,7 +15,9 @@ class EditObject extends React.Component {
       personId: '',
       shortDescription: '',
       streetAddress: '',
-
+      par: [],
+      childLocation: [],
+      newVal: 0,
     }
   }
   objectEdit = (e) => {
@@ -68,6 +71,8 @@ class EditObject extends React.Component {
         shortDescription: response.objectById.objectCl.shortDescription,
         streetAddress: response.objectById.objectCl.streetAddress,
       })
+      this.setParentObj(response.objectById.locations);
+      console.log("JEL GA IMA OVDE bRE?", response.objectById.locations);
       console.log('RESPONSE', response)
     } else {
       console.log('stajebreovo')
@@ -79,11 +84,47 @@ class EditObject extends React.Component {
     })
   }
 
+  setParentObj = (parrent) => {
+    let obArr = [];
+    let nekiObj = {
+      key: 2,
+      value: 2,
+      text: "Novi sad",
+      parrentLocation: 0,
+    }
+    for(let child in parrent){
+      console.log("PARRENT LOCATION: ", parrent[child].text);
+      if(parrent[child].parrentLocation === 0){
+        obArr[child] = parrent[child];
+      }
+    }   
+    let newArr = [...obArr,nekiObj];
+    this.setState({
+      par : newArr,
+    });
+  }
+  setLo = (e, { value }) => {
+    let arr = this.state.objToEdit.locations.filter(word => word.parrentLocation == value)
+    this.setState({
+      childLocation: arr
+    })
+  }
+  // findChildLocation = (parrent, parrentKey) => {
+  //   let obb = [];
+  //   for (let child in parrent){
+  //     if(parrent[child].parrentLocation === parrentKey){
+  //       obb[child] = parrent[child];
+  //     }
+  //   }
+  //   this.setState({
+  //     childLocation: obb,
+  //   });
+  // }
+
   prepareToEditObject = () => {
     let {objToEdit} = this.state
     let objectArr = [];
-    // let arr = Object.keys(this.state)
-    // console.log("AREJ", arr)
+
     let objectClKeys = Object.keys(objToEdit.objectCl)
     let objectInfo = Object.keys(objToEdit.objectInfo)
     let objectPhones = Object.keys(objToEdit.objectPhones[0])
@@ -103,9 +144,15 @@ class EditObject extends React.Component {
   }
 
   render() {
-    console.log("STEJT ", this.state)
-    console.log('STRIPTIZETA', this.state.objectCategoriesArr)
-    console.log("LOC", this.state.objToEdit.locations)
+    // console.log("STEJT ", this.state);
+    // console.log('STRIPTIZETA', this.state.objectCategoriesArr);
+    // console.log("LOC", this.state.objToEdit.locations);
+    // console.log('LOCATION TEST', this.state.objToEdit);
+    // console.log('STATE PAR: ', this.state.par);
+    // console.log('STATE PAR NAME: ', this.state.par);
+    // console.log("VALUE", this.state.newVal);
+    // console.log("PUNTO CUKAM!", this.state.childLocation)
+    console.log("CHILD", this.state)
     return (
       <div>
         {/* <Input label='locationId: ' name='locationId' value={this.state.locationId} onChange={this.objectEdit} /><br /> */}
@@ -116,13 +163,15 @@ class EditObject extends React.Component {
          onChange={this.setCategoryObj}
          options={this.state.objToEdit.objectCategoriesArr} /><br />
          <Dropdown
-          value={this.state.locationId} 
           selection 
           onChange={this.setCategoryObj}
-          options={this.state.objToEdit.locations} /><br />
+          options={this.state.childLocation} /><br />
          <Dropdown
-         selection
-          /><br />
+          selection
+          value= {this.state.newVal}
+          options={this.state.par}
+          onChange={this.setLo}
+        /><br />
         <Input label='personId: ' name='personId' value={this.state.personId} onChange={this.objectEdit} /><br />
         <Input label='shortDescription: ' name='shortDescription' value={this.state.shortDescription} onChange={this.objectEdit} /><br />
         <Input label='streetAdress: ' name='streetAddress'  onChange={this.objectEdit} /><br />
