@@ -1,19 +1,21 @@
 import React from 'react';
 import post from '../../fetch/post';
 import { Input, Button, Dropdown,Checkbox } from 'semantic-ui-react';
+import Number from './Number'
 
 class AddObject extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
             name: "",
-            objectCategorieId: "",
+            objectCategorie: "",
             person: "",
             image: "",
             objectLocation: {},
             objectInfo: "",
             popular: "",
-            phone: "",
+            phone:"",
+            phoneArr:["kica","a","neko jos","i Jos"],
             additionalInfo: "",
             verified: false
         }
@@ -25,8 +27,15 @@ class AddObject extends React.Component {
         this.setState({ [name]: value });
     }
     handleChange = (e, { name, value }) => this.setState({ [name]: value })
+    
     toggle = () => this.setState({ verified: !this.state.verified })
-
+    
+    removeNumber = (index) => {
+      let arr= this.state.phoneArr.splice(index,1)
+      this.setState({
+          phoneArr:arr
+      })
+    }
 
     render() {
         console.log("ADD OBJECT STATE", this.state)
@@ -34,13 +43,13 @@ class AddObject extends React.Component {
             <div>
                 {/* <Input label='locationId: ' name='locationId' value={this.state.locationId} onChange={this.objectEdit} /><br /> */}
                 <Input label='Name: ' name='name' onChange={this.handleInput} /><br />
-                <Dropdown
+                {/* <Dropdown
                     placeholder="Select categorie"
-                    name="categories"
+                    name="objectCategorie"
                     selection
-                    // options={this.state.categoriesArr}
+                    options={this.state.phoneArr}
                     onChange={this.handleChange}
-                /><br />
+                /><br /> */}
                 <Dropdown
                     //   value={this.state.locationId} 
                     selection
@@ -53,7 +62,15 @@ class AddObject extends React.Component {
                 <Input label='Object location: ' name='objectLocation' onChange={this.handleInput} placeholder="Enter street name" /><br />
                 <Input label='Person: ' name='person' onChange={this.handleInput} /><br />
                 <Input label='Image: ' name='image' onChange={this.handleInput} placeholder="Image url..." /><br />
-                <Input label='Phone: ' name='phone' onChange={this.handleInput} /><br />
+                <div>
+                <Input label='Phone: ' name='phone' onChange={this.handleInput} />
+                <Button icon='plus' />
+                {this.state.phoneArr.length ?
+                 this.state.phoneArr.map((item,index) =>{
+                     return <Number removeNumber={()=>this.removeNumber({index})}/>
+                 }):null
+                }
+                </div>
                 <Input label='Object Info: ' name='objectInfo' onChange={this.handleInput} placeholder="Webiste url.." /><br />
                 <Input label='Popular because of: ' name='popular' onChange={this.handleInput} placeholder="Why is this object popular..." /><br />
                 <Input label='Additional info: ' name='additionalInfo' onChange={this.handleInput} placeholder="Add some info..." /><br />
