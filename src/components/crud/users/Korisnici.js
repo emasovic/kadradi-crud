@@ -36,7 +36,7 @@ class Korisnici extends React.Component {
     let response = await post.secure('/deleteUser', {
       userId
     })
-    if (response.deleted) {
+    if (response.deleted){
       this.displayPage(this.state.activePage)
     }
   }
@@ -82,6 +82,9 @@ class Korisnici extends React.Component {
       })
     }
   }
+  editUser = (userId) => {
+    this.props.history.push(`/editUsers/${userId}`);
+  }
   render() {
     console.log("STATE USERS", this.state)
     return (
@@ -105,7 +108,7 @@ class Korisnici extends React.Component {
                         <Table.Cell>{item.userLastName + " " + item.userFirstName}</Table.Cell>
                         <Table.Cell>{item.userEmail}</Table.Cell>
                         <Table.Cell>
-                          <Button icon onClick={() => this.editObj(item.userId)}>
+                          <Button icon onClick={() => this.editUser(item.userId)}>
                             <Icon name='edit' />
                           </Button>
                           <Button icon onClick={() => this.deleteUser(item.userId)}>
