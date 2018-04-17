@@ -103,8 +103,16 @@ import PATHS from 'config/paths';
 //IMPORT POSTGRESQL DATABASE
 import db from '../../db/db';
 
+//SCRAPING
+import scrap from './scrapping';
+import PubSub from 'pubsub-js';
+
 //IMPORT JSONWEBTOKEN
 import jwt from 'jsonwebtoken';
+
+//IMPORT ZA GOOGLE PLACES
+import GooglePlaces from 'node-googleplaces';
+const googlePlaces = new GooglePlaces('AIzaSyDImc0NawEJTQwlDskJBSL7cidhVvlccvQ')
 
 // ----------------------
 
@@ -616,7 +624,33 @@ const router = (new KoaRouter())
     }
   })
 
+  /*
+    ////////////////////////////
+    /// TESTIRANJE ////////////
+    //////////////////////////
+  */
 
+  .post('/startScraping', async (ctx, next) => {
+    scrap.startScraping(ctx.request.body.categoryId, ctx.request.body.lat, ctx.request.body.lng, ctx.request.body.radius);
+    ctx.body = "AJDE STARTOVAN JE SKREJPING";
+  })
+
+  .post('/stopScraping', async (ctx, next) => {
+    scrap.stopScraping();
+    ctx.body = "SCRAPING JE STAO"
+  })
+
+  .get('/searchobjects', async ctx => {
+    const parameters = {
+      location: '44.793923, 20.446009',
+      // types: "bakery",
+      radius: 1000
+    };
+    googlePlaces.nearbySearch(parameters, (err, res) => {
+      console.log(res.body.results[0].geometry);
+    });
+  
+  })
 
 
 
@@ -793,17 +827,26 @@ const listen = () => {
   // Spawn the listeners.
   const servers = [];
 
+  const server1 = http.createServer(app.callback())
+  const server2 = https.createServer(config.sslOptions, app.callback())
+
   // Plain HTTP
   if (config.enableHTTP) {
+    let io = require('socket.io')(server1)
+    io.on('connection', function(socket){
+      let newObject = PubSub.subscribe('object_found', function(msg,data) {
+        io.emit('object_found', data);
+      });
+    });
     servers.push(
-      http.createServer(app.callback()).listen(process.env.PORT),
+      server1.listen(process.env.PORT),
     );
   }
 
   // SSL -- only enable this if we have an `SSL_PORT` set on the environment
   if (process.env.SSL_PORT) {
     servers.push(
-      https.createServer(config.sslOptions, app.callback()).listen(process.env.SSL_PORT),
+      server2.listen(proces.env.SSL_PORT),
     );
   }
 
