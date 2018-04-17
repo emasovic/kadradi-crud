@@ -421,7 +421,7 @@ const router = (new KoaRouter())
     const newToken = verifyToken(ctx.request.body.token)
     if(newToken.success) {
       const user = await db.models.person.find({where: {id: ctx.request.body.userId}});
-      ctx.body = JSON.stringify({user: user, token: newToken})
+      ctx.body = JSON.stringify({user: user.dataValues, token: newToken})
     } else {
       ctx.body = JSON.stringify({user: {}, token: newToken})
     }
