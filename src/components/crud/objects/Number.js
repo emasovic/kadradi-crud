@@ -12,8 +12,8 @@ class Number extends React.Component {
     render() {
         return (
             <div>
-                <Input label={"Tel no.1"}  placeholder="Neki telefon" />
-                <Button icon='minus' onClick={this.props.removeNumber} />
+                <Input label={"Tel no.1"}  placeholder={this.props.text} />
+                <Button icon='minus' onClick={()=>this.props.removeNumber(this.props.index)} />
             </div>
         )
     }

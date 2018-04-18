@@ -15,7 +15,7 @@ class AddObject extends React.Component {
             objectInfo: "",
             popular: "",
             phone:"",
-            phoneArr:["kica","a","neko jos","i Jos"],
+            phoneArr:[],
             additionalInfo: "",
             verified: false
         }
@@ -31,10 +31,16 @@ class AddObject extends React.Component {
     toggle = () => this.setState({ verified: !this.state.verified })
     
     removeNumber = (index) => {
-      let arr= this.state.phoneArr.splice(index,1)
+     this.state.phoneArr.splice(index,1)
       this.setState({
-          phoneArr:arr
+          phoneArr:this.state.phoneArr
       })
+    }
+    addNumber = (tel) => {
+     this.state.phoneArr.push({number:tel})
+     this.setState({
+         phoneArr:this.state.phoneArr
+     })
     }
 
     render() {
@@ -64,10 +70,10 @@ class AddObject extends React.Component {
                 <Input label='Image: ' name='image' onChange={this.handleInput} placeholder="Image url..." /><br />
                 <div>
                 <Input label='Phone: ' name='phone' onChange={this.handleInput} />
-                <Button icon='plus' />
+                <Button icon='plus' onClick={()=>this.addNumber(this.state.phone)}/>
                 {this.state.phoneArr.length ?
-                 this.state.phoneArr.map((item,index) =>{
-                     return <Number removeNumber={()=>this.removeNumber({index})}/>
+                 this.state.phoneArr.map((item,index) => {
+                     return <Number index={index} removeNumber = {this.removeNumber} text={item.number}/>
                  }):null
                 }
                 </div>
