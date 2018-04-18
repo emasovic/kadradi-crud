@@ -553,21 +553,36 @@ const router = (new KoaRouter())
  .post('/editObject', async (ctx, next) => {
   const newToken = verifyToken(ctx.request.body.token)
   // let objectArr = ctx.request.body.objectArr;
-  const objectId = ctx.request.body.objectId;
+
+
+
+  // const objectId = ctx.request.body.objectId;
+  const objectId = 1;
+
+
+
   // let objectClArr = ['name', 'shortDescription', 'verified', 'objectCategoryId'];
   // let objectInfoArr = ['websiteUrl', 'hasRestaurant', 'popularBeacauseOf'];
   // let objectLocationArr = ['adress'];
   // let objectPhonesArr = ['desc', 'number'];
 
   let objectClArr = {
-    name: 'Stefannnnnnnn',
+    name: 'Stefannnnnn',
+    shortDescription: 'ovo je descr',
+    city: 'lestaneee',
   };
   let objectInfoArr = {};
   let objectLocationArr = {};
   let objectPhonesArr = [
     {
-      number: '12313',
+      desc: 'Probni tell',
+      number: '123131',
       id: 1,
+    },
+    {
+      desc: 'Stefanov fixniii',
+      number: '0123456789',
+      id: 2,
     }
   ];
   // let objectClArr = ctx.request.body.objectClArr;
