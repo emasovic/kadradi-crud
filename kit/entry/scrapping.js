@@ -4,6 +4,56 @@ import db from '../../db/db';
 
 const googlePlaces = new GooglePlaces('AIzaSyDImc0NawEJTQwlDskJBSL7cidhVvlccvQ')
 
+const access_token = 'AIzaSyDImc0NawEJTQwlDskJBSL7cidhVvlccvQ';
+
+async function withoutToken(args) {
+  const url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location="+
+  args.lat +
+  ","+
+  args.lng+
+  "&radius="+
+  args.radius +
+  "&types="+
+  category.google +
+  "&key="+
+  access_token
+
+  let zaReturn;
+
+   await fetch(url)
+  .then(response => response.text())
+  .then(async response => {
+    const res = JSON.parse(response);
+    zaReturn = res;
+  })
+  return zaReturn;
+}
+
+async function withToken(args) {
+  const url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location="+
+  args.lat +
+  ","+
+  args.lng+
+  "&radius="+
+  args.radius +
+  "&types="+
+  category.google +
+  "&key="+
+  access_token  +
+  "&pagetoken="+
+  args.nextPage
+
+  let zaReturn;
+
+   await fetch(url)
+  .then(response => response.text())
+  .then(async response => {
+    const res = JSON.parse(response);
+    zaReturn = res;
+  })
+  return zaReturn;
+}
+
 let isScraping = false;
 let isNewScrap = true;
 let lat = 0.0;
@@ -13,6 +63,8 @@ let category = {
   google: 'bakery',
   base: 1
 }
+
+let dalje = true;
 
 
 async function startScraping(categoryId, latitude, longitue, distance) {
@@ -26,35 +78,31 @@ async function startScraping(categoryId, latitude, longitue, distance) {
   scrap();
 }
 
+async function idiDalje() {
+  dalje = false;
+}
+
 async function scrap(nextPage) {
-  if (isScraping) {
-    console.log("KRENUO SAM")
+    dalje = true;
+    console.log(category.google)
     let parameters = {}
     if (nextPage) {
-      parameters = {
-        location: lat.toString() + ', ' + lng.toString(),
-        // type: category.google,
-        radius: radius,
-        next_page_token: nextPage
-      }
-    } else {
-      parameters = {
-        location: lat.toString() + ', ' + lng.toString(),
-        // type: category.google,
-        radius: radius
-      }
-    }
-    googlePlaces.nearbySearch(parameters, async (err, res) => {
-      console.log(res.body)
-      await Promise.all(res.body.results.map(item => {
-        console.log(item.types)
+      const screp = await withToken({lat, lng, radius, type: category.google, nextPage})
+      await Promise.all(screp.results.map(item => {
         PubSub.publish('object_found', { id: item.id, name: item.name, vicinity: item.vicinity, lat: item.geometry.location.lat, lng: item.geometry.location.lng });
       }))
-      if (res.body.next_page_token) {
-        setTimeout(function () { scrap(res.body.next_page_token); }, 1000);
+      if (screp.next_page_token) {
+        setTimeout(function () { scrap(screp.next_page_token); }, 5000);
       }
-    });
-  }
+    } else {
+      const screp = await withoutToken({lat, lng, radius, type: category.google})
+      await Promise.all(screp.results.map(item => {
+        PubSub.publish('object_found', { id: item.id, name: item.name, vicinity: item.vicinity, lat: item.geometry.location.lat, lng: item.geometry.location.lng });
+      }))
+      if (screp.next_page_token) {
+        setTimeout(function () { scrap(screp.next_page_token); }, 5000);
+      }
+    }
 }
 
 function stopScraping() {
@@ -63,5 +111,6 @@ function stopScraping() {
 
 export default {
   startScraping,
-  stopScraping
+  stopScraping,
+  idiDalje
 }

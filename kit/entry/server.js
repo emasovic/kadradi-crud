@@ -757,13 +757,21 @@ const router = (new KoaRouter())
   })
 
   .post('/startScraping', async (ctx, next) => {
-    const newToken = verifyToken(ctx.request.body.token);
-    if (newToken.success) {
-      scrap.startScraping(ctx.request.body.categoryId, ctx.request.body.lat, ctx.request.body.lng, ctx.request.body.radius);
-      ctx.body = JSON.stringify({ success: true, token: newToken });
-    }
-
+    // const newToken = verifyToken(ctx.request.body.token);
+    // if (newToken.success) {
+    //   scrap.startScraping(ctx.request.body.categoryId, ctx.request.body.lat, ctx.request.body.lng, ctx.request.body.radius);
+    //   ctx.body = JSON.stringify({ success: true, token: newToken });
+    // }
+    scrap.startScraping(ctx.request.body.categoryId, ctx.request.body.lat, ctx.request.body.lng, ctx.request.body.radius);
+    ctx.body = "Skrejpujem";
   })
+
+  .post('/idiDalje', async(ctx, next) => {
+    scrap.idiDalje();
+    ctx.body = "idem Dalje"
+  })
+
+
   .post('/stopScraping', async (ctx, next) => {
     scrap.stopScraping();
     ctx.body = "SCRAPING JE STAO"
