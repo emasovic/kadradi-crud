@@ -3,7 +3,8 @@ import { Map, InfoWindow, Marker, GoogleApiWrapper } from 'google-maps-react';
 import { geolocated } from 'react-geolocated';
 import styles from './scraper.css'
 import { Input, Button, Dropdown } from 'semantic-ui-react';
-import post from '../../fetch/post'; 
+import post from '../../fetch/post';
+import io from 'socket.io-client';
 
 @geolocated({
   positionOptions: {
@@ -16,9 +17,12 @@ class Scraper extends Component {
     super(props);
     this.state = {
       categories: [],
+      fetchedObject: [],
       showingInfoWindow: true,
       activeMarker: {},
       selectedPlace: {},
+      categoryId: 0,
+      radius: 0,
       lat: 0,
       lng: 0
     }
@@ -59,11 +63,44 @@ class Scraper extends Component {
       })
     }
   }
+  dropDownSetRadius = (e, { value }) => {
+    this.setState({
+      radius: value
+    })
+    this.setState({
+      categoryId: value
+    })
+  }
+  dropDownSetCategoryId = (e, { value }) => {
+    this.setState({
+      categoryId: value
+    })
+  }
+  fetchObjects = async () => {
+    let response = await post.secure('/mapFetch', {
+      categoryId: this.state.categoryId,
+      lat: this.state.lat,
+      lng: this.state.lng,
+      radius: this.state.radius
+    });
+    console.log("RESPONSE", response)
+    if (response.token.success) {
+      this.setState({
+        fetchedObject: response.objects
+      })
+    }
+  }
+  scrapeObjects = () => {
+    this.fetchObjects()
+    let socket = io('http://localhost:8081')
+    socket.on('object_found', (data) => {
+      console.log(data);
+    });
+  }
   componentWillMount() {
     this.getAllObjCategories()
   }
   render() {
-    console.log("PROPS", this.props)
     let radius = [
       {
         key: 1,
@@ -92,8 +129,10 @@ class Scraper extends Component {
         {
           this.props.coords != null ?
             <div className={styles.map}>
-              <Dropdown placeholder='Radius' name='radius' selection options={radius} />
-              <Dropdown placeholder='Kategorije' name='kategorije' selection options={this.state.categories} />
+              <Dropdown placeholder='Radius' name='radius' selection options={radius} onChange={this.dropDownSetRadius} />
+              <Dropdown placeholder='Kategorije' name='kategorije' selection options={this.state.categories} onChange={this.dropDownSetCategoryId} />
+              <Button primary onClick={() => this.fetchObjects()}>Fetch</Button>
+              <Button primary onClick={() => this.scrapeObjects()}>Scrape</Button>
               <Map
                 onClick={this.onMapClicked}
                 google={this.props.google}
@@ -108,6 +147,17 @@ class Scraper extends Component {
                     lng: this.state.lng
                   }}
                   name={'Dje sam'} />
+                {
+                  this.state.fetchedObject.length ?
+                    this.state.fetchedObject.map((item, key) => {
+                      return (
+                        <Marker
+                          title={item.name}
+                          name={'SOMA'}
+                          position={{ lat: item.lat, lng: item.lng }} />
+                      )
+                    }) : ''
+                }
               </Map>
             </div>
             : 'Lokacija je disejblovana'

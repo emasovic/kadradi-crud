@@ -365,31 +365,43 @@ const router = (new KoaRouter())
         const objectCategories = await db.models.objectCategories.findAll({
           attributes: ['nameJ', 'id']
         });
-        const objectPhones = await db.models.objectPhones.find({where: {objectInfoId: objectId}});
-        let objectPhonesArr = 
-        objectPhones === null ? '' :
-          !objectPhones.length ? [] : 
-          objectPhones.map(item => {
-            return(
-              {
-                id: item.id,
-                desc: item.desct,
-                number: item.number,
-              }
-            )
-          })
-          let objectCategoriesArr = objectCategories.map(item => {
-            return(
-              {
-                id: item.id,
-                name: item.nameM
-              }
-            )
-          })
-        const objectInfo = await db.models.objectInfo.find({where: {objectClId: objectId}});
-        const objectLocation = await db.models.objectLocation.find({where: {objectClId: objectId}});
-        const objectById = {objectCl, objectInfo, objectLocation, objectCategoriesArr, objectPhones};
-        ctx.body = JSON.stringify({objectById, token: newToken})
+        let locations = await db.models.locations.findAll();
+        locations = locations.map(item => {
+          return (
+            {
+              key: item.id,
+              value: item.id,
+              text: item.name,
+              parrentLocation: item.parrentLocation
+            }
+          )
+        })
+        const objectPhones = await db.models.objectPhones.find({ where: { objectInfoId: objectId } });
+        // let objectPhonesArr = 
+        // !objectPhones.length ? [] : 
+        // objectPhones.map(item => {
+        //   return(
+        //     {
+        //       id: item.id,
+        //       desc: item.desct,
+        //       number: item.number,
+
+        //     }
+        //   )
+        // })
+        let objectCategoriesArr = objectCategories.map(item => {
+          return (
+            {
+              key: item.id,
+              value: item.id,
+              text: item.nameJ
+            }
+          )
+        })
+        const objectInfo = await db.models.objectInfo.find({ where: { objectClId: objectId } });
+        const objectLocation = await db.models.objectLocation.find({ where: { objectClId: objectId } });
+        const objectById = { objectCl, objectInfo, objectLocation, objectCategoriesArr, objectPhones, locations };
+        ctx.body = JSON.stringify({ objectById, token: newToken })
         // console.log("KATEGORIJE", objectCategories)
         // console.log('elvis prisli', objectById)
       }
@@ -717,11 +729,41 @@ const router = (new KoaRouter())
     //////////////////////////
   */
 
-  .post('/startScraping', async (ctx, next) => {
-    scrap.startScraping(ctx.request.body.categoryId, ctx.request.body.lat, ctx.request.body.lng, ctx.request.body.radius);
-    ctx.body = "AJDE STARTOVAN JE SKREJPING";
+  .post('/mapFetch', async (ctx, next) => {
+    const newToken = verifyToken(ctx.request.body.token)
+    if (newToken.success) {
+      let objekti = [];
+      await fetch('https://kadradi-backend.ml/graphql', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query: 'query nearestObjects($lat: Float!, $lng: Float!, $distance: Float!, $categoryId: Int!) { nearestObjects(categoryId: $categoryId, lat: $lat, lng: $lng, distance: $distance) { name, objectLocations { lat, lng} }}',
+          variables: { lat: ctx.request.body.lat, lng: ctx.request.body.lng, distance: ctx.request.body.radius, categoryId: ctx.request.body.categoryId }
+        },
+        ),
+
+      })
+        .then(res => res.json())
+        .then(res => {
+          Promise.all(res.data.nearestObjects.map(item => {
+            objekti.push({name: item.name, lat: item.objectLocations.lat, lng: item.objectLocations.lng })
+          }))
+        });
+      ctx.body = { objects: objekti, token: newToken }
+    } else {
+      ctx.body = { objects: [], token: newToken}
+    }
+
   })
 
+  .post('/startScraping', async (ctx, next) => {
+    const newToken = verifyToken(ctx.request.body.token);
+    if (newToken.success) {
+      scrap.startScraping(ctx.request.body.categoryId, ctx.request.body.lat, ctx.request.body.lng, ctx.request.body.radius);
+      ctx.body = JSON.stringify({ success: true, token: newToken });
+    }
+
+  })
   .post('/stopScraping', async (ctx, next) => {
     scrap.stopScraping();
     ctx.body = "SCRAPING JE STAO"
@@ -736,7 +778,7 @@ const router = (new KoaRouter())
     googlePlaces.nearbySearch(parameters, (err, res) => {
       console.log(res.body.results[0].geometry);
     });
-  
+
   })
 
 
@@ -920,8 +962,8 @@ const listen = () => {
   // Plain HTTP
   if (config.enableHTTP) {
     let io = require('socket.io')(server1)
-    io.on('connection', function(socket){
-      let newObject = PubSub.subscribe('object_found', function(msg,data) {
+    io.on('connection', function (socket) {
+      let newObject = PubSub.subscribe('object_found', function (msg, data) {
         io.emit('object_found', data);
       });
     });
