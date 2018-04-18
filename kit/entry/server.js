@@ -376,7 +376,7 @@ const router = (new KoaRouter())
             }
           )
         })
-        const objectPhones = await db.models.objectPhones.find({ where: { objectInfoId: objectId } });
+        const objectPhones = await db.models.objectPhones.findAll({ where: { objectInfoId: objectId } });
         // let objectPhonesArr = 
         // !objectPhones.length ? [] : 
         // objectPhones.map(item => {
@@ -515,38 +515,33 @@ const router = (new KoaRouter())
     objectCategoryId: 10,
     shortDescription: "hihihi"
   }
+
+  
   let objectInfoArr = {};
   let objectLocationArr = {};
   if(newToken.success) {
-    // const obId = await db.models.objectCl.create(objectClArr)
-    // if(obId) {
-    //   ctx.body = JSON.stringify({ odg: 'upisao', token: newToken})
-    // } else {
-    //   ctx.body = JSON.stringify({ odg: 'nije upisao', token: newToken})
-    // }
-
     try {
-
+      // sending all from objectCl in db
       const obId = await db.models.objectCl.create(objectClArr)
-
+      // adding id into objects
       objectInfoArr = {...objectInfoArr, objectClId: obId.id}
       objectLocationArr = {...objectLocationArr, objectClId: obId.id}
-
+      // sending all from objectInfo in db
       await db.models.objectInfo.create(objectInfoArr);
-      await db.models.objectLocation.create(objectLocationArr)
-
-      // objectPhonesArr.map(async item => {
-      //   item = {...item, objectClId: obId.id}
-      //   await db.models.objectPhones.create(item);
-      // })
-  
-      ctx.body = JSON.stringify({ update: true, token: newToken})
+      // sending all from objectLocation in db
+      await db.models.objectLocation.create(objectLocationArr);
+      // sending all from objectPhones in db
+      objectPhonesArr.map(async item => {
+        item = {...item, objectClId: obId.id}
+        await db.models.objectPhones.create(item);
+      })
+      ctx.body = JSON.stringify({ createdNewObject: true, token: newToken})
     } catch (err) {
       await transaction.rollback();
-      ctx.body = JSON.stringify({ update: false, token: newToken})
+      ctx.body = JSON.stringify({ createdNewObject: false, token: newToken})
     }
   } else {
-    ctx.body = JSON.stringify({ odg: 'greska', token: newToken})
+    ctx.body = JSON.stringify({ createdNewObject: false, token: newToken})
   }
 })
 
@@ -565,7 +560,7 @@ const router = (new KoaRouter())
   // let objectPhonesArr = ['desc', 'number'];
 
   let objectClArr = {
-    name: 'Stefannnnnnnn'
+    name: 'Stefannnnnnnn',
   };
   let objectInfoArr = {};
   let objectLocationArr = {};
