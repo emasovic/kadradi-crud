@@ -84,7 +84,6 @@ async function idiDalje() {
 
 async function scrap(nextPage) {
     dalje = true;
-    console.log(category.google)
     let parameters = {}
     if (nextPage) {
       const screp = await withToken({lat, lng, radius, type: category.google, nextPage})
