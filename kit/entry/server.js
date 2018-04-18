@@ -376,7 +376,7 @@ const router = (new KoaRouter())
             }
           )
         })
-        const objectPhones = await db.models.objectPhones.find({ where: { objectInfoId: objectId } });
+        const objectPhones = await db.models.objectPhones.findAll({ where: { objectInfoId: objectId } });
         // let objectPhonesArr = 
         // !objectPhones.length ? [] : 
         // objectPhones.map(item => {
@@ -560,7 +560,7 @@ const router = (new KoaRouter())
   // let objectPhonesArr = ['desc', 'number'];
 
   let objectClArr = {
-    name: 'Stefannnnnnnn'
+    name: 'Stefannnnnnnn',
   };
   let objectInfoArr = {};
   let objectLocationArr = {};
