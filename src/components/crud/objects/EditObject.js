@@ -1,7 +1,10 @@
 import React from 'react';
 import post from '../../fetch/post';
-import { Input, Button, Dropdown } from 'semantic-ui-react';
+import { Table, Input, Button, Dropdown, Checkbox } from 'semantic-ui-react';
 import { stat } from 'fs';
+import TimePicker from 'rc-time-picker';
+import Style from './objectsEdit.css';
+import TableRow from 'semantic-ui-react';
 
 class EditObject extends React.Component {
   constructor(props) {
@@ -17,7 +20,8 @@ class EditObject extends React.Component {
       streetAddress: '',
       par: [],
       childLocation: [],
-      newVal: 0,
+      newVal: 1,
+      testState: '',
     }
   }
   objectEdit = (e) => {
@@ -70,12 +74,13 @@ class EditObject extends React.Component {
         personId: response.objectById.objectCl.personId,
         shortDescription: response.objectById.objectCl.shortDescription,
         streetAddress: response.objectById.objectCl.streetAddress,
+        childLocation: response.objectById.objectCl.locationId,
       })
       this.setParentObj(response.objectById.locations);
       console.log("JEL GA IMA OVDE bRE?", response.objectById.locations);
-      console.log('RESPONSE', response)
+      console.log('RESPONSE', response);
     } else {
-      console.log('stajebreovo')
+      console.log('stajebreovo');
     }
   }
   setCategoryObj = async (e, { value }) => {
@@ -83,7 +88,6 @@ class EditObject extends React.Component {
       objectCategoryId: value
     })
   }
-
   setParentObj = (parrent) => {
     let obArr = [];
     let nekiObj = {
@@ -144,15 +148,14 @@ class EditObject extends React.Component {
   }
 
   render() {
-    // console.log("STEJT ", this.state);
+     console.log("STEJT ", this.state);
     // console.log('STRIPTIZETA', this.state.objectCategoriesArr);
-    // console.log("LOC", this.state.objToEdit.locations);
     // console.log('LOCATION TEST', this.state.objToEdit);
     // console.log('STATE PAR: ', this.state.par);
     // console.log('STATE PAR NAME: ', this.state.par);
     // console.log("VALUE", this.state.newVal);
     // console.log("PUNTO CUKAM!", this.state.childLocation)
-    console.log("CHILD", this.state)
+    console.log("CHILD", this.state.objectCategoryId)
     return (
       <div>
         {/* <Input label='locationId: ' name='locationId' value={this.state.locationId} onChange={this.objectEdit} /><br /> */}
@@ -164,14 +167,143 @@ class EditObject extends React.Component {
          options={this.state.objToEdit.objectCategoriesArr} /><br />
          <Dropdown
           selection 
+          value={6}
           onChange={this.setCategoryObj}
           options={this.state.childLocation} /><br />
          <Dropdown
           selection
-          value= {this.state.newVal}
           options={this.state.par}
           onChange={this.setLo}
         /><br />
+
+        <Table compact celled definition>
+          <Table.Header>
+            <Table.Row>
+              <Table.HeaderCell>Dan:</Table.HeaderCell>
+              <Table.HeaderCell>Start</Table.HeaderCell>
+              <Table.HeaderCell>End</Table.HeaderCell>
+              <Table.HeaderCell>Da li radi?</Table.HeaderCell>
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
+            <Table.Row >
+              <Table.Cell>Ponedeljak</Table.Cell>
+              <Table.Cell>
+                <TimePicker
+                  showSecond={false}
+                  onChange={(value) => {
+                    console.log(value);
+                  }}
+                />
+              </Table.Cell>
+              <Table.Cell>
+                <TimePicker
+                  showSecond={false}
+                />
+              </Table.Cell>
+              <Table.Cell>
+                <Checkbox />
+              </Table.Cell>
+            </Table.Row>
+            <Table.Row >
+              <Table.Cell>Utorak</Table.Cell>
+              <Table.Cell>
+                <TimePicker
+                  showSecond={false}
+                />
+              </Table.Cell>
+              <Table.Cell>
+                <TimePicker
+                  showSecond={false}
+                />
+              </Table.Cell>
+              <Table.Cell>
+                <Checkbox />
+              </Table.Cell>
+            </Table.Row>
+            <Table.Row >
+              <Table.Cell>Sreda</Table.Cell>
+              <Table.Cell>
+                <TimePicker
+                  showSecond={false}
+                />
+              </Table.Cell>
+              <Table.Cell>
+                <TimePicker
+                  showSecond={false}
+                />
+              </Table.Cell>
+              <Table.Cell>
+                <Checkbox />
+              </Table.Cell>
+            </Table.Row>
+            <Table.Row >
+              <Table.Cell>Cetvrtak</Table.Cell>
+              <Table.Cell>
+                <TimePicker
+                  showSecond={false}
+                />
+              </Table.Cell>
+              <Table.Cell>
+                <TimePicker
+                  showSecond={false}
+                />
+              </Table.Cell>
+              <Table.Cell>
+                <Checkbox />
+              </Table.Cell>
+            </Table.Row>
+            <Table.Row >
+              <Table.Cell>Petak</Table.Cell>
+              <Table.Cell>
+                <TimePicker
+                  showSecond={false}
+                />
+              </Table.Cell>
+              <Table.Cell>
+                <TimePicker
+                  showSecond={false}
+                />
+              </Table.Cell>
+              <Table.Cell>
+                <Checkbox />
+              </Table.Cell>
+            </Table.Row>
+            <Table.Row >
+              <Table.Cell>Subota</Table.Cell>
+              <Table.Cell>
+                <TimePicker
+                  showSecond={false}
+                />
+              </Table.Cell>
+              <Table.Cell>
+                <TimePicker
+                  showSecond={false}
+                />
+              </Table.Cell>
+              <Table.Cell>
+                <Checkbox />
+              </Table.Cell>
+            </Table.Row>
+            <Table.Row >
+              <Table.Cell>Nedelja</Table.Cell>
+              <Table.Cell>
+                <TimePicker
+                  showSecond={false}
+                />
+              </Table.Cell>
+              <Table.Cell>
+                <TimePicker
+                  showSecond={false}
+                />
+              </Table.Cell>
+              <Table.Cell>
+                <Checkbox />
+              </Table.Cell>
+            </Table.Row>
+          </Table.Body>
+        </Table>
+
         <Input label='personId: ' name='personId' value={this.state.personId} onChange={this.objectEdit} /><br />
         <Input label='shortDescription: ' name='shortDescription' value={this.state.shortDescription} onChange={this.objectEdit} /><br />
         <Input label='streetAdress: ' name='streetAddress'  onChange={this.objectEdit} /><br />
