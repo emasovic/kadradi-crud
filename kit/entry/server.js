@@ -970,6 +970,9 @@ const listen = () => {
       let newObject = PubSub.subscribe('object_found', function (msg, data) {
         io.emit('object_found', data);
       });
+      let scrapeInfo = PubSub.subscribe('scrape_info', function(msg, data){
+        io.emit('scrape_info', data)
+      })
     });
     servers.push(
       server1.listen(process.env.PORT),

@@ -75,6 +75,7 @@ async function startScraping(categoryId, latitude, longitue, distance) {
   lat = latitude;
   lng = longitue;
   radius = distance * 1000;
+  PubSub.publish('scrape_info', true)
   scrap();
 }
 
@@ -83,6 +84,7 @@ async function idiDalje() {
 }
 
 async function scrap(nextPage) {
+    if(isScraping){
     dalje = true;
     let parameters = {}
     if (nextPage) {
@@ -91,7 +93,9 @@ async function scrap(nextPage) {
         PubSub.publish('object_found', { id: item.id, name: item.name, vicinity: item.vicinity, lat: item.geometry.location.lat, lng: item.geometry.location.lng });
       }))
       if (screp.next_page_token) {
-        setTimeout(function () { scrap(screp.next_page_token); }, 5000);
+        setTimeout(function () { scrap(screp.next_page_token); }, 2000);
+      } else {
+        PubSub.publish('scrape_info', false)
       }
     } else {
       const screp = await withoutToken({lat, lng, radius, type: category.google})
@@ -99,9 +103,15 @@ async function scrap(nextPage) {
         PubSub.publish('object_found', { id: item.id, name: item.name, vicinity: item.vicinity, lat: item.geometry.location.lat, lng: item.geometry.location.lng });
       }))
       if (screp.next_page_token) {
-        setTimeout(function () { scrap(screp.next_page_token); }, 5000);
+        setTimeout(function () { scrap(screp.next_page_token); }, 2000);
+      } else {
+        PubSub.publish('scrape_info', false)
       }
     }
+  }
+  else {
+    PubSub.publish('scrape_info', false)
+  }
 }
 
 function stopScraping() {
