@@ -1,7 +1,8 @@
 import React from 'react';
 import post from '../../fetch/post';
-import { Input, Button, Dropdown } from 'semantic-ui-react';
+import { Input, Button, Dropdown, TextArea } from 'semantic-ui-react';
 import { stat } from 'fs';
+import Geosuggest from 'react-geosuggest';
 
 class EditObject extends React.Component {
   constructor(props) {
@@ -15,13 +16,16 @@ class EditObject extends React.Component {
       personId: '',
       shortDescription: '',
       address: '',
+      lat: '',
+      lng: '',
       verified: '',
-      webSiteUrl: '',
+      websiteUrl: '',
       city: '',
       streetAddress: '',
       par: [],
       childLocation: [],
       newVal: 0,
+      popularBecauseOf: '',
     }
   }
   objectEdit = (e) => {
@@ -50,24 +54,29 @@ class EditObject extends React.Component {
         shortDescription: e.target.value
       })
     }
-    if (e.target.name === 'address') {
-      this.setState({
-        address: e.target.value
-      })
-    }
+    // if (e.target.name === 'address') {
+    //   this.setState({
+    //     address: e.target.value
+    //   })
+    // }
     if (e.target.name === 'verified') {
       this.setState({
         verified: e.target.value
       })
     }
-    if (e.target.name === 'webSiteUrl') {
+    if (e.target.name === 'websiteUrl') {
       this.setState({
-        webSiteUrl: e.target.value
+        websiteUrl: e.target.value
       })
     }
     if (e.target.name === 'city') {
       this.setState({
         city: e.target.value
+      })
+    }
+    if (e.target.name === 'popularBecauseOf') {
+      this.setState({
+        popularBecauseOf: e.target.value
       })
     }
   }
@@ -90,12 +99,11 @@ class EditObject extends React.Component {
         shortDescription: response.objectById.objectCl.shortDescription,
         address: response.objectById.objectLocation.address,
         verified: response.objectById.objectCl.verified,
-        webSiteUrl: response.objectById.objectInfo.websiteUrl,
-        city: response.objectById.objectLocation.city
+        websiteUrl: response.objectById.objectInfo.websiteUrl,
+        city: response.objectById.objectLocation.city,
+        popularBecauseOf: response.objectById.objectInfo.popularBecauseOf
       })
       this.setParentObj(response.objectById.locations);
-      console.log("JEL GA IMA OVDE bRE?", response.objectById.locations);
-      console.log('RESPONSE', response)
     } else {
       console.log('stajebreovo')
     }
@@ -150,6 +158,7 @@ prepareToEditObject = async () => {
   let {objToEdit} = this.state
   let objectClArr = {};
   let objectLocationArr = {};
+  let objectInfoArr = {};
   let objectClKeys = Object.keys(objToEdit.objectCl)
     let objectInfoKeys = Object.keys(objToEdit.objectInfo)
     let objectPhones = Object.keys(objToEdit.objectPhones)
@@ -158,9 +167,6 @@ prepareToEditObject = async () => {
     // let objectLocation = Object.keys(objToEdit.objectLocation[0])
     objectClKeys.map((item) => {
       if (objToEdit.objectCl[item] != this.state[item]) {
-        console.log('item', item)
-        console.log('IZ PROPSA', objToEdit.objectCl[item])
-        console.log('IZ STATE', this.state[item])
         objectClArr = {
           ...objectClArr,
           [item]: this.state[item]
@@ -168,7 +174,8 @@ prepareToEditObject = async () => {
       }
       
     })
-    console.log('OBJECT CL', objectClArr)
+    console.log('OBJECT CLpre', objectClArr)
+    console.log('OBJECT LOCpre', objectLocationArr)
     objectLocationKeys.map((item) => {
       if (objToEdit.objectLocation[item] != this.state[item]) {
        objectLocationArr = {
@@ -177,7 +184,17 @@ prepareToEditObject = async () => {
        }
       }
     })
-    console.log('OBJECT LOC', objectLocationArr)
+    objectInfoKeys.map((item) => {
+      if (objToEdit.objectInfo[item] != this.state[item]) {
+       objectInfoArr = {
+         ...objectInfoArr,
+         [item]: this.state[item]
+       }
+      }
+    })
+    console.log('OBJECT CLposle', objectClArr)
+    console.log('OBJECT LOCposle', objectLocationArr)
+    console.log('OBJECT infoposle', objectInfoArr)
     // console.log('niz', objectClArr)
     // let response = await post.secure('/editObject', {
     //   objectId: objectId,
@@ -187,6 +204,15 @@ prepareToEditObject = async () => {
     //   objectLocationArr: {},
     //   objectPhonesArr: [],
     // });
+  }
+  onSuggestSelect = (suggest) => {
+    console.log('sug',suggest)
+    let street = suggest.description.split(",");
+    this.setState({
+      address: street[0],
+      lat: suggest.location.lat,
+      lng: suggest.location.lng,
+    })
   }
 
   render() {
@@ -211,11 +237,15 @@ prepareToEditObject = async () => {
           onChange={this.setLo}
         /><br />
         <Input label='personId: ' name='personId' value={this.state.personId} onChange={this.objectEdit} /><br />
-        <Input label='shortDescription: ' name='shortDescription' value={this.state.shortDescription} onChange={this.objectEdit} /><br />
-        <Input label='streetAddress: ' name='address' value={this.state.address} onChange={this.objectEdit} /><br />
+        Short Description :<br />
+        <TextArea autoHeight name='shortDescription' value={this.state.shortDescription} onChange={this.objectEdit} style={{minHeight:'50px',minWidth:'300px'}} /><br />
+        <Geosuggest initialValue={this.state.address} onSuggestSelect={this.onSuggestSelect}/>
+        {/* <Input label='address: ' name='address' value={this.state.address} onChange={this.objectEdit} /><br /> */}
         <Input label='Verified: ' name='verified' value={this.state.verified} onChange={this.objectEdit} /><br />
-        <Input label='WebSiteUrl: ' name='webSiteUrl' value={this.state.webSiteUrl} onChange={this.objectEdit} /><br />
-        <Input label='City: ' name='city' value={this.state.city} onChange={this.objectEdit} /><br />
+        <Input label='WebSiteUrl: ' name='websiteUrl' value={this.state.websiteUrl} onChange={this.objectEdit} /><br />
+        popularBeacuseOf:<br />
+        <TextArea autoHeight  name='popularBecauseOf' value={this.state.popularBecauseOf} onChange={this.objectEdit} style={{minHeight:'50px',minWidth:'300px'}}/><br />
+        {/* <Input label='City: ' name='city' value={this.state.city} onChange={this.objectEdit} /><br /> */}
         <Button primary onClick={() => this.prepareToEditObject()}>Save</Button>
       </div>
     )
