@@ -342,7 +342,7 @@ const router = (new KoaRouter())
  .post('/getAllLocations', async (ctx, next) => {
   const newToken = verifyToken(ctx.request.body.token);
   if(newToken.success) {
-    const locations = await db.models.objectCategories.findAll();
+    const locations = await db.models.locations.findAll();
     ctx.body = JSON.stringify({ locations, token: newToken})
   } else {
       ctx.body = JSON.stringify({ locations: [], token: newToken})

@@ -12,11 +12,16 @@ class Proba extends React.Component{
     });
     console.log(response)
   }
+  getAllLocations = async () => {
+    let response = await post.secure('/getAllLocations', {});
+    console.log(response)
+  }
   render() {
     return(
       <div>
         <button onClick={() => this.getAllObjCategories()} >edit objects</button>
         <button onClick={() => this.getObjById()} >get object by id</button>
+        <button onClick={() => this.getAllLocations()} >get all locations</button>
       </div>
     )
   }
