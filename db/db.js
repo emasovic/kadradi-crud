@@ -222,6 +222,9 @@ const ObjectCategorie = db.define('objectCategories', {
   nameM: {
     type: Sequelize.STRING,
     allowNull: false
+  },
+  googleType: {
+    type: Sequelize.STRING,
   }
 });
 ObjectCategorie.hasOne(ObjectCl);

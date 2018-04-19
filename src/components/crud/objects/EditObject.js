@@ -17,6 +17,10 @@ class EditObject extends React.Component {
       objectCategoryId: '',
       personId: '',
       shortDescription: '',
+      address: '',
+      verified: '',
+      webSiteUrl: '',
+      city: '',
       streetAddress: '',
       par: [],
       childLocation: [],
@@ -50,9 +54,24 @@ class EditObject extends React.Component {
         shortDescription: e.target.value
       })
     }
-    if (e.target.name === 'streetAddress') {
+    if (e.target.name === 'address') {
       this.setState({
-        streetAddress: e.target.value
+        address: e.target.value
+      })
+    }
+    if (e.target.name === 'verified') {
+      this.setState({
+        verified: e.target.value
+      })
+    }
+    if (e.target.name === 'webSiteUrl') {
+      this.setState({
+        webSiteUrl: e.target.value
+      })
+    }
+    if (e.target.name === 'city') {
+      this.setState({
+        city: e.target.value
       })
     }
   }
@@ -75,6 +94,10 @@ class EditObject extends React.Component {
         shortDescription: response.objectById.objectCl.shortDescription,
         streetAddress: response.objectById.objectCl.streetAddress,
         childLocation: response.objectById.objectCl.locationId,
+        address: response.objectById.objectLocation.address,
+        verified: response.objectById.objectCl.verified,
+        webSiteUrl: response.objectById.objectInfo.websiteUrl,
+        city: response.objectById.objectLocation.city
       })
       this.setParentObj(response.objectById.locations);
       console.log("JEL GA IMA OVDE bRE?", response.objectById.locations);
@@ -82,12 +105,15 @@ class EditObject extends React.Component {
     } else {
       console.log('stajebreovo');
     }
+    console.log('RESPONSE',response)
   }
   setCategoryObj = async (e, { value }) => {
     this.setState({
       objectCategoryId: value
     })
   }
+
+ 
   setParentObj = (parrent) => {
     let obArr = [];
     let nekiObj = {
@@ -125,26 +151,48 @@ class EditObject extends React.Component {
   //   });
   // }
 
-  prepareToEditObject = () => {
-    let {objToEdit} = this.state
-    let objectArr = [];
-
-    let objectClKeys = Object.keys(objToEdit.objectCl)
-    let objectInfo = Object.keys(objToEdit.objectInfo)
-    let objectPhones = Object.keys(objToEdit.objectPhones[0])
-    let objectLocation = Object.keys(objToEdit.objectLocation[0])
-    console.log("objectLOC", objectClKeys)
-    objectClKeys.map((item, key) => {
-      if (objectCl[item] != this.state[item]) {
-        let obj = {
-          key: key,
-          name: item,
-          value: this.state[item],
+    
+prepareToEditObject = async () => {
+  let {objToEdit} = this.state
+  let objectClArr = {};
+  let objectLocationArr = {};
+  let objectClKeys = Object.keys(objToEdit.objectCl)
+    let objectInfoKeys = Object.keys(objToEdit.objectInfo)
+    let objectPhones = Object.keys(objToEdit.objectPhones)
+    // let objectPhones = Object.keys(objToEdit.objectPhones[0])
+    let objectLocationKeys = Object.keys(objToEdit.objectLocation)
+    // let objectLocation = Object.keys(objToEdit.objectLocation[0])
+    objectClKeys.map((item) => {
+      if (objToEdit.objectCl[item] != this.state[item]) {
+        console.log('item', item)
+        console.log('IZ PROPSA', objToEdit.objectCl[item])
+        console.log('IZ STATE', this.state[item])
+        objectClArr = {
+          ...objectClArr,
+          [item]: this.state[item]
         }
-        objectArr.push(obj)
+      }
+      
+    })
+    console.log('OBJECT CL', objectClArr)
+    objectLocationKeys.map((item) => {
+      if (objToEdit.objectLocation[item] != this.state[item]) {
+       objectLocationArr = {
+         ...objectLocationArr,
+         [item]: this.state[item]
+       }
       }
     })
-    console.log('niz', objectArr)
+    console.log('OBJECT LOC', objectLocationArr)
+    // console.log('niz', objectClArr)
+    // let response = await post.secure('/editObject', {
+    //   objectId: objectId,
+    //   token: this.props.token,
+    //   objectClArr: {},
+    //   objectInfoArr: {},
+    //   objectLocationArr: {},
+    //   objectPhonesArr: [],
+    // });
   }
 
   render() {
@@ -156,6 +204,7 @@ class EditObject extends React.Component {
     // console.log("VALUE", this.state.newVal);
     // console.log("PUNTO CUKAM!", this.state.childLocation)
     console.log("CHILD", this.state.objectCategoryId)
+    console.log('STATE', this.state)
     return (
       <div>
         {/* <Input label='locationId: ' name='locationId' value={this.state.locationId} onChange={this.objectEdit} /><br /> */}
@@ -306,7 +355,10 @@ class EditObject extends React.Component {
 
         <Input label='personId: ' name='personId' value={this.state.personId} onChange={this.objectEdit} /><br />
         <Input label='shortDescription: ' name='shortDescription' value={this.state.shortDescription} onChange={this.objectEdit} /><br />
-        <Input label='streetAdress: ' name='streetAddress'  onChange={this.objectEdit} /><br />
+        <Input label='streetAddress: ' name='address' value={this.state.address} onChange={this.objectEdit} /><br />
+        <Input label='Verified: ' name='verified' value={this.state.verified} onChange={this.objectEdit} /><br />
+        <Input label='WebSiteUrl: ' name='webSiteUrl' value={this.state.webSiteUrl} onChange={this.objectEdit} /><br />
+        <Input label='City: ' name='city' value={this.state.city} onChange={this.objectEdit} /><br />
         <Button primary onClick={() => this.prepareToEditObject()}>Save</Button>
       </div>
     )
