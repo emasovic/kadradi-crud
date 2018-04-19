@@ -334,7 +334,20 @@ const router = (new KoaRouter())
       ctx.body = JSON.stringify({ objects: [], token: newToken })
     }
   })
-
+  /*
+  ------------------------------
+  OVO JE METODA ZA IZLISTAVANJE OBJEKATA IZ KATEGORIJA
+  ------------------------------
+  */
+ .post('/getAllLocations', async (ctx, next) => {
+  const newToken = verifyToken(ctx.request.body.token);
+  if(newToken.success) {
+    const locations = await db.models.objectCategories.findAll();
+    ctx.body = JSON.stringify({ locations, token: newToken})
+  } else {
+      ctx.body = JSON.stringify({ locations: [], token: newToken})
+    }
+  })
    /*
     ------------------------------
     OVO JE METODA ZA DODAVANJE OBJEKATA
