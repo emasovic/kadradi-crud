@@ -414,15 +414,15 @@ const router = (new KoaRouter())
         const objectInfo = await db.models.objectInfo.find({ where: { objectClId: objectId } });
         const objectLocation = await db.models.objectLocation.find({ where: { objectClId: objectId } });
 
+        let objectWorkTime = await db.models.objectWorkTime.find({ where: { objectClId: objectId }});
 
-
-        let wtMon = await db.models.wtMon.find({ where: { id: objectId } });
-        let wtTue = await db.models.wtTue.find({ where: { id: objectId } });
-        let wtWed = await db.models.wtWed.find({ where: { id: objectId } });
-        let wtThu = await db.models.wtThu.find({ where: { id: objectId } });
-        let wtFri = await db.models.wtFri.find({ where: { id: objectId } });
-        let wtSat = await db.models.wtSat.find({ where: { id: objectId } });
-        let wtSun = await db.models.wtSun.find({ where: { id: objectId } });
+        let wtMon = await db.models.wtMon.find({ where: { id: objectWorkTime.wtMonId } });
+        let wtTue = await db.models.wtTue.find({ where: { id: objectWorkTime.wtTueId } });
+        let wtWed = await db.models.wtWed.find({ where: { id: objectWorkTime.wtWedId } });
+        let wtThu = await db.models.wtThu.find({ where: { id: objectWorkTime.wtThuId } });
+        let wtFri = await db.models.wtFri.find({ where: { id: objectWorkTime.wtFriId } });
+        let wtSat = await db.models.wtSat.find({ where: { id: objectWorkTime.wtSatId } });
+        let wtSun = await db.models.wtSun.find({ where: { id: objectWorkTime.wtSunId } });
 
         let pon = {
           name: "Pon",
@@ -461,13 +461,11 @@ const router = (new KoaRouter())
         }
 
 
-        const objectWorkTime = [ pon, uto, sre, cet, pet, sub, ned ];
+        const objectWorkTimes = [ pon, uto, sre, cet, pet, sub, ned ];
         
 
-        const objectById = { objectCl, objectInfo, objectLocation, objectCategoriesArr, objectPhones, locations, objectWorkTime };
+        const objectById = { objectCl, objectInfo, objectLocation, objectCategoriesArr, objectPhones, locations, objectWorkTimes };
         ctx.body = JSON.stringify({ objectById, token: newToken })
-        // console.log("KATEGORIJE", objectCategories)
-        // console.log('elvis prisli', objectById)
       }
     } else {
       ctx.body = JSON.stringify({ objectById: [], token: newToken })
