@@ -8,17 +8,17 @@ class AddObject extends React.Component {
         super(props);
         this.state = {
             name: "",
-            nameError:false,
-            objectCategorie:"",
-            objectCategorieError:false,
+            nameError: false,
+            objectCategorie: "",
+            objectCategorieError: false,
             categories: [],
             cityArr: [],
             childLocationArr: [],
             childLocation: [],
             cityId: "",
-            cityIdError:false,
+            cityIdError: false,
             cityPart: "",
-            cityPartError:false,
+            cityPartError: false,
             person: "",
             image: "",
             objectLocation: {},
@@ -28,7 +28,8 @@ class AddObject extends React.Component {
             phoneDesc: "",
             phoneArr: [],
             additionalInfo: "",
-            verified: false
+            verified: false,
+            sendError: false
         }
     }
     componentWillMount() {
@@ -60,7 +61,7 @@ class AddObject extends React.Component {
     getLocations = async () => {
         let response = await post.secure('/getAllLocations', {})
         if (response.token.success) {
-            console.log("LOCATIONS",response)
+            console.log("LOCATIONS", response)
             let arr = []
             let arr1 = []
             let obj = response.locations.map(item => {
@@ -88,15 +89,16 @@ class AddObject extends React.Component {
             })
         }
     }
-    getCityPart = (e,{value}) => {
-        let arr = this.state.childLocationArr.filter( id => id.parrentLocation == value)
+    getCityPart = (e, { value }) => {
+        let arr = this.state.childLocationArr.filter(id => id.parrentLocation == value)
         this.setState({
-          childLocation: arr
+            childLocation: arr,
+            cityId:value
         })
-      }
+    }
     getObjectCategories = async () => {
         let response = await post.secure('/categoriesArray', {})
-        console.log("CATEGORIES",response)
+        console.log("CATEGORIES", response)
         if (response.token.success) {
             let arr = []
             let obj = response.categoriesArray.map(item => {
@@ -111,13 +113,52 @@ class AddObject extends React.Component {
             })
         }
     }
+    addObject = () => {
+        let error = false;
+
+        if (this.state.name === '') {
+            this.setState({ nameError: true})
+            error = true
+        } else {
+            this.setState({ nameError: false })
+            error = false
+        }
+        if (this.state.objectCategorie === '') {
+            this.setState({ objectCategorieError: true })
+            error = true
+        } else {
+            this.setState({ objectCategorieError: false })
+            error = false
+        }
+        if (this.state.cityId === '') {
+            this.setState({ cityIdError: true })
+            error = true
+        } else {
+            this.setState({ cityIdError: false })
+            error = false
+        }
+        if (this.state.cityPart === '') {
+            this.setState({ cityPartError: true })
+            error = true
+        } else {
+            this.setState({ cityPartError: false })
+            error = false
+        }
+
+        if (error) {
+            this.setState({ sendError: true })
+        } else {
+            this.setState({ sendError: false })
+        }
+    }
 
     render() {
         console.log("ADD OBJECT STATE", this.state)
+        console.log("IMA GRESKU",this.state.sendError)
         return (
             <div>
                 {/* <Input label='locationId: ' name='locationId' value={this.state.locationId} onChange={this.objectEdit} /><br /> */}
-                <Input label='Name: ' name='name' error={this.state.nameError} onChange={this.handleInput} required/><br />
+                <Input label='Name: ' name='name' error={this.state.nameError} onChange={this.handleInput} required /><br />
                 <Dropdown
                     error={this.state.objectCategorieError}
                     placeholder="Select categorie"
@@ -167,7 +208,7 @@ class AddObject extends React.Component {
                     label='Verified'
                     onChange={this.toggle}
                 />
-                <Button primary>Add</Button>
+                <Button primary onClick={this.addObject}>Add</Button>
             </div>
         )
     }
