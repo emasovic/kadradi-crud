@@ -224,8 +224,8 @@ prepareToEditObject = async () => {
         <Dropdown
          value={this.state.objectCategoryId} 
          selection 
-         onChange={this.setCategoryObj}
-         options={this.state.objToEdit.objectCategoriesArr} /><br />
+         options={this.state.objToEdit.objectCategoriesArr} 
+         onChange={this.setCategoryObj}/><br />
          <Dropdown
           selection 
           onChange={this.setCategoryObj}
