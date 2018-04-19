@@ -6,10 +6,17 @@ class Proba extends React.Component{
     let response = await post.secure('/editObject', {});
     console.log(response)
   }
+  getObjById = async () => {
+    let response = await post.secure('/objectById', {
+      objectId: 1,
+    });
+    console.log(response)
+  }
   render() {
     return(
       <div>
-        <button onClick={() => this.getAllObjCategories()} >dont press!!!</button>
+        <button onClick={() => this.getAllObjCategories()} >edit objects</button>
+        <button onClick={() => this.getObjById()} >get object by id</button>
       </div>
     )
   }

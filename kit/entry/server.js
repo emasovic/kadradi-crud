@@ -400,7 +400,58 @@ const router = (new KoaRouter())
         })
         const objectInfo = await db.models.objectInfo.find({ where: { objectClId: objectId } });
         const objectLocation = await db.models.objectLocation.find({ where: { objectClId: objectId } });
-        const objectById = { objectCl, objectInfo, objectLocation, objectCategoriesArr, objectPhones, locations };
+
+
+
+        let wtMon = await db.models.wtMon.find({ where: { id: objectId } });
+        let wtTue = await db.models.wtTue.find({ where: { id: objectId } });
+        let wtWed = await db.models.wtWed.find({ where: { id: objectId } });
+        let wtThu = await db.models.wtThu.find({ where: { id: objectId } });
+        let wtFri = await db.models.wtFri.find({ where: { id: objectId } });
+        let wtSat = await db.models.wtSat.find({ where: { id: objectId } });
+        let wtSun = await db.models.wtSun.find({ where: { id: objectId } });
+
+        let pon = {
+          name: "Pon",
+          open: wtMon.opening,
+          close: wtMon.closing
+        }
+        let uto = {
+          name: "Uto",
+          open: wtTue.opening,
+          close: wtTue.closing
+        }
+        let sre = {
+          name: "Sre",
+          open: wtWed.opening,
+          close: wtWed.closing
+        }
+        let cet = {
+          name: "Cet",
+          open: wtThu.opening,
+          close: wtThu.closing
+        }
+        let pet = {
+          name: "Pet",
+          open: wtFri.opening,
+          close: wtFri.closing
+        }
+        let sub = {
+          name: "Sub",
+          open: wtSat.opening,
+          close: wtSat.closing
+        }
+        let ned = {
+          name: "Ned",
+          open: wtSun.opening,
+          close: wtSun.closing
+        }
+
+
+        const objectWorkTime = [ pon, uto, sre, cet, pet, sub, ned ];
+        
+
+        const objectById = { objectCl, objectInfo, objectLocation, objectCategoriesArr, objectPhones, locations, objectWorkTime };
         ctx.body = JSON.stringify({ objectById, token: newToken })
         // console.log("KATEGORIJE", objectCategories)
         // console.log('elvis prisli', objectById)
