@@ -12,7 +12,11 @@ class Number extends React.Component {
     render() {
         return (
             <div>
-                <Input label={"Tel no.1"}  placeholder={this.props.text} />
+                <Input 
+                  action={<Input label="Phone Desc" disabled defaultValue={this.props.desc} />}
+                  label={"Telephone No."+`${this.props.index+1}`} 
+                  disabled 
+                  defaultValue={this.props.value} />
                 <Button icon='minus' onClick={()=>this.props.removeNumber(this.props.index)} />
             </div>
         )

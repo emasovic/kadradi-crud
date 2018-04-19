@@ -8,17 +8,22 @@ class AddObject extends React.Component {
         super(props);
         this.state = {
             name: "",
-            objectCategorie: "",
+            objectCategorie: [],
+            categories:[],
             person: "",
             image: "",
             objectLocation: {},
             objectInfo: "",
             popular: "",
             phone:"",
+            phoneDesc:"",
             phoneArr:[],
             additionalInfo: "",
             verified: false
         }
+    }
+    componentWillMount(){
+        this.getObjectCategories();
     }
     handleInput = (event) => {
         const target = event.target;
@@ -26,9 +31,9 @@ class AddObject extends React.Component {
         const name = target.name;
         this.setState({ [name]: value });
     }
-    handleChange = (e, { name, value }) => this.setState({ [name]: value })
+    handleChange = (e, { name, value}) => this.setState({ [name]:value })
     
-    toggle = () => this.setState({ verified: !this.state.verified })
+    toggle = () => this.setState({ verified: !this.state.verified });
     
     removeNumber = (index) => {
      this.state.phoneArr.splice(index,1)
@@ -36,12 +41,28 @@ class AddObject extends React.Component {
           phoneArr:this.state.phoneArr
       })
     }
-    addNumber = (tel) => {
-     this.state.phoneArr.push({number:tel})
+    addNumber = (tel,desc) => {
+     this.state.phoneArr.push({description:desc, number:tel})
      this.setState({
          phoneArr:this.state.phoneArr
      })
     }
+    getObjectCategories = async () => {
+        let response = await post.secure('/categoriesArray',{})
+        if (response.token.success){
+            let arr=[]
+            let obj=response.categoriesArray.map(item =>{
+                return arr.push ({
+                    key:item.id,
+                    text:item.nameM,
+                    value:item.id
+                })
+            })
+            this.setState({
+              categories:arr
+        })
+    }
+}
 
     render() {
         console.log("ADD OBJECT STATE", this.state)
@@ -49,13 +70,13 @@ class AddObject extends React.Component {
             <div>
                 {/* <Input label='locationId: ' name='locationId' value={this.state.locationId} onChange={this.objectEdit} /><br /> */}
                 <Input label='Name: ' name='name' onChange={this.handleInput} /><br />
-                {/* <Dropdown
+                <Dropdown
                     placeholder="Select categorie"
                     name="objectCategorie"
                     selection
-                    options={this.state.phoneArr}
+                    options={this.state.categories}
                     onChange={this.handleChange}
-                /><br /> */}
+                /><br />
                 <Dropdown
                     //   value={this.state.locationId} 
                     selection
@@ -69,11 +90,16 @@ class AddObject extends React.Component {
                 <Input label='Person: ' name='person' onChange={this.handleInput} /><br />
                 <Input label='Image: ' name='image' onChange={this.handleInput} placeholder="Image url..." /><br />
                 <div>
-                <Input label='Phone: ' name='phone' onChange={this.handleInput} />
-                <Button icon='plus' onClick={()=>this.addNumber(this.state.phone)}/>
+                <Input 
+                    action={<Input name="phoneDesc" placeholder="Description"  onChange={this.handleInput}/>}
+                    label='Phone: ' 
+                    name='phone'
+                    placeholder="Number"
+                    onChange={this.handleInput} />
+                <Button icon='plus' onClick={()=>this.addNumber(this.state.phone,this.state.phoneDesc)}/>
                 {this.state.phoneArr.length ?
                  this.state.phoneArr.map((item,index) => {
-                     return <Number index={index} removeNumber = {this.removeNumber} text={item.number}/>
+                     return <Number index={index} removeNumber = {this.removeNumber} value={item.number} desc={this.state.phoneDesc}/>
                  }):null
                 }
                 </div>
