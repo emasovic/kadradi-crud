@@ -334,7 +334,20 @@ const router = (new KoaRouter())
       ctx.body = JSON.stringify({ objects: [], token: newToken })
     }
   })
-
+  /*
+  ------------------------------
+  OVO JE METODA ZA IZLISTAVANJE OBJEKATA IZ KATEGORIJA
+  ------------------------------
+  */
+ .post('/getAllLocations', async (ctx, next) => {
+  const newToken = verifyToken(ctx.request.body.token);
+  if(newToken.success) {
+    const locations = await db.models.locations.findAll();
+    ctx.body = JSON.stringify({ locations, token: newToken})
+  } else {
+      ctx.body = JSON.stringify({ locations: [], token: newToken})
+    }
+  })
    /*
     ------------------------------
     OVO JE METODA ZA DODAVANJE OBJEKATA
@@ -400,10 +413,59 @@ const router = (new KoaRouter())
         })
         const objectInfo = await db.models.objectInfo.find({ where: { objectClId: objectId } });
         const objectLocation = await db.models.objectLocation.find({ where: { objectClId: objectId } });
-        const objectById = { objectCl, objectInfo, objectLocation, objectCategoriesArr, objectPhones, locations };
+
+        let objectWorkTime = await db.models.objectWorkTime.find({ where: { objectClId: objectId }});
+
+        let wtMon = await db.models.wtMon.find({ where: { id: objectWorkTime.wtMonId } });
+        let wtTue = await db.models.wtTue.find({ where: { id: objectWorkTime.wtTueId } });
+        let wtWed = await db.models.wtWed.find({ where: { id: objectWorkTime.wtWedId } });
+        let wtThu = await db.models.wtThu.find({ where: { id: objectWorkTime.wtThuId } });
+        let wtFri = await db.models.wtFri.find({ where: { id: objectWorkTime.wtFriId } });
+        let wtSat = await db.models.wtSat.find({ where: { id: objectWorkTime.wtSatId } });
+        let wtSun = await db.models.wtSun.find({ where: { id: objectWorkTime.wtSunId } });
+
+        let pon = {
+          name: "Pon",
+          open: wtMon.opening,
+          close: wtMon.closing
+        }
+        let uto = {
+          name: "Uto",
+          open: wtTue.opening,
+          close: wtTue.closing
+        }
+        let sre = {
+          name: "Sre",
+          open: wtWed.opening,
+          close: wtWed.closing
+        }
+        let cet = {
+          name: "Cet",
+          open: wtThu.opening,
+          close: wtThu.closing
+        }
+        let pet = {
+          name: "Pet",
+          open: wtFri.opening,
+          close: wtFri.closing
+        }
+        let sub = {
+          name: "Sub",
+          open: wtSat.opening,
+          close: wtSat.closing
+        }
+        let ned = {
+          name: "Ned",
+          open: wtSun.opening,
+          close: wtSun.closing
+        }
+
+
+        const objectWorkTimes = [ pon, uto, sre, cet, pet, sub, ned ];
+        
+
+        const objectById = { objectCl, objectInfo, objectLocation, objectCategoriesArr, objectPhones, locations, objectWorkTimes };
         ctx.body = JSON.stringify({ objectById, token: newToken })
-        // console.log("KATEGORIJE", objectCategories)
-        // console.log('elvis prisli', objectById)
       }
     } else {
       ctx.body = JSON.stringify({ objectById: [], token: newToken })
@@ -553,21 +615,36 @@ const router = (new KoaRouter())
  .post('/editObject', async (ctx, next) => {
   const newToken = verifyToken(ctx.request.body.token)
   // let objectArr = ctx.request.body.objectArr;
-  const objectId = ctx.request.body.objectId;
+
+
+
+  // const objectId = ctx.request.body.objectId;
+  const objectId = 1;
+
+
+
   // let objectClArr = ['name', 'shortDescription', 'verified', 'objectCategoryId'];
   // let objectInfoArr = ['websiteUrl', 'hasRestaurant', 'popularBeacauseOf'];
   // let objectLocationArr = ['adress'];
   // let objectPhonesArr = ['desc', 'number'];
 
   let objectClArr = {
-    name: 'Stefannnnnnnn',
+    name: 'Stefannnnnn',
+    shortDescription: 'ovo je descr',
+    city: 'lestaneee',
   };
   let objectInfoArr = {};
   let objectLocationArr = {};
   let objectPhonesArr = [
     {
-      number: '12313',
+      desc: 'Probni tell',
+      number: '123131',
       id: 1,
+    },
+    {
+      desc: 'Stefanov fixniii',
+      number: '0123456789',
+      id: 2,
     }
   ];
   // let objectClArr = ctx.request.body.objectClArr;
