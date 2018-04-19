@@ -334,7 +334,20 @@ const router = (new KoaRouter())
       ctx.body = JSON.stringify({ objects: [], token: newToken })
     }
   })
-
+  /*
+  ------------------------------
+  OVO JE METODA ZA IZLISTAVANJE OBJEKATA IZ KATEGORIJA
+  ------------------------------
+  */
+ .post('/getAllLocations', async (ctx, next) => {
+  const newToken = verifyToken(ctx.request.body.token);
+  if(newToken.success) {
+    const locations = await db.models.locations.findAll();
+    ctx.body = JSON.stringify({ locations, token: newToken})
+  } else {
+      ctx.body = JSON.stringify({ locations: [], token: newToken})
+    }
+  })
    /*
     ------------------------------
     OVO JE METODA ZA DODAVANJE OBJEKATA
@@ -376,7 +389,7 @@ const router = (new KoaRouter())
             }
           )
         })
-        const objectPhones = await db.models.objectPhones.find({ where: { objectInfoId: objectId } });
+        const objectPhones = await db.models.objectPhones.findAll({ where: { objectInfoId: objectId } });
         // let objectPhonesArr = 
         // !objectPhones.length ? [] : 
         // objectPhones.map(item => {
@@ -400,7 +413,58 @@ const router = (new KoaRouter())
         })
         const objectInfo = await db.models.objectInfo.find({ where: { objectClId: objectId } });
         const objectLocation = await db.models.objectLocation.find({ where: { objectClId: objectId } });
-        const objectById = { objectCl, objectInfo, objectLocation, objectCategoriesArr, objectPhones, locations };
+
+
+
+        let wtMon = await db.models.wtMon.find({ where: { id: objectId } });
+        let wtTue = await db.models.wtTue.find({ where: { id: objectId } });
+        let wtWed = await db.models.wtWed.find({ where: { id: objectId } });
+        let wtThu = await db.models.wtThu.find({ where: { id: objectId } });
+        let wtFri = await db.models.wtFri.find({ where: { id: objectId } });
+        let wtSat = await db.models.wtSat.find({ where: { id: objectId } });
+        let wtSun = await db.models.wtSun.find({ where: { id: objectId } });
+
+        let pon = {
+          name: "Pon",
+          open: wtMon.opening,
+          close: wtMon.closing
+        }
+        let uto = {
+          name: "Uto",
+          open: wtTue.opening,
+          close: wtTue.closing
+        }
+        let sre = {
+          name: "Sre",
+          open: wtWed.opening,
+          close: wtWed.closing
+        }
+        let cet = {
+          name: "Cet",
+          open: wtThu.opening,
+          close: wtThu.closing
+        }
+        let pet = {
+          name: "Pet",
+          open: wtFri.opening,
+          close: wtFri.closing
+        }
+        let sub = {
+          name: "Sub",
+          open: wtSat.opening,
+          close: wtSat.closing
+        }
+        let ned = {
+          name: "Ned",
+          open: wtSun.opening,
+          close: wtSun.closing
+        }
+
+
+        const objectWorkTime = [ pon, uto, sre, cet, pet, sub, ned ];
+        
+
+        const objectById = { objectCl, objectInfo, objectLocation, objectCategoriesArr, objectPhones, locations, objectWorkTime };
         ctx.body = JSON.stringify({ objectById, token: newToken })
         // console.log("KATEGORIJE", objectCategories)
         // console.log('elvis prisli', objectById)
@@ -515,38 +579,33 @@ const router = (new KoaRouter())
     objectCategoryId: 10,
     shortDescription: "hihihi"
   }
+
+  
   let objectInfoArr = {};
   let objectLocationArr = {};
   if(newToken.success) {
-    // const obId = await db.models.objectCl.create(objectClArr)
-    // if(obId) {
-    //   ctx.body = JSON.stringify({ odg: 'upisao', token: newToken})
-    // } else {
-    //   ctx.body = JSON.stringify({ odg: 'nije upisao', token: newToken})
-    // }
-
     try {
-
+      // sending all from objectCl in db
       const obId = await db.models.objectCl.create(objectClArr)
-
+      // adding id into objects
       objectInfoArr = {...objectInfoArr, objectClId: obId.id}
       objectLocationArr = {...objectLocationArr, objectClId: obId.id}
-
+      // sending all from objectInfo in db
       await db.models.objectInfo.create(objectInfoArr);
-      await db.models.objectLocation.create(objectLocationArr)
-
-      // objectPhonesArr.map(async item => {
-      //   item = {...item, objectClId: obId.id}
-      //   await db.models.objectPhones.create(item);
-      // })
-  
-      ctx.body = JSON.stringify({ update: true, token: newToken})
+      // sending all from objectLocation in db
+      await db.models.objectLocation.create(objectLocationArr);
+      // sending all from objectPhones in db
+      objectPhonesArr.map(async item => {
+        item = {...item, objectClId: obId.id}
+        await db.models.objectPhones.create(item);
+      })
+      ctx.body = JSON.stringify({ createdNewObject: true, token: newToken})
     } catch (err) {
       await transaction.rollback();
-      ctx.body = JSON.stringify({ update: false, token: newToken})
+      ctx.body = JSON.stringify({ createdNewObject: false, token: newToken})
     }
   } else {
-    ctx.body = JSON.stringify({ odg: 'greska', token: newToken})
+    ctx.body = JSON.stringify({ createdNewObject: false, token: newToken})
   }
 })
 
@@ -558,21 +617,36 @@ const router = (new KoaRouter())
  .post('/editObject', async (ctx, next) => {
   const newToken = verifyToken(ctx.request.body.token)
   // let objectArr = ctx.request.body.objectArr;
-  const objectId = ctx.request.body.objectId;
+
+
+
+  // const objectId = ctx.request.body.objectId;
+  const objectId = 1;
+
+
+
   // let objectClArr = ['name', 'shortDescription', 'verified', 'objectCategoryId'];
   // let objectInfoArr = ['websiteUrl', 'hasRestaurant', 'popularBeacauseOf'];
   // let objectLocationArr = ['adress'];
   // let objectPhonesArr = ['desc', 'number'];
 
   let objectClArr = {
-    name: 'Stefannnnnnnn'
+    name: 'Stefannnnnn',
+    shortDescription: 'ovo je descr',
+    city: 'lestaneee',
   };
   let objectInfoArr = {};
   let objectLocationArr = {};
   let objectPhonesArr = [
     {
-      number: '12313',
+      desc: 'Probni tell',
+      number: '123131',
       id: 1,
+    },
+    {
+      desc: 'Stefanov fixniii',
+      number: '0123456789',
+      id: 2,
     }
   ];
   // let objectClArr = ctx.request.body.objectClArr;
@@ -758,12 +832,21 @@ const router = (new KoaRouter())
 
   .post('/startScraping', async (ctx, next) => {
     const newToken = verifyToken(ctx.request.body.token);
+    console.log('askjdnaskjdnsa')
     if (newToken.success) {
       scrap.startScraping(ctx.request.body.categoryId, ctx.request.body.lat, ctx.request.body.lng, ctx.request.body.radius);
       ctx.body = JSON.stringify({ success: true, token: newToken });
     }
-
+    // scrap.startScraping(ctx.request.body.categoryId, ctx.request.body.lat, ctx.request.body.lng, ctx.request.body.radius);
+    // ctx.body = "Skrejpujem";
   })
+
+  .post('/idiDalje', async(ctx, next) => {
+    scrap.idiDalje();
+    ctx.body = "idem Dalje"
+  })
+
+
   .post('/stopScraping', async (ctx, next) => {
     scrap.stopScraping();
     ctx.body = "SCRAPING JE STAO"

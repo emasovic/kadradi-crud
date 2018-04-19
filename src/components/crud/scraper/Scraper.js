@@ -18,6 +18,7 @@ class Scraper extends Component {
     this.state = {
       categories: [],
       fetchedObject: [],
+      scrapedObject: [],
       showingInfoWindow: true,
       activeMarker: {},
       selectedPlace: {},
@@ -67,9 +68,6 @@ class Scraper extends Component {
     this.setState({
       radius: value
     })
-    this.setState({
-      categoryId: value
-    })
   }
   dropDownSetCategoryId = (e, { value }) => {
     this.setState({
@@ -77,6 +75,8 @@ class Scraper extends Component {
     })
   }
   fetchObjects = async () => {
+    // let stopScraping = await post.secure('/stopScraping', {
+    // });
     let response = await post.secure('/mapFetch', {
       categoryId: this.state.categoryId,
       lat: this.state.lat,
@@ -90,11 +90,19 @@ class Scraper extends Component {
       })
     }
   }
-  scrapeObjects = () => {
-    this.fetchObjects()
+  scrapeObjects = async () => {
+    this.setState({scrapedObject: []})
+    let response = await post.secure('/startScraping', {
+      categoryId: this.state.categoryId,
+      lat: this.state.lat,
+      lng: this.state.lng,
+      radius: this.state.radius
+    });
     let socket = io('http://localhost:8081')
     socket.on('object_found', (data) => {
-      console.log(data);
+      this.setState({
+        scrapedObject: [...this.state.scrapedObject, data]
+      })
     });
   }
   componentWillMount() {
@@ -154,6 +162,17 @@ class Scraper extends Component {
                         <Marker
                           title={item.name}
                           name={'SOMA'}
+                          position={{ lat: item.lat, lng: item.lng }} />
+                      )
+                    }) : ''
+                }
+                {
+                  this.state.scrapedObject.length ?
+                    this.state.scrapedObject.map((item, key) => {
+                      return (
+                        <Marker
+                          title={item.name}
+                          name={item.vicinity}
                           position={{ lat: item.lat, lng: item.lng }} />
                       )
                     }) : ''
