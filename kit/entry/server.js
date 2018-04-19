@@ -460,10 +460,8 @@ const router = (new KoaRouter())
           close: wtSun.closing
         }
 
-
         const objectWorkTimes = [ pon, uto, sre, cet, pet, sub, ned ];
         
-
         const objectById = { objectCl, objectInfo, objectLocation, objectCategoriesArr, objectPhones, locations, objectWorkTimes };
         ctx.body = JSON.stringify({ objectById, token: newToken })
       }
@@ -620,14 +618,6 @@ const router = (new KoaRouter())
 
   // const objectId = ctx.request.body.objectId;
   const objectId = 1;
-
-
-
-  // let objectClArr = ['name', 'shortDescription', 'verified', 'objectCategoryId'];
-  // let objectInfoArr = ['websiteUrl', 'hasRestaurant', 'popularBeacauseOf'];
-  // let objectLocationArr = ['adress'];
-  // let objectPhonesArr = ['desc', 'number'];
-
   let objectClArr = {
     name: 'Stefannnnnn',
     shortDescription: 'ovo je descr',
@@ -651,8 +641,76 @@ const router = (new KoaRouter())
   // let objectInfoArr = ctx.request.body.objectInfoArr;
   // let objectLocation = ctx.request.body.objectLocationArr;
   // let objectPhones = ctx.request.body.objectPhone;
+
+  let wtMonObj = 
+    {
+      name: "wtMon",
+      open: '0000',
+      close: '0800'
+    };
+  let wtTueObj = 
+    {
+      name: "wtTue",
+      open: '0800',
+      close: '1400'
+    }
+  let wtWedObj =
+    {
+      name: "wtWed",
+      open: '0800',
+      close: '1400'
+    }
+  let wtThuObj =
+    {
+      name: "wtThu",
+      open: '0800',
+      close: '1400'
+    }
+  let wtFriObj = 
+    {
+      name: "wtFri",
+      open: '0800',
+      close: '1400'
+    }
+  let wtSatObj =
+    {
+      name: "wtSat",
+      open: '0800',
+      close: '1400'
+    }
+  let wtSunObj = 
+    {
+      name: "wtSun",
+      open: '0800',
+      close: '1400'
+    }
+
+
   if(newToken.success) {
     try {
+      let stefan = await db.models.objectWorkTime.findOrCreate({where: {objectClId: objectId}})
+    
+      let wtMon =  await db.models.wtMon.findOrCreate({where: {opening: wtMonObj.open, closing: wtMonObj.close}})
+      let wtTue =  await db.models.wtTue.findOrCreate({where: {opening: wtTueObj.open, closing: wtTueObj.close}})
+      let wtWed =  await db.models.wtWed.findOrCreate({where: {opening: wtWedObj.open, closing: wtWedObj.close}})
+      let wtThu =  await db.models.wtThu.findOrCreate({where: {opening: wtThuObj.open, closing: wtThuObj.close}})
+      let wtFri =  await db.models.wtFri.findOrCreate({where: {opening: wtFriObj.open, closing: wtFriObj.close}})
+      let wtSat =  await db.models.wtSat.findOrCreate({where: {opening: wtSatObj.open, closing: wtSatObj.close}})
+      let wtSun =  await db.models.wtSun.findOrCreate({where: {opening: wtSunObj.open, closing: wtSunObj.close}})
+
+      let wtMonId = { wtMonId: wtMon.id }
+      let wtTueId = { wtTueId: wtTue.id }
+      let wtWedId = { wtWedId: wtWed.id }
+      let wtThuId = { wtThuId: wtThu.id }
+      let wtFriId = { wtFriId: wtFri.id }
+      let wtSatId = { wtSatId: wtSat.id }
+      let wtSunId = { wtSunId: wtSun.id }
+      let objectClId = {objectClId: objectId}
+
+      let workTimeObject = { wtMonId, wtTueId, wtWedId, wtThuId, wtFriId, wtSatId, wtSunId }
+
+      await db.models.objectWorkTime.update(workTimeObject, {where: {objectClId: objectId}})
+
       await db.models.objectCl.update(objectClArr, {where: {id: objectId}})
       await db.models.objectInfo.update(objectInfoArr, {where: {id: objectId}})
       await db.models.objectLocation.update(objectLocationArr, {where: {id: objectId}})
