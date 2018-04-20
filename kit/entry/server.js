@@ -252,7 +252,7 @@ function verifyToken(token) {
     let response = {};
     if ((tokenVerify.exp - currentTimeStamp) <= 10) {
       console.log('manje je')
-      const newToken = jwt.sign({ id: tokenVerify.id, username: tokenVerify.username, email: tokenVerify.email }, 'nasasifra', { expiresIn: 60 * 10 });
+      const newToken = jwt.sign({ id: tokenVerify.id, username: tokenVerify.username, email: tokenVerify.email }, 'nasasifra', { expiresIn: 60 * 60 });
       return { success: true, token: newToken };
     } else {
       if (tokenVerify.name === 'TokenExpiredError') {
@@ -286,7 +286,7 @@ const router = (new KoaRouter())
       if (ctx.request.body.rememberMe) {
         token = jwt.sign({ id: user.id, username: user.username }, 'nasasifra')
       } else {
-        token = jwt.sign({ id: user.id, username: user.username }, 'nasasifra', { expiresIn: 60 * 10 })
+        token = jwt.sign({ id: user.id, username: user.username }, 'nasasifra', { expiresIn: 60 * 60 })
       }
       ctx.body = JSON.stringify({ success: true, token: token });
     } else {
@@ -581,6 +581,7 @@ const router = (new KoaRouter())
   let objectLocationArr = {};
   if(newToken.success) {
     try {
+      
       // sending all from objectCl in db
       const obId = await db.models.objectCl.create(objectClArr)
       // adding id into objects
@@ -681,15 +682,15 @@ const router = (new KoaRouter())
   let wtSunObj = 
     {
       name: "wtSun",
-      open: '0800',
-      close: '1400'
+      open: '1234',
+      close: '5678'
     }
 
 
   if(newToken.success) {
     try {
       let stefan = await db.models.objectWorkTime.findOrCreate({where: {objectClId: objectId}})
-    
+  
       let wtMon =  await db.models.wtMon.findOrCreate({where: {opening: wtMonObj.open, closing: wtMonObj.close}})
       let wtTue =  await db.models.wtTue.findOrCreate({where: {opening: wtTueObj.open, closing: wtTueObj.close}})
       let wtWed =  await db.models.wtWed.findOrCreate({where: {opening: wtWedObj.open, closing: wtWedObj.close}})
@@ -698,14 +699,14 @@ const router = (new KoaRouter())
       let wtSat =  await db.models.wtSat.findOrCreate({where: {opening: wtSatObj.open, closing: wtSatObj.close}})
       let wtSun =  await db.models.wtSun.findOrCreate({where: {opening: wtSunObj.open, closing: wtSunObj.close}})
 
-      let wtMonId = { wtMonId: wtMon.id }
-      let wtTueId = { wtTueId: wtTue.id }
-      let wtWedId = { wtWedId: wtWed.id }
-      let wtThuId = { wtThuId: wtThu.id }
-      let wtFriId = { wtFriId: wtFri.id }
-      let wtSatId = { wtSatId: wtSat.id }
-      let wtSunId = { wtSunId: wtSun.id }
-      let objectClId = {objectClId: objectId}
+      let wtMonId = { wtMonId: wtMon[0].id }
+      let wtTueId = { wtTueId: wtTue[0].id }
+      let wtWedId = { wtWedId: wtWed[0].id }
+      let wtThuId = { wtThuId: wtThu[0].id }
+      let wtFriId = { wtFriId: wtFri[0].id }
+      let wtSatId = { wtSatId: wtSat[0].id }
+      let wtSunId = { wtSunId: wtSun[0].id }
+      // let objectClId = {objectClId: objectId}
 
       let workTimeObject = { wtMonId, wtTueId, wtWedId, wtThuId, wtFriId, wtSatId, wtSunId }
 
