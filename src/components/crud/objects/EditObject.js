@@ -159,12 +159,11 @@ prepareToEditObject = async () => {
   let objectClArr = {};
   let objectLocationArr = {};
   let objectInfoArr = {};
+  let objectPhonesArr = [];
   let objectClKeys = Object.keys(objToEdit.objectCl)
-    let objectInfoKeys = Object.keys(objToEdit.objectInfo)
-    let objectPhones = Object.keys(objToEdit.objectPhones)
-    // let objectPhones = Object.keys(objToEdit.objectPhones[0])
-    let objectLocationKeys = Object.keys(objToEdit.objectLocation)
-    // let objectLocation = Object.keys(objToEdit.objectLocation[0])
+  let objectInfoKeys = Object.keys(objToEdit.objectInfo)
+  let objectPhonesKeys = Object.keys(objToEdit.objectPhones)
+  let objectLocationKeys = Object.keys(objToEdit.objectLocation)
     objectClKeys.map((item) => {
       if (objToEdit.objectCl[item] != this.state[item]) {
         objectClArr = {
@@ -176,6 +175,7 @@ prepareToEditObject = async () => {
     })
     console.log('OBJECT CLpre', objectClArr)
     console.log('OBJECT LOCpre', objectLocationArr)
+    
     objectLocationKeys.map((item) => {
       if (objToEdit.objectLocation[item] != this.state[item]) {
        objectLocationArr = {
@@ -195,6 +195,7 @@ prepareToEditObject = async () => {
     console.log('OBJECT CLposle', objectClArr)
     console.log('OBJECT LOCposle', objectLocationArr)
     console.log('OBJECT infoposle', objectInfoArr)
+    
     // console.log('niz', objectClArr)
     // let response = await post.secure('/editObject', {
     //   objectId: objectId,
@@ -214,7 +215,6 @@ prepareToEditObject = async () => {
       lng: suggest.location.lng,
     })
   }
-
   render() {
   console.log('STATE', this.state)
     return (
