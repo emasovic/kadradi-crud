@@ -101,6 +101,7 @@
     "koa-sslify": "^2.1.2",
     "md5": "^2.2.1",
     "microseconds": "^0.1.0",
+    "moment": "^2.22.1",
     "node-googleplaces": "^0.1.2",
     "pg": "^7.4.1",
     "prop-types": "^15.6.0",
