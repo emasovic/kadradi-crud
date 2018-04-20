@@ -8,7 +8,6 @@ import TableRow from 'semantic-ui-react';
 import moment from 'moment';
 import Geosuggest from 'react-geosuggest';
 
-
 class EditObject extends React.Component {
   constructor(props) {
     super(props);
@@ -33,7 +32,8 @@ class EditObject extends React.Component {
       testState: '',
       workTime: [],
       workTimeEdit: [],
-      popularBecauseOf: '',      
+      phones: [],
+      popularBecauseOf: '',
     };
   }
   objectEdit = e => {
@@ -93,6 +93,7 @@ class EditObject extends React.Component {
       token: this.props.token,
     });
     if (response.token.success) {
+      console.log("RESPONSE", response.objectById)
       this.setState({
         objToEdit: response.objectById,
         locationId: response.objectById.objectCl.locationId,
@@ -107,27 +108,28 @@ class EditObject extends React.Component {
         websiteUrl: response.objectById.objectInfo.websiteUrl,
         popularBecauseOf: response.objectById.objectInfo.popularBecauseOf,        
         city: response.objectById.objectLocation.city,
-        workTime: response.objectById.objectWorkTime,
+        workTime: response.objectById.objectWorkTimes,
+        phones: JSON.parse(JSON.stringify(response.objectById.objectPhones))
       });
+      console.log("OVO", this.state.workTime)
       let jsArr = JSON.parse(JSON.stringify(this.state.workTime));
       this.setState({
         workTimeEdit: jsArr,
       })
       this.setParentObj(response.objectById.locations);
-      console.log('JEL GA IMA OVDE bRE?', response.objectById.locations);
-      console.log('RESPONSE', response);
+      // console.log('JEL GA IMA OVDE bRE?', response.objectById.locations);
+      // console.log('RESPONSE', response);
     } else {
       console.log('stajebreovo');
     }
     console.log('RESPONSE', response);
   }
+
   setCategoryObj = async (e, { value }) => {
     this.setState({
       objectCategoryId: value,
     });
   }
-
-
   setParentObj = parrent => {
     const obArr = [];
     const nekiObj = {
@@ -153,7 +155,6 @@ class EditObject extends React.Component {
       childLocation: arr,
     });
   }
-
   editWorkingTime(value,a){
     let time = value.format('HH:mm');
     let newTime = time.slice(0,2) + time.slice(3,5);
@@ -165,7 +166,6 @@ class EditObject extends React.Component {
     this.setState({
       workTimeEdit: arr,
     })
-    
   }
   editWorkingTimeClose(value,a){
     let time = value.format('HH:mm');
@@ -179,7 +179,6 @@ class EditObject extends React.Component {
       workTimeEdit: arr,
     })
   }
-
   editWorkingTimeBtn(){
     let obj = {};
     let objTosend = {}
@@ -203,32 +202,23 @@ class EditObject extends React.Component {
     })
     console.log("objjjjjjjjjjjj", obj)
   }
-
   prepareToEditObject = async () => {
-    const { objToEdit } = this.state;
+    let { objToEdit } = this.state;
     let objectClArr = {};
     let objectLocationArr = {};
     let objectInfoArr = {};  
+    let objectPhonesArr = [];
     let objectClKeys = Object.keys(objToEdit.objectCl);
     let objectInfoKeys = Object.keys(objToEdit.objectInfo);
-    let objectPhones = Object.keys(objToEdit.objectPhones);
-    // let objectPhones = Object.keys(objToEdit.objectPhones[0])
-    const objectLocationKeys = Object.keys(objToEdit.objectLocation);
-    // let objectLocation = Object.keys(objToEdit.objectLocation[0])
+    let objectLocationKeys = Object.keys(objToEdit.objectLocation);
     objectClKeys.map(item => {
       if (objToEdit.objectCl[item] != this.state[item]) {
-        console.log('item', item);
-        console.log('IZ PROPSA', objToEdit.objectCl[item]);
-        console.log('IZ STATE', this.state[item]);
         objectClArr = {
           ...objectClArr,
           [item]: this.state[item],
         };
       }
-      
     })
-    console.log('OBJECT CLpre', objectClArr)
-    console.log('OBJECT LOCpre', objectLocationArr)
     objectLocationKeys.map((item) => {
       if (objToEdit.objectLocation[item] != this.state[item]) {
         objectLocationArr = {
@@ -245,18 +235,28 @@ class EditObject extends React.Component {
        }
       }
     })
-    console.log('OBJECT CLposle', objectClArr)
-    console.log('OBJECT LOCposle', objectLocationArr)
-    console.log('OBJECT infoposle', objectInfoArr)
-    // console.log('niz', objectClArr)
-    // let response = await post.secure('/editObject', {
-    //   objectId: objectId,
-    //   token: this.props.token,
-    //   objectClArr: {},
-    //   objectInfoArr: {},
-    //   objectLocationArr: {},
-    //   objectPhonesArr: [],
-    // });
+  }
+  changePhones = (e, id) => {
+    let arr = this.state.phones
+    if(e.target.name === 'number') {
+      arr.map(item => {
+        if(item.id == id) {
+          item.number = e.target.value
+        }
+      })
+    }else {
+      arr.map(item => {
+        if(item.id == id) {
+          item.desc = e.target.value
+        }
+      })
+    }
+    
+    this.setState({
+      phones: arr
+    })
+    console.log("ID", id)
+    console.log("EVENT", e.target.value)
   }
   onSuggestSelect = (suggest) => {
     console.log('sug',suggest)
@@ -267,36 +267,27 @@ class EditObject extends React.Component {
       lng: suggest.location.lng,
     })
   }
-
   render() {
     console.log('STEJT ', this.state);
-    // console.log('STRIPTIZETA', this.state.objectCategoriesArr);
-    // console.log('LOCATION TEST', this.state.objToEdit);
-    // console.log('STATE PAR: ', this.state.par);
-    // console.log('STATE PAR NAME: ', this.state.par);
-    // console.log("VALUE", this.state.newVal);
-    // console.log("PUNTO CUKAM!", this.state.childLocation);
-    // console.log('CHILD', this.state.objectCategoryId);
-    // console.log('STATE', this.state);
     return (
       <div>
         {/* <Input label='locationId: ' name='locationId' value={this.state.locationId} onChange={this.objectEdit} /><br /> */}
         <Input label="Name: " name="name" value={this.state.name} onChange={this.objectEdit} /><br />
+        <span>Category: </span>
         <Dropdown
           value={this.state.objectCategoryId}
           selection
           onChange={this.setCategoryObj}
           options={this.state.objToEdit.objectCategoriesArr} /><br />
+        <span>Community: </span>
         <Dropdown
           selection
-          value={6}
           onChange={this.setCategoryObj}
           options={this.state.childLocation} /><br />
         <Dropdown
           selection
           options={this.state.par}
           onChange={this.setLo} /><br />
-
         <Table compact celled definition>
           <Table.Header>
             <Table.Row>
@@ -341,7 +332,6 @@ class EditObject extends React.Component {
           }
           <Button primary onClick={() => this.editWorkingTimeBtn()}>Izmeni</Button>          
         </Table>
-
         <Input label='personId: ' name='personId' value={this.state.personId} onChange={this.objectEdit} /><br />
         Short Description :<br />
         <TextArea autoHeight name='shortDescription' value={this.state.shortDescription} onChange={this.objectEdit} style={{minHeight:'50px',minWidth:'300px'}} /><br />
@@ -352,6 +342,17 @@ class EditObject extends React.Component {
         popularBeacuseOf:<br />
         <TextArea autoHeight  name='popularBecauseOf' value={this.state.popularBecauseOf} onChange={this.objectEdit} style={{minHeight:'50px',minWidth:'300px'}}/><br />
         {/* <Input label='City: ' name='city' value={this.state.city} onChange={this.objectEdit} /><br /> */}
+        {
+          this.state.phones.length ?
+          this.state.phones.map((item, key) => {
+            return(
+              <div>
+               <Input name='desc' value={item.desc} onChange={(e) => this.changePhones(e, item.id)}/> 
+               <Input name='number' value={item.number} onChange={(e) => this.changePhones(e, item.id)}/>
+              </div>
+            )
+          }) : null
+        }
         <Button primary onClick={() => this.prepareToEditObject()}>Save</Button>
       </div>
     );
