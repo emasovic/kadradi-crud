@@ -155,3 +155,9 @@ li.rc-time-picker-panel-select-option-disabled:hover {
   background: transparent;
   cursor: not-allowed;
 }
+
+.geosuggest__suggests--hidden {
+    max-height: 0;
+    overflow: hidden;
+    border-width: 0;
+  }

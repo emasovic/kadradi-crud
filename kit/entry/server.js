@@ -252,7 +252,7 @@ function verifyToken(token) {
     let response = {};
     if ((tokenVerify.exp - currentTimeStamp) <= 10) {
       console.log('manje je')
-      const newToken = jwt.sign({ id: tokenVerify.id, username: tokenVerify.username, email: tokenVerify.email }, 'nasasifra', { expiresIn: 60 * 10 });
+      const newToken = jwt.sign({ id: tokenVerify.id, username: tokenVerify.username, email: tokenVerify.email }, 'nasasifra', { expiresIn: 60 * 60 });
       return { success: true, token: newToken };
     } else {
       if (tokenVerify.name === 'TokenExpiredError') {
@@ -286,7 +286,7 @@ const router = (new KoaRouter())
       if (ctx.request.body.rememberMe) {
         token = jwt.sign({ id: user.id, username: user.username }, 'nasasifra')
       } else {
-        token = jwt.sign({ id: user.id, username: user.username }, 'nasasifra', { expiresIn: 60 * 10 })
+        token = jwt.sign({ id: user.id, username: user.username }, 'nasasifra', { expiresIn: 60 * 60 })
       }
       ctx.body = JSON.stringify({ success: true, token: token });
     } else {
@@ -414,15 +414,15 @@ const router = (new KoaRouter())
         const objectInfo = await db.models.objectInfo.find({ where: { objectClId: objectId } });
         const objectLocation = await db.models.objectLocation.find({ where: { objectClId: objectId } });
 
+        let objectWorkTime = await db.models.objectWorkTime.find({ where: { objectClId: objectId }});
 
-
-        let wtMon = await db.models.wtMon.find({ where: { id: objectId } });
-        let wtTue = await db.models.wtTue.find({ where: { id: objectId } });
-        let wtWed = await db.models.wtWed.find({ where: { id: objectId } });
-        let wtThu = await db.models.wtThu.find({ where: { id: objectId } });
-        let wtFri = await db.models.wtFri.find({ where: { id: objectId } });
-        let wtSat = await db.models.wtSat.find({ where: { id: objectId } });
-        let wtSun = await db.models.wtSun.find({ where: { id: objectId } });
+        let wtMon = await db.models.wtMon.find({ where: { id: objectWorkTime.wtMonId } });
+        let wtTue = await db.models.wtTue.find({ where: { id: objectWorkTime.wtTueId } });
+        let wtWed = await db.models.wtWed.find({ where: { id: objectWorkTime.wtWedId } });
+        let wtThu = await db.models.wtThu.find({ where: { id: objectWorkTime.wtThuId } });
+        let wtFri = await db.models.wtFri.find({ where: { id: objectWorkTime.wtFriId } });
+        let wtSat = await db.models.wtSat.find({ where: { id: objectWorkTime.wtSatId } });
+        let wtSun = await db.models.wtSun.find({ where: { id: objectWorkTime.wtSunId } });
 
         let pon = {
           name: "Pon",
@@ -460,14 +460,10 @@ const router = (new KoaRouter())
           close: wtSun.closing
         }
 
-
-        const objectWorkTime = [ pon, uto, sre, cet, pet, sub, ned ];
+        const objectWorkTimes = [ pon, uto, sre, cet, pet, sub, ned ];
         
-
-        const objectById = { objectCl, objectInfo, objectLocation, objectCategoriesArr, objectPhones, locations, objectWorkTime };
+        const objectById = { objectCl, objectInfo, objectLocation, objectCategoriesArr, objectPhones, locations, objectWorkTimes };
         ctx.body = JSON.stringify({ objectById, token: newToken })
-        // console.log("KATEGORIJE", objectCategories)
-        // console.log('elvis prisli', objectById)
       }
     } else {
       ctx.body = JSON.stringify({ objectById: [], token: newToken })
@@ -585,6 +581,7 @@ const router = (new KoaRouter())
   let objectLocationArr = {};
   if(newToken.success) {
     try {
+      
       // sending all from objectCl in db
       const obId = await db.models.objectCl.create(objectClArr)
       // adding id into objects
@@ -622,14 +619,6 @@ const router = (new KoaRouter())
 
   // const objectId = ctx.request.body.objectId;
   const objectId = 1;
-
-
-
-  // let objectClArr = ['name', 'shortDescription', 'verified', 'objectCategoryId'];
-  // let objectInfoArr = ['websiteUrl', 'hasRestaurant', 'popularBeacauseOf'];
-  // let objectLocationArr = ['adress'];
-  // let objectPhonesArr = ['desc', 'number'];
-
   let objectClArr = {
     name: 'Stefannnnnn',
     shortDescription: 'ovo je descr',
@@ -653,8 +642,76 @@ const router = (new KoaRouter())
   // let objectInfoArr = ctx.request.body.objectInfoArr;
   // let objectLocation = ctx.request.body.objectLocationArr;
   // let objectPhones = ctx.request.body.objectPhone;
+
+  let wtMonObj = 
+    {
+      name: "wtMon",
+      open: '0000',
+      close: '0800'
+    };
+  let wtTueObj = 
+    {
+      name: "wtTue",
+      open: '0800',
+      close: '1400'
+    }
+  let wtWedObj =
+    {
+      name: "wtWed",
+      open: '0800',
+      close: '1400'
+    }
+  let wtThuObj =
+    {
+      name: "wtThu",
+      open: '0800',
+      close: '1400'
+    }
+  let wtFriObj = 
+    {
+      name: "wtFri",
+      open: '0800',
+      close: '1400'
+    }
+  let wtSatObj =
+    {
+      name: "wtSat",
+      open: '0800',
+      close: '1400'
+    }
+  let wtSunObj = 
+    {
+      name: "wtSun",
+      open: '1234',
+      close: '5678'
+    }
+
+
   if(newToken.success) {
     try {
+      let stefan = await db.models.objectWorkTime.findOrCreate({where: {objectClId: objectId}})
+  
+      let wtMon =  await db.models.wtMon.findOrCreate({where: {opening: wtMonObj.open, closing: wtMonObj.close}})
+      let wtTue =  await db.models.wtTue.findOrCreate({where: {opening: wtTueObj.open, closing: wtTueObj.close}})
+      let wtWed =  await db.models.wtWed.findOrCreate({where: {opening: wtWedObj.open, closing: wtWedObj.close}})
+      let wtThu =  await db.models.wtThu.findOrCreate({where: {opening: wtThuObj.open, closing: wtThuObj.close}})
+      let wtFri =  await db.models.wtFri.findOrCreate({where: {opening: wtFriObj.open, closing: wtFriObj.close}})
+      let wtSat =  await db.models.wtSat.findOrCreate({where: {opening: wtSatObj.open, closing: wtSatObj.close}})
+      let wtSun =  await db.models.wtSun.findOrCreate({where: {opening: wtSunObj.open, closing: wtSunObj.close}})
+
+      let wtMonId = { wtMonId: wtMon[0].id }
+      let wtTueId = { wtTueId: wtTue[0].id }
+      let wtWedId = { wtWedId: wtWed[0].id }
+      let wtThuId = { wtThuId: wtThu[0].id }
+      let wtFriId = { wtFriId: wtFri[0].id }
+      let wtSatId = { wtSatId: wtSat[0].id }
+      let wtSunId = { wtSunId: wtSun[0].id }
+      // let objectClId = {objectClId: objectId}
+
+      let workTimeObject = { wtMonId, wtTueId, wtWedId, wtThuId, wtFriId, wtSatId, wtSunId }
+
+      await db.models.objectWorkTime.update(workTimeObject, {where: {objectClId: objectId}})
+
       await db.models.objectCl.update(objectClArr, {where: {id: objectId}})
       await db.models.objectInfo.update(objectInfoArr, {where: {id: objectId}})
       await db.models.objectLocation.update(objectLocationArr, {where: {id: objectId}})
@@ -1049,6 +1106,9 @@ const listen = () => {
       let newObject = PubSub.subscribe('object_found', function (msg, data) {
         io.emit('object_found', data);
       });
+      let scrapeInfo = PubSub.subscribe('scrape_info', function(msg, data){
+        io.emit('scrape_info', data)
+      })
     });
     servers.push(
       server1.listen(process.env.PORT),

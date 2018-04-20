@@ -1,11 +1,13 @@
 import React from 'react';
 import post from '../../fetch/post';
-import { Table, Input, Button, Dropdown, Checkbox } from 'semantic-ui-react';
+import { Table, Input, Button, Dropdown, Checkbox, TextArea } from 'semantic-ui-react';
 import { stat } from 'fs';
 import TimePicker from 'rc-time-picker';
 import Style from './objectsEdit.css';
 import TableRow from 'semantic-ui-react';
 import moment from 'moment';
+import Geosuggest from 'react-geosuggest';
+
 
 class EditObject extends React.Component {
   constructor(props) {
@@ -19,8 +21,10 @@ class EditObject extends React.Component {
       personId: '',
       shortDescription: '',
       address: '',
+      lat: '',
+      lng: '',
       verified: '',
-      webSiteUrl: '',
+      websiteUrl: '',
       city: '',
       streetAddress: '',
       par: [],
@@ -29,6 +33,7 @@ class EditObject extends React.Component {
       testState: '',
       workTime: [],
       workTimeEdit: [],
+      popularBecauseOf: '',      
     };
   }
   objectEdit = e => {
@@ -57,25 +62,25 @@ class EditObject extends React.Component {
         shortDescription: e.target.value,
       });
     }
-    if (e.target.name === 'address') {
-      this.setState({
-        address: e.target.value,
-      });
-    }
     if (e.target.name === 'verified') {
       this.setState({
         verified: e.target.value,
       });
     }
-    if (e.target.name === 'webSiteUrl') {
+    if (e.target.name === 'websiteUrl') {
       this.setState({
-        webSiteUrl: e.target.value,
-      });
+        websiteUrl: e.target.value
+      })
     }
     if (e.target.name === 'city') {
       this.setState({
         city: e.target.value,
       });
+    }
+    if (e.target.name === 'popularBecauseOf') {
+      this.setState({
+        popularBecauseOf: e.target.value
+      })
     }
   }
   componentWillMount() {
@@ -99,7 +104,8 @@ class EditObject extends React.Component {
         childLocation: response.objectById.objectCl.locationId,
         address: response.objectById.objectLocation.address,
         verified: response.objectById.objectCl.verified,
-        webSiteUrl: response.objectById.objectInfo.websiteUrl,
+        websiteUrl: response.objectById.objectInfo.websiteUrl,
+        popularBecauseOf: response.objectById.objectInfo.popularBecauseOf,        
         city: response.objectById.objectLocation.city,
         workTime: response.objectById.objectWorkTime,
       });
@@ -202,9 +208,10 @@ class EditObject extends React.Component {
     const { objToEdit } = this.state;
     let objectClArr = {};
     let objectLocationArr = {};
-    const objectClKeys = Object.keys(objToEdit.objectCl);
-    const objectInfoKeys = Object.keys(objToEdit.objectInfo);
-    const objectPhones = Object.keys(objToEdit.objectPhones);
+    let objectInfoArr = {};  
+    let objectClKeys = Object.keys(objToEdit.objectCl);
+    let objectInfoKeys = Object.keys(objToEdit.objectInfo);
+    let objectPhones = Object.keys(objToEdit.objectPhones);
     // let objectPhones = Object.keys(objToEdit.objectPhones[0])
     const objectLocationKeys = Object.keys(objToEdit.objectLocation);
     // let objectLocation = Object.keys(objToEdit.objectLocation[0])
@@ -218,17 +225,29 @@ class EditObject extends React.Component {
           [item]: this.state[item],
         };
       }
-    });
-    console.log('OBJECT CL', objectClArr);
-    objectLocationKeys.map(item => {
+      
+    })
+    console.log('OBJECT CLpre', objectClArr)
+    console.log('OBJECT LOCpre', objectLocationArr)
+    objectLocationKeys.map((item) => {
       if (objToEdit.objectLocation[item] != this.state[item]) {
         objectLocationArr = {
           ...objectLocationArr,
           [item]: this.state[item],
         };
       }
-    });
-    console.log('OBJECT LOC', objectLocationArr);
+    })
+    objectInfoKeys.map((item) => {
+      if (objToEdit.objectInfo[item] != this.state[item]) {
+       objectInfoArr = {
+         ...objectInfoArr,
+         [item]: this.state[item]
+       }
+      }
+    })
+    console.log('OBJECT CLposle', objectClArr)
+    console.log('OBJECT LOCposle', objectLocationArr)
+    console.log('OBJECT infoposle', objectInfoArr)
     // console.log('niz', objectClArr)
     // let response = await post.secure('/editObject', {
     //   objectId: objectId,
@@ -238,6 +257,15 @@ class EditObject extends React.Component {
     //   objectLocationArr: {},
     //   objectPhonesArr: [],
     // });
+  }
+  onSuggestSelect = (suggest) => {
+    console.log('sug',suggest)
+    let street = suggest.description.split(",");
+    this.setState({
+      address: street[0],
+      lat: suggest.location.lat,
+      lng: suggest.location.lng,
+    })
   }
 
   render() {
@@ -314,12 +342,16 @@ class EditObject extends React.Component {
           <Button primary onClick={() => this.editWorkingTimeBtn()}>Izmeni</Button>          
         </Table>
 
-        <Input label="personId: " name="personId" value={this.state.personId} onChange={this.objectEdit} /><br />
-        <Input label="shortDescription: " name="shortDescription" value={this.state.shortDescription} onChange={this.objectEdit} /><br />
-        <Input label="streetAddress: " name="address" value={this.state.address} onChange={this.objectEdit} /><br />
-        <Input label="Verified: " name="verified" value={this.state.verified} onChange={this.objectEdit} /><br />
-        <Input label="WebSiteUrl: " name="webSiteUrl" value={this.state.webSiteUrl} onChange={this.objectEdit} /><br />
-        <Input label="City: " name="city" value={this.state.city} onChange={this.objectEdit} /><br />
+        <Input label='personId: ' name='personId' value={this.state.personId} onChange={this.objectEdit} /><br />
+        Short Description :<br />
+        <TextArea autoHeight name='shortDescription' value={this.state.shortDescription} onChange={this.objectEdit} style={{minHeight:'50px',minWidth:'300px'}} /><br />
+        <Geosuggest initialValue={this.state.address} onSuggestSelect={this.onSuggestSelect}/>
+        {/* <Input label='address: ' name='address' value={this.state.address} onChange={this.objectEdit} /><br /> */}
+        <Input label='Verified: ' name='verified' value={this.state.verified} onChange={this.objectEdit} /><br />
+        <Input label='WebSiteUrl: ' name='websiteUrl' value={this.state.websiteUrl} onChange={this.objectEdit} /><br />
+        popularBeacuseOf:<br />
+        <TextArea autoHeight  name='popularBecauseOf' value={this.state.popularBecauseOf} onChange={this.objectEdit} style={{minHeight:'50px',minWidth:'300px'}}/><br />
+        {/* <Input label='City: ' name='city' value={this.state.city} onChange={this.objectEdit} /><br /> */}
         <Button primary onClick={() => this.prepareToEditObject()}>Save</Button>
       </div>
     );
