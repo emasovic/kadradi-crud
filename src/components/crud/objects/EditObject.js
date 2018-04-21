@@ -34,6 +34,7 @@ class EditObject extends React.Component {
       workTimeEdit: [],
       phones: [],
       popularBecauseOf: '',
+      isAlwaysOpen: false,
     };
   }
   objectEdit = e => {
@@ -179,23 +180,50 @@ class EditObject extends React.Component {
       workTimeEdit: arr,
     })
   }
+  isWorkingToggle(a){
+    let isWrk
+    if(this.state.workTimeEdit[a].isWorking){
+      isWrk = false;
+    }      
+    else{
+      isWrk = true;
+    }
+
+    let arr = this.state.workTimeEdit;
+    arr[a].isWorking = isWrk;
+    this.setState({
+      
+      workTimeEdit: arr,
+    });
+  }
+  isAlwaysOpenToggle(){
+    if(this.state.isAlwaysOpen){
+      this.setState({
+        isAlwaysOpen: false,
+      })
+    }else{
+      this.setState({
+        isAlwaysOpen: true,
+      })
+    }
+  }
   editWorkingTimeBtn(){
     let obj = {};
     let objTosend = {}
     let newArr = this.state.workTimeEdit;
 
     this.state.workTime.map(item => {
-
       let a = this.state.workTime.indexOf(item);
       console.log(this.state.workTimeEdit[a]);
 
-      if(item.open !== newArr[a].open || item.close !== newArr[a].close){
+      if(item.open !== newArr[a].open || item.close !== newArr[a].close || item.isWorking !== newArr[a].isWorking){
         let name = newArr[a].name;
         obj = {
           ...obj,
           [name]:{
-           open: newArr.open,
-           close: newArr.close, 
+           open: newArr[a].open,
+           close: newArr[a].close,
+           isWorking: newArr[a].isWorking,
           }
         }
       }      
@@ -215,7 +243,7 @@ class EditObject extends React.Component {
       if (objToEdit.objectCl[item] != this.state[item]) {
         objectClArr = {
           ...objectClArr,
-          [item]: this.state[item],
+          [item]: this.state[item], 
         };
       }
     })
@@ -288,6 +316,7 @@ class EditObject extends React.Component {
           selection
           options={this.state.par}
           onChange={this.setLo} /><br />
+        <Checkbox checked={this.state.isAlwaysOpen} toggle onClick={()=> this.isAlwaysOpenToggle() } />                                
         <Table compact celled definition>
           <Table.Header>
             <Table.Row>
@@ -311,17 +340,20 @@ class EditObject extends React.Component {
                         <TimePicker
                           defaultValue={moment(openning, 'HH:mm')}
                           // value={moment(openning)}
+                          disabled={!this.state.isAlwaysOpen ? item.isWorking ? false : true : true}
                           showSecond={false}
                           onChange={(value) => this.editWorkingTime(value, key) } />
                       </Table.Cell>
                       <Table.Cell>
                         <TimePicker
+                          disabled={!this.state.isAlwaysOpen ? item.isWorking ? false : true : true}                        
                           defaultValue={moment(closing, 'HH:mm')} 
                           onChange={(value) => this.editWorkingTimeClose(value, key) }                       
                           showSecond={false} />
                       </Table.Cell>
                       <Table.Cell>
-                        <Checkbox />
+                        <Checkbox checked={item.isWorking} disabled={this.state.isAlwaysOpen ? true : false} toggle onClick={()=> this.isWorkingToggle(key) }
+                      />
                       </Table.Cell>
                     </Table.Row>
                   </Table.Body>
