@@ -866,7 +866,7 @@ const router = (new KoaRouter())
 
   /*
     ////////////////////////////
-    /// TESTIRANJE ////////////
+    /// SCRAPING ////////////
     //////////////////////////
   */
 
@@ -919,18 +919,11 @@ const router = (new KoaRouter())
     ctx.body = "SCRAPING JE STAO"
   })
 
-  .get('/searchobjects', async ctx => {
-    const parameters = {
-      location: '44.793923, 20.446009',
-      // types: "bakery",
-      radius: 1000
-    };
-    googlePlaces.nearbySearch(parameters, (err, res) => {
-      console.log(res.body.results[0].geometry);
-    });
-
-  })
-
+  /*
+      ^^^^^^^^^^^^^^^^^^
+      ||||||||||||||||||
+      SCRAPING
+  */
 
 
   // Favicon.ico.  By default, we'll serve this as a 204 No Content.
