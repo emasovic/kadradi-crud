@@ -337,6 +337,9 @@ class EditObject extends React.Component {
                     <Table.Row >
                       <Table.Cell>{item.name}</Table.Cell>
                       <Table.Cell>
+                        {
+                          <!-- ovde ide promena koja treba da se stavi pindji baci --/>
+                        }
                         <TimePicker
                           defaultValue={moment(openning, 'HH:mm')}
                           // value={moment(openning)}
