@@ -14,7 +14,7 @@ class EditObject extends React.Component {
     this.state = {
       objToEdit: {},
       objectCategoriesArr: [],
-      locationId: '',
+      locationId: 0,
       name: '',
       objectCategoryId: '',
       personId: '',
@@ -118,6 +118,7 @@ class EditObject extends React.Component {
         workTimeEdit: jsArr,
       })
       this.setParentObj(response.objectById.locations);
+      this.setCurrentParrent(response.objectById.locations);
       // console.log('JEL GA IMA OVDE bRE?', response.objectById.locations);
       // console.log('RESPONSE', response);
     } else {
@@ -132,28 +133,60 @@ class EditObject extends React.Component {
     });
   }
   setParentObj = parrent => {
-    const obArr = [];
-    const nekiObj = {
+    let obArr = [];
+    let nekiObj = {
       key: 2,
       value: 2,
       text: 'Novi sad',
       parrentLocation: 0,
     };
-    for (const child in parrent) {
+
+    for (let child in parrent) {
       console.log('PARRENT LOCATION: ', parrent[child].text);
+
       if (parrent[child].parrentLocation === 0) {
         obArr[child] = parrent[child];
       }
     }
-    const newArr = [...obArr, nekiObj];
+    let newArr = [...obArr, nekiObj];
     this.setState({
       par: newArr,
     });
   }
+
+  setCurrentParrent = (parrent) => {
+    console.log("USAOOOOOOO");
+    for (let child in parrent){
+      if(parrent[child].locationId === this.state.childLocation){
+        let currentParrent = parrent[child].parrentLocation;
+        this.setState({
+          newVal: currentParrent,
+        })
+      }   
+    }
+    for (let i in parrent){
+      let arr = parrent.filter(word => word.parrentLocation === this.state.newVal);
+      let a = this.state.childLocation;
+      this.setState({
+        childLocation: arr,
+        currentChild: a,
+      })
+    }   
+    console.log("EVO GA CURRRENT", this.state.currentChild);
+  }
+  changeC = (e,{value}) => {
+    this.setState({
+      locationId : value,
+    })
+  }
+
   setLo = (e, { value }) => {
-    const arr = this.state.objToEdit.locations.filter(word => word.parrentLocation == value);
+    let arr = this.state.objToEdit.locations.filter(word => word.parrentLocation == value);
+    let arrFirst = this.state.childLocation[0];
     this.setState({
       childLocation: arr,
+      newVal: value,
+      locationId: arrFirst,
     });
   }
   editWorkingTime(value,a){
@@ -296,7 +329,6 @@ class EditObject extends React.Component {
     })
   }
   render() {
-    console.log('STEJT ', this.state);
     return (
       <div>
         {/* <Input label='locationId: ' name='locationId' value={this.state.locationId} onChange={this.objectEdit} /><br /> */}
@@ -310,10 +342,13 @@ class EditObject extends React.Component {
         <span>Community: </span>
         <Dropdown
           selection
-          onChange={this.setCategoryObj}
-          options={this.state.childLocation} /><br />
+          value={this.state.locationId}
+          options={this.state.childLocation}
+          onChange={this.changeC}  
+        /><br />
         <Dropdown
           selection
+          value={this.state.newVal}
           options={this.state.par}
           onChange={this.setLo} /><br />
         <Checkbox checked={this.state.isAlwaysOpen} toggle onClick={()=> this.isAlwaysOpenToggle() } />                                
@@ -331,15 +366,11 @@ class EditObject extends React.Component {
               this.state.workTimeEdit.map((item, key) => {
                 let openning = item.open.slice(0,2) + ":" + item.open.slice(2,4);
                 let closing = item.close.slice(0,2) + ":" + item.close.slice(2,4);
-                console.log("MOMENT",moment(openning, 'HH:mm'));
                 return (
                   <Table.Body>
                     <Table.Row >
                       <Table.Cell>{item.name}</Table.Cell>
                       <Table.Cell>
-                        {
-                          <!-- ovde ide promena koja treba da se stavi pindji baci --/>
-                        }
                         <TimePicker
                           defaultValue={moment(openning, 'HH:mm')}
                           // value={moment(openning)}
