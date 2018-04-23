@@ -117,7 +117,7 @@ async function scrap(nextPage) {
           name: item.name,
           lat: item.geometry.location.lat,
           lng: item.geometry.location.lng,
-          streetAddress: item.vicinity.slice(0,item.vicinity.indexOf(',')),
+          streetAddres: item.vicinity.slice(0,item.vicinity.indexOf(',')),
           city: item.vicinity.substring(item.vicinity.indexOf(',')+1),
           objectCategoryId: category.base,
           imported: false
