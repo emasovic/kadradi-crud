@@ -185,6 +185,9 @@ const ObjectSc = db.define('objectSc', {
   },
   city: {
     type: Sequelize.STRING
+  },
+  imported: {
+    type: Sequelize.BOOLEAN
   }
 })
 

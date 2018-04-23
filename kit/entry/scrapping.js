@@ -99,7 +99,8 @@ async function scrap(nextPage) {
           lng: item.geometry.location.lng,
           streetAddress: item.vicinity.slice(0,item.vicinity.indexOf(',')),
           city: item.vicinity.substring(item.vicinity.indexOf(',')+1),
-          objectCategoryId: category.base
+          objectCategoryId: category.base,
+          imported: false,
         })
         PubSub.publish('object_found', { id: item.id, name: item.name, vicinity: item.vicinity, lat: item.geometry.location.lat, lng: item.geometry.location.lng });
       }))
@@ -118,7 +119,8 @@ async function scrap(nextPage) {
           lng: item.geometry.location.lng,
           streetAddress: item.vicinity.slice(0,item.vicinity.indexOf(',')),
           city: item.vicinity.substring(item.vicinity.indexOf(',')+1),
-          objectCategoryId: category.base
+          objectCategoryId: category.base,
+          imported: false
         })
         PubSub.publish('object_found', { id: item.id, name: item.name, vicinity: item.vicinity, lat: item.geometry.location.lat, lng: item.geometry.location.lng });
       }))
