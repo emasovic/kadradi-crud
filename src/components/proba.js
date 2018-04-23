@@ -20,7 +20,7 @@ class Proba extends React.Component{
           },
         },
         objectCl: {
-          name: 'STEFAN PROBA1',
+          name: 'SANEEEEEEEEEEEEE',
           shortDescription: 'STEFAN PROBA1',
           verified: true,
           personId: 2,
