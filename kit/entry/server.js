@@ -401,8 +401,9 @@ const router = (new KoaRouter())
             }
           )
         })
-        const objectInfo = await db.models.objectInfo.find({ where: { objectClId: objectId } });
-        const objectLocation = await db.models.objectLocation.find({ where: { objectClId: objectId } });
+        const objectInfo = await db.models.objectInfo.find({ where: { objectClId: objectId }});
+        const objectLocation = await db.models.objectLocation.find({ where: { objectClId: objectId }});
+        const objectFile = await db.models.objectFile.find({ attributes:['id', 'fileUrl', 'desc'], where: { objectClId: objectId }});
 
         let objectWorkTime = await db.models.objectWorkTime.find({ where: { objectClId: objectId } });
         let pon = {
@@ -447,7 +448,11 @@ const router = (new KoaRouter())
           open: '0',
           close: '0'
         }
-        if (objectWorkTime.wtMonId !== null) {
+        let isAlwaysOpened = false;
+        if(objectWorkTime.isAlwaysOpened) {
+          isAlwaysOpened = true;
+        }
+        if(objectWorkTime.wtMonId !== null) {
           let wtMon = await db.models.wtMon.find({ where: { id: objectWorkTime.wtMonId } });
           pon.isWorking = true;
           pon.open = wtMon.opening;
@@ -490,9 +495,13 @@ const router = (new KoaRouter())
           ned.close = wtSun.closing;
         }
 
-        const objectWorkTimes = [pon, uto, sre, cet, pet, sub, ned];
-
-        const objectById = { objectCl, objectInfo, objectLocation, objectCategoriesArr, objectPhones, locations, objectWorkTimes };
+        const objectWorkTimes = [ pon, uto, sre, cet, pet, sub, ned ];
+        const objectTimes = {
+          isAlwaysOpened,
+          objectWorkTimes,
+        }
+        
+        const objectById = { objectCl, objectInfo, objectLocation, objectCategoriesArr, objectPhones, locations, objectTimes, objectFile };
         ctx.body = JSON.stringify({ objectById, token: newToken })
       }
     } else {
@@ -606,35 +615,36 @@ const router = (new KoaRouter())
       shortDescription: "hihihi"
     }
 
+  
+  let objectInfoArr = {};
+  let objectLocationArr = {};
+  if(newToken.success) {
+      // sending all from objectCl in db
+      const obId = await db.models.objectCl.create(objectClArr)
+      // adding id into objects
+      objectInfoArr = {...objectInfoArr, objectClId: obId.id}
+      objectLocationArr = {...objectLocationArr, objectClId: obId.id}
+      // sending all from objectInfo in db
+      await db.models.objectInfo.create(objectInfoArr);
+      // sending all from objectLocation in db
+      await db.models.objectLocation.create(objectLocationArr);
+      // sending all from objectPhones in db
+      objectPhonesArr.map(async item => {
+        item = {...item, objectClId: obId.id}
+        await db.models.objectPhones.create(item);
+      })
 
-    let objectInfoArr = {};
-    let objectLocationArr = {};
-    if (newToken.success) {
-      try {
 
-        // sending all from objectCl in db
-        const obId = await db.models.objectCl.create(objectClArr)
-        // adding id into objects
-        objectInfoArr = { ...objectInfoArr, objectClId: obId.id }
-        objectLocationArr = { ...objectLocationArr, objectClId: obId.id }
-        // sending all from objectInfo in db
-        await db.models.objectInfo.create(objectInfoArr);
-        // sending all from objectLocation in db
-        await db.models.objectLocation.create(objectLocationArr);
-        // sending all from objectPhones in db
-        objectPhonesArr.map(async item => {
-          item = { ...item, objectClId: obId.id }
-          await db.models.objectPhones.create(item);
-        })
-        ctx.body = JSON.stringify({ createdNewObject: true, token: newToken })
-      } catch (err) {
-        await transaction.rollback();
-        ctx.body = JSON.stringify({ createdNewObject: false, token: newToken })
-      }
-    } else {
-      ctx.body = JSON.stringify({ createdNewObject: false, token: newToken })
-    }
-  })
+      // ctx.body = JSON.stringify({ createdNewObject: true, token: newToken})
+
+
+      // ctx.body = JSON.stringify({ createdNewObject: false, token: newToken})
+
+
+  } else {
+    ctx.body = JSON.stringify({ createdNewObject: false, token: newToken})
+  }
+})
 
   /*
     ------------------------------
