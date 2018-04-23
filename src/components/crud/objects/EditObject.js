@@ -14,7 +14,7 @@ class EditObject extends React.Component {
     this.state = {
       objToEdit: {},
       objectCategoriesArr: [],
-      locationId: '',
+      locationId: 0,
       name: '',
       objectCategoryId: '',
       personId: '',
@@ -34,6 +34,8 @@ class EditObject extends React.Component {
       workTimeEdit: [],
       phones: [],
       popularBecauseOf: '',
+      isAlwaysOpen: false,
+      workTime24h: false,
     };
   }
   objectEdit = e => {
@@ -108,7 +110,8 @@ class EditObject extends React.Component {
         websiteUrl: response.objectById.objectInfo.websiteUrl,
         popularBecauseOf: response.objectById.objectInfo.popularBecauseOf,        
         city: response.objectById.objectLocation.city,
-        workTime: response.objectById.objectWorkTimes,
+        workTime: response.objectById.objectTimes.objectWorkTimes,
+        isAlwaysOpen: response.objectById.objectTimes.isAlwaysOpened,
         phones: JSON.parse(JSON.stringify(response.objectById.objectPhones))
       });
       console.log("OVO", this.state.workTime)
@@ -117,6 +120,7 @@ class EditObject extends React.Component {
         workTimeEdit: jsArr,
       })
       this.setParentObj(response.objectById.locations);
+      this.setCurrentParrent(response.objectById.locations);
       // console.log('JEL GA IMA OVDE bRE?', response.objectById.locations);
       // console.log('RESPONSE', response);
     } else {
@@ -131,28 +135,60 @@ class EditObject extends React.Component {
     });
   }
   setParentObj = parrent => {
-    const obArr = [];
-    const nekiObj = {
+    let obArr = [];
+    let nekiObj = {
       key: 2,
       value: 2,
       text: 'Novi sad',
       parrentLocation: 0,
     };
-    for (const child in parrent) {
+
+    for (let child in parrent) {
       console.log('PARRENT LOCATION: ', parrent[child].text);
+
       if (parrent[child].parrentLocation === 0) {
         obArr[child] = parrent[child];
       }
     }
-    const newArr = [...obArr, nekiObj];
+    let newArr = [...obArr, nekiObj];
     this.setState({
       par: newArr,
     });
   }
+
+  setCurrentParrent = (parrent) => {
+    console.log("USAOOOOOOO");
+    for (let child in parrent){
+      if(parrent[child].locationId === this.state.childLocation){
+        let currentParrent = parrent[child].parrentLocation;
+        this.setState({
+          newVal: currentParrent,
+        })
+      }   
+    }
+    for (let i in parrent){
+      let arr = parrent.filter(word => word.parrentLocation === this.state.newVal);
+      let a = this.state.childLocation;
+      this.setState({
+        childLocation: arr,
+        currentChild: a,
+      })
+    }   
+    console.log("EVO GA CURRRENT", this.state.currentChild);
+  }
+  changeC = (e,{value}) => {
+    this.setState({
+      locationId : value,
+    })
+  }
+
   setLo = (e, { value }) => {
-    const arr = this.state.objToEdit.locations.filter(word => word.parrentLocation == value);
+    let arr = this.state.objToEdit.locations.filter(word => word.parrentLocation == value);
+    let arrFirst = this.state.childLocation[0];
     this.setState({
       childLocation: arr,
+      newVal: value,
+      locationId: arrFirst,
     });
   }
   editWorkingTime(value,a){
@@ -160,7 +196,6 @@ class EditObject extends React.Component {
     let newTime = time.slice(0,2) + time.slice(3,5);
     console.log("NEW TIMEEE:", newTime);
     console.log(this.state.workTimeEdit[a].open)
-    
     let arr = this.state.workTimeEdit;
     arr[a].open = newTime;
     this.setState({
@@ -179,26 +214,61 @@ class EditObject extends React.Component {
       workTimeEdit: arr,
     })
   }
+  isWorkingToggle(a){
+    let isWrk
+    if(this.state.workTimeEdit[a].isWorking){
+      isWrk = false;
+    }      
+    else{
+      isWrk = true;
+    }
+
+    let arr = this.state.workTimeEdit;
+    arr[a].isWorking = isWrk;
+    this.setState({
+      
+      workTimeEdit: arr,
+    });
+  }
+  isAlwaysOpenToggle(){
+    if(this.state.isAlwaysOpen){
+      this.setState({
+        isAlwaysOpen: false,
+      })
+    }else{
+      this.setState({
+        isAlwaysOpen: true,
+      })
+    }
+  }
   editWorkingTimeBtn(){
     let obj = {};
     let objTosend = {}
     let newArr = this.state.workTimeEdit;
 
     this.state.workTime.map(item => {
-
       let a = this.state.workTime.indexOf(item);
       console.log(this.state.workTimeEdit[a]);
-
-      if(item.open !== newArr[a].open || item.close !== newArr[a].close){
-        let name = newArr[a].name;
+      
+      if(this.state.isAlwaysOpen ){
         obj = {
           ...obj,
-          [name]:{
-           open: newArr.open,
-           close: newArr.close, 
-          }
+          isAlwaysOpen: true,
         }
-      }      
+      }else{
+        if(item.open !== newArr[a].open || item.close !== newArr[a].close || item.isWorking !== newArr[a].isWorking){
+          let name = newArr[a].name;
+          obj = {
+            ...obj,
+            isAlwaysOpen: false,
+            [name]:{
+             open: newArr[a].open,
+             close: newArr[a].close,
+             isWorking: newArr[a].isWorking,
+            }
+          }
+        }  
+      }    
     })
     console.log("objjjjjjjjjjjj", obj)
   }
@@ -244,7 +314,7 @@ class EditObject extends React.Component {
       if (objToEdit.objectCl[item] != this.state[item]) {
         objectClArr = {
           ...objectClArr,
-          [item]: this.state[item],
+          [item]: this.state[item], 
         };
       }
     })
@@ -267,7 +337,6 @@ class EditObject extends React.Component {
   }
   
   render() {
-    console.log('STEJT ', this.state);
     return (
       <div>
         {/* <Input label='locationId: ' name='locationId' value={this.state.locationId} onChange={this.objectEdit} /><br /> */}
@@ -281,12 +350,16 @@ class EditObject extends React.Component {
         <span>Community: </span>
         <Dropdown
           selection
-          onChange={this.setCategoryObj}
-          options={this.state.childLocation} /><br />
+          value={this.state.locationId}
+          options={this.state.childLocation}
+          onChange={this.changeC}  
+        /><br />
         <Dropdown
           selection
+          value={this.state.newVal}
           options={this.state.par}
           onChange={this.setLo} /><br />
+        <Checkbox checked={this.state.isAlwaysOpen} toggle onClick={()=> this.isAlwaysOpenToggle() } />                                
         <Table compact celled definition>
           <Table.Header>
             <Table.Row>
@@ -301,7 +374,6 @@ class EditObject extends React.Component {
               this.state.workTimeEdit.map((item, key) => {
                 let openning = item.open.slice(0,2) + ":" + item.open.slice(2,4);
                 let closing = item.close.slice(0,2) + ":" + item.close.slice(2,4);
-                console.log("MOMENT",moment(openning, 'HH:mm'));
                 return (
                   <Table.Body>
                     <Table.Row >
@@ -310,17 +382,20 @@ class EditObject extends React.Component {
                         <TimePicker
                           defaultValue={moment(openning, 'HH:mm')}
                           // value={moment(openning)}
+                          disabled={!this.state.isAlwaysOpen ? item.isWorking ? false : true : true}
                           showSecond={false}
                           onChange={(value) => this.editWorkingTime(value, key) } />
                       </Table.Cell>
                       <Table.Cell>
                         <TimePicker
+                          disabled={!this.state.isAlwaysOpen ? item.isWorking ? false : true : true}                        
                           defaultValue={moment(closing, 'HH:mm')} 
                           onChange={(value) => this.editWorkingTimeClose(value, key) }                       
                           showSecond={false} />
                       </Table.Cell>
                       <Table.Cell>
-                        <Checkbox />
+                        <Checkbox checked={item.isWorking} disabled={this.state.isAlwaysOpen ? true : false} toggle onClick={()=> this.isWorkingToggle(key) }
+                      />
                       </Table.Cell>
                     </Table.Row>
                   </Table.Body>

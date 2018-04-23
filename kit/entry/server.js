@@ -390,18 +390,7 @@ const router = (new KoaRouter())
           )
         })
         const objectPhones = await db.models.objectPhones.findAll({ where: { objectInfoId: objectId } });
-        // let objectPhonesArr = 
-        // !objectPhones.length ? [] : 
-        // objectPhones.map(item => {
-        //   return(
-        //     {
-        //       id: item.id,
-        //       desc: item.desct,
-        //       number: item.number,
 
-        //     }
-        //   )
-        // })
         let objectCategoriesArr = objectCategories.map(item => {
           return (
             {
@@ -411,58 +400,106 @@ const router = (new KoaRouter())
             }
           )
         })
-        const objectInfo = await db.models.objectInfo.find({ where: { objectClId: objectId } });
-        const objectLocation = await db.models.objectLocation.find({ where: { objectClId: objectId } });
+        const objectInfo = await db.models.objectInfo.find({ where: { objectClId: objectId }});
+        const objectLocation = await db.models.objectLocation.find({ where: { objectClId: objectId }});
 
         let objectWorkTime = await db.models.objectWorkTime.find({ where: { objectClId: objectId }});
-
-        let wtMon = await db.models.wtMon.find({ where: { id: objectWorkTime.wtMonId } });
-        let wtTue = await db.models.wtTue.find({ where: { id: objectWorkTime.wtTueId } });
-        let wtWed = await db.models.wtWed.find({ where: { id: objectWorkTime.wtWedId } });
-        let wtThu = await db.models.wtThu.find({ where: { id: objectWorkTime.wtThuId } });
-        let wtFri = await db.models.wtFri.find({ where: { id: objectWorkTime.wtFriId } });
-        let wtSat = await db.models.wtSat.find({ where: { id: objectWorkTime.wtSatId } });
-        let wtSun = await db.models.wtSun.find({ where: { id: objectWorkTime.wtSunId } });
-
         let pon = {
+          isWorking: false,
           name: "Pon",
-          open: wtMon.opening,
-          close: wtMon.closing
+          open: '0',
+          close: '0'
         }
         let uto = {
+          isWorking: false,
           name: "Uto",
-          open: wtTue.opening,
-          close: wtTue.closing
+          open: '0',
+          close: '0'
         }
         let sre = {
+          isWorking: false,
           name: "Sre",
-          open: wtWed.opening,
-          close: wtWed.closing
+          open: '0',
+          close: '0'
         }
         let cet = {
+          isWorking: false,
           name: "Cet",
-          open: wtThu.opening,
-          close: wtThu.closing
+          open: '0',
+          close: '0'
         }
         let pet = {
+          isWorking: false,
           name: "Pet",
-          open: wtFri.opening,
-          close: wtFri.closing
+          open: '0',
+          close: '0'
         }
         let sub = {
+          isWorking: false,
           name: "Sub",
-          open: wtSat.opening,
-          close: wtSat.closing
+          open: '0',
+          close: '0'
         }
         let ned = {
+          isWorking: false,
           name: "Ned",
-          open: wtSun.opening,
-          close: wtSun.closing
+          open: '0',
+          close: '0'
+        }
+        let isAlwaysOpened = false;
+        if(objectWorkTime.isAlwaysOpened) {
+          isAlwaysOpened = true;
+        }
+        if(objectWorkTime.wtMonId !== null) {
+          let wtMon = await db.models.wtMon.find({ where: { id: objectWorkTime.wtMonId } });
+          pon.isWorking = true;
+          pon.open = wtMon.opening;
+          pon.close = wtMon.closing;
+        }
+        if(objectWorkTime.wtTueId !== null) {
+          let wtTue = await db.models.wtTue.find({ where: { id: objectWorkTime.wtTueId } });
+          uto.isWorking = true;
+          uto.open = wtTue.opening;
+          uto.close = wtTue.closing;
+        }
+        if(objectWorkTime.wtWedId !== null) {
+          let wtWed = await db.models.wtWed.find({ where: { id: objectWorkTime.wtWedId } });
+          sre.isWorking = true;
+          sre.open = wtWed.opening;
+          sre.close = wtWed.closing;
+        }
+        if(objectWorkTime.wtThuId !== null) {
+          let wtThu = await db.models.wtThu.find({ where: { id: objectWorkTime.wtThuId } });
+          cet.isWorking = true;
+          cet.open = wtThu.opening;
+          cet.close = wtThu.closing;
+        }
+        if(objectWorkTime.wtFriId !== null) {
+          let wtFri = await db.models.wtFri.find({ where: { id: objectWorkTime.wtFriId } });
+          pet.isWorking = true;
+          pet.open = wtFri.opening;
+          pet.close = wtFri.closing;
+        }
+        if(objectWorkTime.wtSatId !== null) {
+          let wtSat = await db.models.wtSat.find({ where: { id: objectWorkTime.wtSatId } });
+          sub.isWorking = true;
+          sub.open = wtSat.opening;
+          sub.close = wtSat.closing;
+        }
+        if(objectWorkTime.wtSunId !== null) {
+          let wtSun = await db.models.wtSun.find({ where: { id: objectWorkTime.wtSunId } });
+          ned.isWorking = true;
+          ned.open = wtSun.opening;
+          ned.close = wtSun.closing;
         }
 
         const objectWorkTimes = [ pon, uto, sre, cet, pet, sub, ned ];
+        const objectTimes = {
+          isAlwaysOpened,
+          objectWorkTimes,
+        }
         
-        const objectById = { objectCl, objectInfo, objectLocation, objectCategoriesArr, objectPhones, locations, objectWorkTimes };
+        const objectById = { objectCl, objectInfo, objectLocation, objectCategoriesArr, objectPhones, locations, objectTimes };
         ctx.body = JSON.stringify({ objectById, token: newToken })
       }
     } else {
@@ -612,105 +649,86 @@ const router = (new KoaRouter())
     ------------------------------
   */
  .post('/editObject', async (ctx, next) => {
+
   const newToken = verifyToken(ctx.request.body.token)
-  // let objectArr = ctx.request.body.objectArr;
+
+  let editObject = ctx.request.body.editObject;
+
+  const objectId = ctx.request.body.objectId;
 
 
-
-  // const objectId = ctx.request.body.objectId;
-  const objectId = 1;
-  let objectClArr = {
-    name: 'Stefannnnnn',
-    shortDescription: 'ovo je descr',
-    city: 'lestaneee',
-  };
-  let objectInfoArr = {};
-  let objectLocationArr = {};
-  let objectPhonesArr = [
-    {
-      desc: 'Probni tell',
-      number: '123131',
-      id: 1,
-    },
-    {
-      desc: 'Stefanov fixniii',
-      number: '0123456789',
-      id: 2,
-    }
-  ];
-  // let objectClArr = ctx.request.body.objectClArr;
-  // let objectInfoArr = ctx.request.body.objectInfoArr;
-  // let objectLocation = ctx.request.body.objectLocationArr;
-  // let objectPhones = ctx.request.body.objectPhone;
-
-  let wtMonObj = 
-    {
-      name: "wtMon",
-      open: '0000',
-      close: '0800'
-    };
-  let wtTueObj = 
-    {
-      name: "wtTue",
-      open: '0800',
-      close: '1400'
-    }
-  let wtWedObj =
-    {
-      name: "wtWed",
-      open: '0800',
-      close: '1400'
-    }
-  let wtThuObj =
-    {
-      name: "wtThu",
-      open: '0800',
-      close: '1400'
-    }
-  let wtFriObj = 
-    {
-      name: "wtFri",
-      open: '0800',
-      close: '1400'
-    }
-  let wtSatObj =
-    {
-      name: "wtSat",
-      open: '0800',
-      close: '1400'
-    }
-  let wtSunObj = 
-    {
-      name: "wtSun",
-      open: '1234',
-      close: '5678'
-    }
-
-
+  let workTime = editObject.workTime;
+  let objectClArr = editObject.objectCl;
+  let objectInfoArr = editObject.objectInfo;
+  let objectLocationArr = editObject.objectLocation;
+  let objectPhonesArr = editObject.objectPhones;
   if(newToken.success) {
     try {
-      let stefan = await db.models.objectWorkTime.findOrCreate({where: {objectClId: objectId}})
-  
-      let wtMon =  await db.models.wtMon.findOrCreate({where: {opening: wtMonObj.open, closing: wtMonObj.close}})
-      let wtTue =  await db.models.wtTue.findOrCreate({where: {opening: wtTueObj.open, closing: wtTueObj.close}})
-      let wtWed =  await db.models.wtWed.findOrCreate({where: {opening: wtWedObj.open, closing: wtWedObj.close}})
-      let wtThu =  await db.models.wtThu.findOrCreate({where: {opening: wtThuObj.open, closing: wtThuObj.close}})
-      let wtFri =  await db.models.wtFri.findOrCreate({where: {opening: wtFriObj.open, closing: wtFriObj.close}})
-      let wtSat =  await db.models.wtSat.findOrCreate({where: {opening: wtSatObj.open, closing: wtSatObj.close}})
-      let wtSun =  await db.models.wtSun.findOrCreate({where: {opening: wtSunObj.open, closing: wtSunObj.close}})
-
-      let wtMonId = { wtMonId: wtMon[0].id }
-      let wtTueId = { wtTueId: wtTue[0].id }
-      let wtWedId = { wtWedId: wtWed[0].id }
-      let wtThuId = { wtThuId: wtThu[0].id }
-      let wtFriId = { wtFriId: wtFri[0].id }
-      let wtSatId = { wtSatId: wtSat[0].id }
-      let wtSunId = { wtSunId: wtSun[0].id }
-      // let objectClId = {objectClId: objectId}
-
-      let workTimeObject = { wtMonId, wtTueId, wtWedId, wtThuId, wtFriId, wtSatId, wtSunId }
-
-      await db.models.objectWorkTime.update(workTimeObject, {where: {objectClId: objectId}})
+      let workTimeObject = { isAlwaysOpened: false };
+      await db.models.objectWorkTime.findOrCreate({where: {objectClId: objectId}})
+      
+      if(workTime.pon) {
+        if(workTime.pon.isWorking) {
+          let wtMon = await db.models.wtMon.findOrCreate({where: {opening: workTime.pon.opening, closing: workTime.pon.closing}})
+          workTimeObject = {...workTimeObject, wtMonId: wtMon[0].id}
+        } else {
+          workTimeObject = {...workTimeObject, wtMonId: null}
+        }
+      }
+      if(workTime.uto) {
+        if(workTime.uto.isWorking) {
+          let wtTue = await db.models.wtTue.findOrCreate({where: {opening: workTime.uto.opening, closing: workTime.uto.closing}})
+          workTimeObject = {...workTimeObject, wtTueId: wtTue[0].id}
+        } else {
+          workTimeObject = {...workTimeObject, wtTueId: null}
+        }
+      }
+      if(workTime.sre) {
+        if(workTime.sre.isWorking) {
+          let wtWed = await db.models.wtWed.findOrCreate({where: {opening: workTime.sre.opening, closing: workTime.sre.closing}})
+          workTimeObject = {...workTimeObject, wtWedId: wtWed[0].id}
+        } else {
+          workTimeObject = {...workTimeObject, wtWedId: null}
+        }
+      }
+      if(workTime.cet) {
+        if(workTime.cet.isWorking) {
+          let wtThu = await db.models.wtThu.findOrCreate({where: {opening: workTime.cet.opening, closing: workTime.cet.closing}})
+          workTimeObject = {...workTimeObject, wtThuId: wtThu[0].id}
+        } else {
+          workTimeObject = {...workTimeObject, wtThuId: null}
+        }
+      }
+      if(workTime.pet) {
+        if(workTime.pet.isWorking) {
+          let wtFri = await db.models.wtFri.findOrCreate({where: {opening: workTime.pet.opening, closing: workTime.pet.closing}})
+          workTimeObject = {...workTimeObject, wtFriId: wtFri[0].id}
+        } else {
+          workTimeObject = {...workTimeObject, wtFriId: null}
+        }
+      }
+      if(workTime.sub) {
+        if(workTime.sub.isWorking) {
+          let wtSat = await db.models.wtSat.findOrCreate({where: {opening: workTime.sub.opening, closing: workTime.sub.closing}})
+          workTimeObject = {...workTimeObject, wtSatId: wtSat[0].id}
+        } else {
+          workTimeObject = {...workTimeObject, wtSatId: null}
+        }
+      }
+      if(workTime.ned) {
+        if(workTime.ned.isWorking) {
+          let wtSun = await db.models.wtSun.findOrCreate({where: {opening: workTime.ned.opening, closing: workTime.ned.closing}}) 
+          workTimeObject = {...workTimeObject, wtSunId: wtSun[0].id}
+        } else {
+          workTimeObject = {...workTimeObject, wtSunId: null}
+        }
+      }
+      if(workTime.isAlwaysOpened) {
+        let obj = { isAlwaysOpened: true, wtMonId: 1, wtTueId: 1, wtWedId: 1, wtThuId: 1, wtFriId: 1, wtSatId: 1, wtSunId: 1 }
+        await db.models.objectWorkTime.update(obj, {where: {objectClId: objectId}})
+      } else {
+        await db.models.objectWorkTime.update(workTimeObject, {where: {objectClId: objectId}})
+      }
 
       await db.models.objectCl.update(objectClArr, {where: {id: objectId}})
       await db.models.objectInfo.update(objectInfoArr, {where: {id: objectId}})
@@ -718,14 +736,14 @@ const router = (new KoaRouter())
       objectPhonesArr.map(async item => {
         await db.models.objectPhones.update(item, {where: {id: item.id}})
       })
-      ctx.body = JSON.stringify({ update: true, token: newToken})
+      ctx.body = JSON.stringify({ token: newToken})
     } catch (err) {
       await transaction.rollback();
       ctx.body = JSON.stringify({ update: false, token: newToken})
     }
     ctx.body = JSON.stringify({ token: newToken})
   } else {
-    ctx.body = JSON.stringify({ token: newToken})
+    ctx.body = JSON.stringify({  token: newToken})
   }
 })
 
@@ -856,7 +874,7 @@ const router = (new KoaRouter())
 
   /*
     ////////////////////////////
-    /// TESTIRANJE ////////////
+    /// SCRAPING ////////////
     //////////////////////////
   */
 
@@ -909,18 +927,11 @@ const router = (new KoaRouter())
     ctx.body = "SCRAPING JE STAO"
   })
 
-  .get('/searchobjects', async ctx => {
-    const parameters = {
-      location: '44.793923, 20.446009',
-      // types: "bakery",
-      radius: 1000
-    };
-    googlePlaces.nearbySearch(parameters, (err, res) => {
-      console.log(res.body.results[0].geometry);
-    });
-
-  })
-
+  /*
+      ^^^^^^^^^^^^^^^^^^
+      ||||||||||||||||||
+      SCRAPING
+  */
 
 
   // Favicon.ico.  By default, we'll serve this as a 204 No Content.
