@@ -252,7 +252,6 @@ function verifyToken(token) {
     const tokenVerify = jwt.verify(token, 'nasasifra');
     let response = {};
     if ((tokenVerify.exp - currentTimeStamp) <= 10) {
-      console.log('manje je')
       const newToken = jwt.sign({ id: tokenVerify.id, username: tokenVerify.username, email: tokenVerify.email }, 'nasasifra', { expiresIn: 60 * 60 });
       return { success: true, token: newToken };
     } else {
@@ -272,8 +271,6 @@ function Deg2Rad(deg) {
 }
 
 function izracunajDistancu(lat1, lon1, lat2, lon2) {
-  console.log(lat1 + ' ' + lon1 + " OVO SU LAT I LNG");
-  console.log(lat2 + ' ' + lon2 + ' OVO SU LAT I LNG 2')
   const fi1 = Deg2Rad(lat1);
   const fi2 = Deg2Rad(lat2);
   const delta1 = Deg2Rad(lat2 - lat1);
@@ -947,7 +944,6 @@ const router = (new KoaRouter())
 
   .post('/startScraping', async (ctx, next) => {
     const newToken = verifyToken(ctx.request.body.token);
-    console.log('askjdnaskjdnsa')
     if (newToken.success) {
       scrap.startScraping(ctx.request.body.categoryId, ctx.request.body.lat, ctx.request.body.lng, ctx.request.body.radius);
       ctx.body = JSON.stringify({ success: true, token: newToken });
