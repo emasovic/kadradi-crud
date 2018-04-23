@@ -252,7 +252,6 @@ function verifyToken(token) {
     const tokenVerify = jwt.verify(token, 'nasasifra');
     let response = {};
     if ((tokenVerify.exp - currentTimeStamp) <= 10) {
-      console.log('manje je')
       const newToken = jwt.sign({ id: tokenVerify.id, username: tokenVerify.username, email: tokenVerify.email }, 'nasasifra', { expiresIn: 60 * 60 });
       return { success: true, token: newToken };
     } else {
@@ -265,6 +264,34 @@ function verifyToken(token) {
   } catch (err) {
     return { success: false };
   }
+}
+
+function Deg2Rad(deg) {
+  return (deg * Math.PI) / 180;
+}
+
+function izracunajDistancu(lat1, lon1, lat2, lon2) {
+  const fi1 = Deg2Rad(lat1);
+  const fi2 = Deg2Rad(lat2);
+  const delta1 = Deg2Rad(lat2 - lat1);
+  const delta2 = Deg2Rad(lon2 - lon1);
+
+  const R = 6371e3;
+  const a = Math.sin(delta1 / 2) * Math.sin(delta1 / 2) +
+      Math.cos(fi1) * Math.cos(fi2) *
+      Math.sin(delta2 / 2) * Math.sin(delta2 / 2);
+  var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  var d = R * c;
+  return d / 1000;
+}
+function compare(a, b) {
+  if (a.distance < b.distance) {
+      return -1;
+  }
+  if (a.distance > b.distance) {
+      return 1;
+  }
+  return 0;
 }
 
 
@@ -899,6 +926,15 @@ const router = (new KoaRouter())
             objekti.push({ name: item.name, lat: item.objectLocations.lat, lng: item.objectLocations.lng })
           }))
         });
+
+      const firstObjects = await db.models.objectSc.findAll({where: {objectCategoryId: ctx.request.body.categoryId, imported: false}});
+      Promise.all(firstObjects.map(item => {
+        const distance = izracunajDistancu(ctx.request.body.lat, ctx.request.body.lng, item.lat, item.lng);
+        if(distance < ctx.request.body.radius) {
+          objekti.push({name: item.name, lat: item.lat, lng: item.lng })
+        }
+      }))
+      
       ctx.body = { objects: objekti, token: newToken }
     } else {
       ctx.body = { objects: [], token: newToken }
@@ -908,7 +944,6 @@ const router = (new KoaRouter())
 
   .post('/startScraping', async (ctx, next) => {
     const newToken = verifyToken(ctx.request.body.token);
-    console.log('askjdnaskjdnsa')
     if (newToken.success) {
       scrap.startScraping(ctx.request.body.categoryId, ctx.request.body.lat, ctx.request.body.lng, ctx.request.body.radius);
       ctx.body = JSON.stringify({ success: true, token: newToken });
@@ -935,14 +970,14 @@ const router = (new KoaRouter())
     const limit = 10;
     const offset = limit * (page - 1)
     const pages = await db.models.objectSc.findAndCountAll({
-      where: { objectCategoryId: categoryId }
+      where: { objectCategoryId: categoryId, imported: false }
     });
     const pagesLength = Math.ceil(pages.count / limit);
     if (newToken.success) {
       const objects = await db.models.objectSc.findAll({
         limit: limit,
         offset: offset,
-        where: { objectCategoryId: categoryId }
+        where: { objectCategoryId: categoryId, imported: false }
       });
       ctx.body = JSON.stringify({ objects, pagesLength, token: newToken });
     } else {
