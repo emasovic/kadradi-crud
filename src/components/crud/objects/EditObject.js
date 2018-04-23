@@ -35,6 +35,7 @@ class EditObject extends React.Component {
       phones: [],
       popularBecauseOf: '',
       isAlwaysOpen: false,
+      workTime24h: false,
     };
   }
   objectEdit = e => {
@@ -109,7 +110,8 @@ class EditObject extends React.Component {
         websiteUrl: response.objectById.objectInfo.websiteUrl,
         popularBecauseOf: response.objectById.objectInfo.popularBecauseOf,        
         city: response.objectById.objectLocation.city,
-        workTime: response.objectById.objectWorkTimes,
+        workTime: response.objectById.objectTimes.objectWorkTimes,
+        isAlwaysOpen: response.objectById.objectTimes.isAlwaysOpened,
         phones: JSON.parse(JSON.stringify(response.objectById.objectPhones))
       });
       console.log("OVO", this.state.workTime)
@@ -194,7 +196,6 @@ class EditObject extends React.Component {
     let newTime = time.slice(0,2) + time.slice(3,5);
     console.log("NEW TIMEEE:", newTime);
     console.log(this.state.workTimeEdit[a].open)
-    
     let arr = this.state.workTimeEdit;
     arr[a].open = newTime;
     this.setState({
@@ -248,18 +249,26 @@ class EditObject extends React.Component {
     this.state.workTime.map(item => {
       let a = this.state.workTime.indexOf(item);
       console.log(this.state.workTimeEdit[a]);
-
-      if(item.open !== newArr[a].open || item.close !== newArr[a].close || item.isWorking !== newArr[a].isWorking){
-        let name = newArr[a].name;
+      
+      if(this.state.isAlwaysOpen ){
         obj = {
           ...obj,
-          [name]:{
-           open: newArr[a].open,
-           close: newArr[a].close,
-           isWorking: newArr[a].isWorking,
-          }
+          isAlwaysOpen: true,
         }
-      }      
+      }else{
+        if(item.open !== newArr[a].open || item.close !== newArr[a].close || item.isWorking !== newArr[a].isWorking){
+          let name = newArr[a].name;
+          obj = {
+            ...obj,
+            isAlwaysOpen: false,
+            [name]:{
+             open: newArr[a].open,
+             close: newArr[a].close,
+             isWorking: newArr[a].isWorking,
+            }
+          }
+        }  
+      }    
     })
     console.log("objjjjjjjjjjjj", obj)
   }
