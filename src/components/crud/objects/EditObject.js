@@ -263,12 +263,39 @@ class EditObject extends React.Component {
     })
     console.log("objjjjjjjjjjjj", obj)
   }
+  changePhones = (e, id) => {
+    let arr = this.state.phones
+    if(e.target.name === 'number') {
+      arr.map(item => {
+        if(item.id == id) {
+          item.number = e.target.value
+        }
+      })
+    }else {
+      arr.map(item => {
+        if(item.id == id) {
+          item.desc = e.target.value
+        }
+      })
+    }
+    this.setState({
+      phones: arr
+    })
+  }
+  onSuggestSelect = (suggest) => {
+    console.log('sug',suggest)
+    let street = suggest.description.split(",");
+    this.setState({
+      address: street[0],
+      lat: suggest.location.lat,
+      lng: suggest.location.lng,
+    })
+  }
   prepareToEditObject = async () => {
     let { objToEdit } = this.state;
     let objectClArr = {};
     let objectLocationArr = {};
-    let objectInfoArr = {};  
-    let objectPhonesArr = [];
+    let objectInfoArr = {};
     let objectClKeys = Object.keys(objToEdit.objectCl);
     let objectInfoKeys = Object.keys(objToEdit.objectInfo);
     let objectLocationKeys = Object.keys(objToEdit.objectLocation);
@@ -297,37 +324,7 @@ class EditObject extends React.Component {
       }
     })
   }
-  changePhones = (e, id) => {
-    let arr = this.state.phones
-    if(e.target.name === 'number') {
-      arr.map(item => {
-        if(item.id == id) {
-          item.number = e.target.value
-        }
-      })
-    }else {
-      arr.map(item => {
-        if(item.id == id) {
-          item.desc = e.target.value
-        }
-      })
-    }
-    
-    this.setState({
-      phones: arr
-    })
-    console.log("ID", id)
-    console.log("EVENT", e.target.value)
-  }
-  onSuggestSelect = (suggest) => {
-    console.log('sug',suggest)
-    let street = suggest.description.split(",");
-    this.setState({
-      address: street[0],
-      lat: suggest.location.lat,
-      lng: suggest.location.lng,
-    })
-  }
+  
   render() {
     return (
       <div>
@@ -402,18 +399,16 @@ class EditObject extends React.Component {
         Short Description :<br />
         <TextArea autoHeight name='shortDescription' value={this.state.shortDescription} onChange={this.objectEdit} style={{minHeight:'50px',minWidth:'300px'}} /><br />
         <Geosuggest initialValue={this.state.address} onSuggestSelect={this.onSuggestSelect}/>
-        {/* <Input label='address: ' name='address' value={this.state.address} onChange={this.objectEdit} /><br /> */}
         <Input label='Verified: ' name='verified' value={this.state.verified} onChange={this.objectEdit} /><br />
         <Input label='WebSiteUrl: ' name='websiteUrl' value={this.state.websiteUrl} onChange={this.objectEdit} /><br />
         popularBeacuseOf:<br />
         <TextArea autoHeight  name='popularBecauseOf' value={this.state.popularBecauseOf} onChange={this.objectEdit} style={{minHeight:'50px',minWidth:'300px'}}/><br />
-        {/* <Input label='City: ' name='city' value={this.state.city} onChange={this.objectEdit} /><br /> */}
         {
           this.state.phones.length ?
           this.state.phones.map((item, key) => {
             return(
               <div>
-               <Input name='desc' value={item.desc} onChange={(e) => this.changePhones(e, item.id)}/> 
+               <Input name='desc' value={item.desc} onChange={(e) => this.changePhones(e, item.id)}/>
                <Input name='number' value={item.number} onChange={(e) => this.changePhones(e, item.id)}/>
               </div>
             )
