@@ -238,6 +238,8 @@ class EditObject extends React.Component {
     let objectClKeys = Object.keys(objToEdit.objectCl);
     let objectInfoKeys = Object.keys(objToEdit.objectInfo);
     let objectLocationKeys = Object.keys(objToEdit.objectLocation);
+
+    
     objectClKeys.map(item => {
       if (objToEdit.objectCl[item] != this.state[item]) {
         objectClArr = {
