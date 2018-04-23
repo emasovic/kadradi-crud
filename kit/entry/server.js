@@ -446,6 +446,10 @@ const router = (new KoaRouter())
           open: '0',
           close: '0'
         }
+        let isAlwaysOpened = false;
+        if(objectWorkTime.isAlwaysOpened) {
+          isAlwaysOpened = true;
+        }
         if(objectWorkTime.wtMonId !== null) {
           let wtMon = await db.models.wtMon.find({ where: { id: objectWorkTime.wtMonId } });
           pon.isWorking = true;
@@ -490,8 +494,12 @@ const router = (new KoaRouter())
         }
 
         const objectWorkTimes = [ pon, uto, sre, cet, pet, sub, ned ];
+        const objectTimes = {
+          isAlwaysOpened,
+          objectWorkTimes,
+        }
         
-        const objectById = { objectCl, objectInfo, objectLocation, objectCategoriesArr, objectPhones, locations, objectWorkTimes };
+        const objectById = { objectCl, objectInfo, objectLocation, objectCategoriesArr, objectPhones, locations, objectTimes };
         ctx.body = JSON.stringify({ objectById, token: newToken })
       }
     } else {
