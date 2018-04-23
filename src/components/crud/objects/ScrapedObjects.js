@@ -3,16 +3,13 @@ import { Grid, Menu, Tab, Button, Dropdown, Table, Icon } from 'semantic-ui-reac
 import post from '../../fetch/post';
 import { withRouter } from 'react-router';
 
-class Objekti extends Component {
+class ScrapedObjects extends Component {
   constructor(props) {
     super(props);
     this.state = {
       categories: [],
       objects: [],
-      pages: [],
-      categoryId: 0,
-      pageNumber: 1,
-      activeItem: '1',
+      pages: []
     }
   }
   getAllObjCategories = async () => {
@@ -69,21 +66,6 @@ class Objekti extends Component {
       })
     }
   }
-  editObj = (objectId) => {
-    this.props.history.push(`/edit/${objectId}`);
-  }
-  addObject = () => {
-    this.props.history.push(`/addObject/`)
-  }
-  deleteObj = async (objectId) => {
-    let response = await post.secure('/deleteObject', {
-      token: this.props.token,
-      objectId
-    });
-    if (response.deleted) {
-      this.categoryObjpageN(this.state.pageNumber)
-    }
-  }
   componentWillMount() {
     this.getAllObjCategories()
   }
@@ -95,18 +77,14 @@ class Objekti extends Component {
           onChange={this.categoryObjpage1}
           options={this.state.categories} />
         {
-          this.state.categoryId != 0 ?
-            <Button floated='left' icon labelPosition='left' primary size='small' onClick={this.addObject}>
-              <Icon name='user' /> Add New
-            </Button> : null
-        }
-        {
           this.state.objects.length ?
             <Table compact celled definition>
               <Table.Header>
                 <Table.Row>
-                  <Table.HeaderCell>Name</Table.HeaderCell>
-                  <Table.HeaderCell>Actions</Table.HeaderCell>
+                  <Table.HeaderCell>Ime</Table.HeaderCell>
+                  <Table.HeaderCell>Grad</Table.HeaderCell>
+                  <Table.HeaderCell>Ulica</Table.HeaderCell>
+                  <Table.HeaderCell>Akcija</Table.HeaderCell>
                 </Table.Row>
               </Table.Header>
               <Table.Body>
@@ -148,4 +126,4 @@ class Objekti extends Component {
     );
   }
 }
-export default withRouter(Objekti);
+export default ScrapedObjects;
