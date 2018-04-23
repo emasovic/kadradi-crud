@@ -285,7 +285,7 @@ class EditObject extends React.Component {
       if (objToEdit.objectCl[item] != this.state[item]) {
         objectClArr = {
           ...objectClArr,
-          [item]: this.state[item], 
+          [item]: this.state[item],
         };
       }
     })
