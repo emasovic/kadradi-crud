@@ -246,6 +246,30 @@ export function createReactHandler(css = [], scripts = [], chunkManifest = {}) {
   };
 }
 
+async function fetchObject(placeid) {
+  const url = 'https://maps.googleapis.com/maps/api/place/details/json?placeid=' + placeid + '&key=AIzaSyDImc0NawEJTQwlDskJBSL7cidhVvlccvQ';
+  let zaReturn = {};
+  await fetch(url)
+    .then(response => response.text())
+    .then(async response => {
+      const res = JSON.parse(response);
+      zaReturn = res;
+    })
+  return zaReturn;
+}
+
+async function fetchObjectImage(imageReference) {
+  const url = 'https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=' + imageReference + '&key=AIzaSyB5o17Ztzcsqm5UbxzJQ_P0Fi8xtxkk0GE';
+  let zaReturn = '';
+  await fetch(url)
+    .then(response => response.text())
+    .then(async response => {
+      const res = JSON.parse(response);
+      zaReturn = res;
+    })
+  return zaReturn
+}
+
 function verifyToken(token) {
   try {
     const currentTimeStamp = Math.floor(Date.now() / 1000);
@@ -278,18 +302,18 @@ function izracunajDistancu(lat1, lon1, lat2, lon2) {
 
   const R = 6371e3;
   const a = Math.sin(delta1 / 2) * Math.sin(delta1 / 2) +
-      Math.cos(fi1) * Math.cos(fi2) *
-      Math.sin(delta2 / 2) * Math.sin(delta2 / 2);
+    Math.cos(fi1) * Math.cos(fi2) *
+    Math.sin(delta2 / 2) * Math.sin(delta2 / 2);
   var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   var d = R * c;
   return d / 1000;
 }
 function compare(a, b) {
   if (a.distance < b.distance) {
-      return -1;
+    return -1;
   }
   if (a.distance > b.distance) {
-      return 1;
+    return 1;
   }
   return 0;
 }
@@ -428,9 +452,9 @@ const router = (new KoaRouter())
             }
           )
         })
-        const objectInfo = await db.models.objectInfo.find({ where: { objectClId: objectId }});
-        const objectLocation = await db.models.objectLocation.find({ where: { objectClId: objectId }});
-        const objectFile = await db.models.objectFile.find({ attributes:['id', 'fileUrl', 'desc'], where: { objectClId: objectId }});
+        const objectInfo = await db.models.objectInfo.find({ where: { objectClId: objectId } });
+        const objectLocation = await db.models.objectLocation.find({ where: { objectClId: objectId } });
+        const objectFile = await db.models.objectFile.find({ attributes: ['id', 'fileUrl', 'desc'], where: { objectClId: objectId } });
 
         let objectWorkTime = await db.models.objectWorkTime.find({ where: { objectClId: objectId } });
         let pon = {
@@ -476,10 +500,10 @@ const router = (new KoaRouter())
           close: '0'
         }
         let isAlwaysOpened = false;
-        if(objectWorkTime.isAlwaysOpened) {
+        if (objectWorkTime.isAlwaysOpened) {
           isAlwaysOpened = true;
         }
-        if(objectWorkTime.wtMonId !== null) {
+        if (objectWorkTime.wtMonId !== null) {
           let wtMon = await db.models.wtMon.find({ where: { id: objectWorkTime.wtMonId } });
           pon.isWorking = true;
           pon.open = wtMon.opening;
@@ -522,12 +546,12 @@ const router = (new KoaRouter())
           ned.close = wtSun.closing;
         }
 
-        const objectWorkTimes = [ pon, uto, sre, cet, pet, sub, ned ];
+        const objectWorkTimes = [pon, uto, sre, cet, pet, sub, ned];
         const objectTimes = {
           isAlwaysOpened,
           objectWorkTimes,
         }
-        
+
         const objectById = { objectCl, objectInfo, objectLocation, objectCategoriesArr, objectPhones, locations, objectTimes, objectFile };
         ctx.body = JSON.stringify({ objectById, token: newToken })
       }
@@ -642,22 +666,22 @@ const router = (new KoaRouter())
       shortDescription: "hihihi"
     }
 
-  
-  let objectInfoArr = {};
-  let objectLocationArr = {};
-  if(newToken.success) {
+
+    let objectInfoArr = {};
+    let objectLocationArr = {};
+    if (newToken.success) {
       // sending all from objectCl in db
       const obId = await db.models.objectCl.create(objectClArr)
       // adding id into objects
-      objectInfoArr = {...objectInfoArr, objectClId: obId.id}
-      objectLocationArr = {...objectLocationArr, objectClId: obId.id}
+      objectInfoArr = { ...objectInfoArr, objectClId: obId.id }
+      objectLocationArr = { ...objectLocationArr, objectClId: obId.id }
       // sending all from objectInfo in db
       await db.models.objectInfo.create(objectInfoArr);
       // sending all from objectLocation in db
       await db.models.objectLocation.create(objectLocationArr);
       // sending all from objectPhones in db
       objectPhonesArr.map(async item => {
-        item = {...item, objectClId: obId.id}
+        item = { ...item, objectClId: obId.id }
         await db.models.objectPhones.create(item);
       })
 
@@ -668,10 +692,10 @@ const router = (new KoaRouter())
       // ctx.body = JSON.stringify({ createdNewObject: false, token: newToken})
 
 
-  } else {
-    ctx.body = JSON.stringify({ createdNewObject: false, token: newToken})
-  }
-})
+    } else {
+      ctx.body = JSON.stringify({ createdNewObject: false, token: newToken })
+    }
+  })
 
   /*
     ------------------------------
@@ -927,14 +951,14 @@ const router = (new KoaRouter())
           }))
         });
 
-      const firstObjects = await db.models.objectSc.findAll({where: {objectCategoryId: ctx.request.body.categoryId, imported: false}});
+      const firstObjects = await db.models.objectSc.findAll({ where: { objectCategoryId: ctx.request.body.categoryId, imported: false } });
       Promise.all(firstObjects.map(item => {
         const distance = izracunajDistancu(ctx.request.body.lat, ctx.request.body.lng, item.lat, item.lng);
-        if(distance < ctx.request.body.radius) {
-          objekti.push({name: item.name, lat: item.lat, lng: item.lng })
+        if (distance < ctx.request.body.radius) {
+          objekti.push({ name: item.name, lat: item.lat, lng: item.lng })
         }
       }))
-      
+
       ctx.body = { objects: objekti, token: newToken }
     } else {
       ctx.body = { objects: [], token: newToken }
@@ -983,6 +1007,108 @@ const router = (new KoaRouter())
     } else {
       ctx.body = JSON.stringify({ objects: [], token: newToken })
     }
+  })
+
+  .post('/importObjects', async (ctx, next) => {
+    const newToken = verifyToken(ctx.request.body.token)
+    if (newToken.success) {
+      const ids = ctx.request.body.ids;
+      const locations = await db.models.locations.findAll();
+      let objectCount = 0;
+      Promise.all(ids.map(async item => {
+        const objectSc = await db.models.objectSc.find({ where: { id: item } })
+        const objectInfo = await fetchObject(objectSc.google_id);
+        if (objectInfo.status == "OK") {
+          let objectClArgs = {
+            name: objectSc.name,
+            city: objectSc.city,
+            streetAddress: objectSc.streetAddres,
+            google_id: objectSc.google_id,
+            objectCategoryId: objectSc.objectCategoryId
+          };
+
+          // PRETRAGA OPŠTINE!!!!!
+          Promise.all(locations.map(item => {
+            if (objectClArgs.locationId == undefined) {
+              Promise.all(objectInfo.result.address_components.map(item2 => {
+                if (item.name == item2.long_name) {
+                  objectClArgs.locationId = item.id;
+                }
+              }))
+            }
+          }))
+          //ZAVRŠENA PRETRAGA OPŠTINE!!!!!!!!!!
+          const newObject = await db.models.objectCl.create(objectClArgs);
+          if (newObject != null) {
+            objectCount++;
+            //RAZRESAVANJE RADNOG VREMENA OBJEKTA!!!
+            const objectWorkTime = db.models.objectWorkTime.create({ objectClId: newObject.id });
+            if (objectWorkTime != null) {
+              if (objectInfo.result.opening_hours.periods.length > 0) {
+                let workingTimeArgs = {};
+                Promise.all(objectInfo.result.opening_hours.periods.map(async vreme => {
+                  if (vreme.open.day == 1) {
+                    const wtMon = await db.models.wtMon.findOrCreate({ where: { opening: vreme.open.time, closing: vreme.close.time } })
+                    if (wtMon != null) {
+                      workingTimeArgs.wtMonId = wtMon.id
+                    }
+                  } else if (vreme.open.day == 2) {
+                    const wtTue = await db.models.wtTue.findOrCreate({ where: { opening: vreme.open.time, closing: vreme.close.time } })
+                    if (wtTue != null) {
+                      workingTimeArgs.wtTueId = wtTue.id
+                    }
+                  } else if (vreme.open.day == 3) {
+                    const wtWed = await db.models.wtWed.findOrCreate({ where: { opening: vreme.open.time, closing: vreme.close.time } })
+                    if (wtWed != null) {
+                      workingTimeArgs.wtWedId = wtWed.id
+                    }
+                  } else if (vreme.open.day == 4) {
+                    const wtThu = await db.models.wtThu.findOrCreate({ where: { opening: vreme.open.time, closing: vreme.close.time } })
+                    if (wtThu != null) {
+                      workingTimeArgs.wtThuId = wtThu.id
+                    }
+                  } else if (vreme.open.day == 5) {
+                    const wtFri = await db.models.wtFri.findOrCreate({ where: { opening: vreme.open.time, closing: vreme.close.time } })
+                    if (wtFri != null) {
+                      workingTimeArgs.wtFriId = wtFri.id
+                    }
+                  } else if (vreme.open.day == 6) {
+                    const wtSat = await db.models.wtSat.findOrCreate({ where: { opening: vreme.open.time, closing: vreme.close.time } })
+                    if (wtSat != null) {
+                      workingTimeArgs.wtSatId = wtSat.id
+                    }
+                  } else if (vreme.open.day == 7) {
+                    const wtSun = await db.models.wtSun.findOrCreate({ where: { opening: vreme.open.time, closing: vreme.close.time } })
+                    if (wtSun != null) {
+                      workingTimeArgs.wtSunId = wtSun.id
+                    }
+                  }
+                }))
+                const wtUpdate = await db.models.objectWorkTime.update(workingTimeArgs, { where: { id: objectWorkTime.id } })
+              }
+              //ZAVRSENO RAZRESAVANJE RADNOG VREMENA OBJEKTA!!! JEBOTE KURAC
+              if (objectInfo.result.photos.length) {
+                const profilna = fetchObjectImage(objectInfo.result.photos[0].photo_reference);
+                const updateProfilna = await db.models.objectFile.create({ objectClId: newObject.id, objectFileCategoryId: 1 })
+              }
+              if (objectInfo.result.website) {
+                const objectInfo = await db.models.objectInfo.create({ objectClId: newObject.id, websiteUrl: objectInfo.result.website })
+              }
+            } else {
+              db.models.objectCl.destroy({ where: { id: newObject.id } })
+              objectCount--;
+            }
+          }
+        } else {
+          console.log('ISTEKAO JE API');
+        }
+        db.models.objectSc.update({imported: true}, {where: {id: item}})
+      }))
+      ctx.body = JSON.stringify({objects: objectCount, token: newToken})
+    } else {
+      ctx.body = JSON.stringify({objects: 0, token: newToken})
+    }
+
   })
 
   /*
