@@ -402,6 +402,7 @@ const router = (new KoaRouter())
         })
         const objectInfo = await db.models.objectInfo.find({ where: { objectClId: objectId }});
         const objectLocation = await db.models.objectLocation.find({ where: { objectClId: objectId }});
+        const objectFile = await db.models.objectFile.find({ attributes:['id', 'fileUrl', 'desc'], where: { objectClId: objectId }});
 
         let objectWorkTime = await db.models.objectWorkTime.find({ where: { objectClId: objectId }});
         let pon = {
@@ -499,7 +500,7 @@ const router = (new KoaRouter())
           objectWorkTimes,
         }
         
-        const objectById = { objectCl, objectInfo, objectLocation, objectCategoriesArr, objectPhones, locations, objectTimes };
+        const objectById = { objectCl, objectInfo, objectLocation, objectCategoriesArr, objectPhones, locations, objectTimes, objectFile };
         ctx.body = JSON.stringify({ objectById, token: newToken })
       }
     } else {
@@ -617,8 +618,6 @@ const router = (new KoaRouter())
   let objectInfoArr = {};
   let objectLocationArr = {};
   if(newToken.success) {
-    try {
-      
       // sending all from objectCl in db
       const obId = await db.models.objectCl.create(objectClArr)
       // adding id into objects
@@ -633,11 +632,14 @@ const router = (new KoaRouter())
         item = {...item, objectClId: obId.id}
         await db.models.objectPhones.create(item);
       })
-      ctx.body = JSON.stringify({ createdNewObject: true, token: newToken})
-    } catch (err) {
-      await transaction.rollback();
-      ctx.body = JSON.stringify({ createdNewObject: false, token: newToken})
-    }
+
+
+      // ctx.body = JSON.stringify({ createdNewObject: true, token: newToken})
+
+
+      // ctx.body = JSON.stringify({ createdNewObject: false, token: newToken})
+
+
   } else {
     ctx.body = JSON.stringify({ createdNewObject: false, token: newToken})
   }
