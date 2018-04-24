@@ -266,8 +266,7 @@ async function fetchObjectImage(imageReference) {
   await fetch(url)
     .then(response => response.text())
     .then(async response => {
-      const res = JSON.parse(response);
-      zaReturn = res;
+      zaReturn = response;
     })
   return zaReturn
 }
@@ -377,11 +376,11 @@ const router = (new KoaRouter())
     const newToken = verifyToken(ctx.request.body.token);
     if(newToken.success) {
       const categories = await db.models.objectCategories.findAll(
-        {where: {googleType: { [Op.ne]: null } }}
+        { where: { googleType: { [Op.ne]: null } } }
       );
-      ctx.body = JSON.stringify({categories, token: newToken})
+      ctx.body = JSON.stringify({ categories, token: newToken })
     } else {
-      ctx.body = JSON.stringify({categories: [], token: newToken})
+      ctx.body = JSON.stringify({ categories: [], token: newToken })
     }
   })
 
@@ -1146,7 +1145,7 @@ const router = (new KoaRouter())
     if (newToken.success) {
       const ids = ctx.request.body.ids;
       const locations = await db.models.locations.findAll(
-        {where: {parrentLocation: {[Op.ne]: 0}}}
+        { where: { parrentLocation: { [Op.ne]: 0 } } }
       );
       let objectCount = 0;
       Promise.all(ids.map(async item => {
@@ -1158,7 +1157,8 @@ const router = (new KoaRouter())
             city: objectSc.city,
             streetAddress: objectSc.streetAddres,
             google_id: objectSc.google_id,
-            objectCategoryId: objectSc.objectCategoryId
+            objectCategoryId: objectSc.objectCategoryId,
+            shortDescription: objectSc.name
           };
 
           // PRETRAGA OPŠTINE!!!!!
@@ -1178,60 +1178,65 @@ const router = (new KoaRouter())
             //RAZRESAVANJE RADNOG VREMENA OBJEKTA!!!
             const objectWorkTime = db.models.objectWorkTime.create({ objectClId: newObject.id });
             if (objectWorkTime != null) {
-              if (objectInfo.result.opening_hours.periods.length > 0) {
-                let workingTimeArgs = {};
-                Promise.all(objectInfo.result.opening_hours.periods.map(async vreme => {
-                  if (vreme.open.day == 1) {
-                    const wtMon = await db.models.wtMon.findOrCreate({ where: { opening: vreme.open.time, closing: vreme.close.time } })
-                    if (wtMon != null) {
-                      workingTimeArgs.wtMonId = wtMon.id
+              if (objectInfo.result.opening_hours != undefined) {
+                if (objectInfo.result.opening_hours.periods.length > 0) {
+                  let workingTimeArgs = {};
+                  Promise.all(objectInfo.result.opening_hours.periods.map(async vreme => {
+                    if (vreme.open.day == 1) {
+                      const wtMon = await db.models.wtMon.findOrCreate({ where: { opening: vreme.open.time, closing: vreme.close.time } })
+                      if (wtMon != null) {
+                        workingTimeArgs.wtMonId = wtMon.id
+                      }
+                    } else if (vreme.open.day == 2) {
+                      const wtTue = await db.models.wtTue.findOrCreate({ where: { opening: vreme.open.time, closing: vreme.close.time } })
+                      if (wtTue != null) {
+                        workingTimeArgs.wtTueId = wtTue.id
+                      }
+                    } else if (vreme.open.day == 3) {
+                      const wtWed = await db.models.wtWed.findOrCreate({ where: { opening: vreme.open.time, closing: vreme.close.time } })
+                      if (wtWed != null) {
+                        workingTimeArgs.wtWedId = wtWed.id
+                      }
+                    } else if (vreme.open.day == 4) {
+                      const wtThu = await db.models.wtThu.findOrCreate({ where: { opening: vreme.open.time, closing: vreme.close.time } })
+                      if (wtThu != null) {
+                        workingTimeArgs.wtThuId = wtThu.id
+                      }
+                    } else if (vreme.open.day == 5) {
+                      const wtFri = await db.models.wtFri.findOrCreate({ where: { opening: vreme.open.time, closing: vreme.close.time } })
+                      if (wtFri != null) {
+                        workingTimeArgs.wtFriId = wtFri.id
+                      }
+                    } else if (vreme.open.day == 6) {
+                      const wtSat = await db.models.wtSat.findOrCreate({ where: { opening: vreme.open.time, closing: vreme.close.time } })
+                      if (wtSat != null) {
+                        workingTimeArgs.wtSatId = wtSat.id
+                      }
+                    } else if (vreme.open.day == 7) {
+                      const wtSun = await db.models.wtSun.findOrCreate({ where: { opening: vreme.open.time, closing: vreme.close.time } })
+                      if (wtSun != null) {
+                        workingTimeArgs.wtSunId = wtSun.id
+                      }
                     }
-                  } else if (vreme.open.day == 2) {
-                    const wtTue = await db.models.wtTue.findOrCreate({ where: { opening: vreme.open.time, closing: vreme.close.time } })
-                    if (wtTue != null) {
-                      workingTimeArgs.wtTueId = wtTue.id
-                    }
-                  } else if (vreme.open.day == 3) {
-                    const wtWed = await db.models.wtWed.findOrCreate({ where: { opening: vreme.open.time, closing: vreme.close.time } })
-                    if (wtWed != null) {
-                      workingTimeArgs.wtWedId = wtWed.id
-                    }
-                  } else if (vreme.open.day == 4) {
-                    const wtThu = await db.models.wtThu.findOrCreate({ where: { opening: vreme.open.time, closing: vreme.close.time } })
-                    if (wtThu != null) {
-                      workingTimeArgs.wtThuId = wtThu.id
-                    }
-                  } else if (vreme.open.day == 5) {
-                    const wtFri = await db.models.wtFri.findOrCreate({ where: { opening: vreme.open.time, closing: vreme.close.time } })
-                    if (wtFri != null) {
-                      workingTimeArgs.wtFriId = wtFri.id
-                    }
-                  } else if (vreme.open.day == 6) {
-                    const wtSat = await db.models.wtSat.findOrCreate({ where: { opening: vreme.open.time, closing: vreme.close.time } })
-                    if (wtSat != null) {
-                      workingTimeArgs.wtSatId = wtSat.id
-                    }
-                  } else if (vreme.open.day == 7) {
-                    const wtSun = await db.models.wtSun.findOrCreate({ where: { opening: vreme.open.time, closing: vreme.close.time } })
-                    if (wtSun != null) {
-                      workingTimeArgs.wtSunId = wtSun.id
-                    }
-                  }
-                }))
-                const wtUpdate = await db.models.objectWorkTime.update(workingTimeArgs, { where: { id: objectWorkTime.id } })
+                  }))
+                  const wtUpdate = await db.models.objectWorkTime.update(workingTimeArgs, { where: { id: objectWorkTime.id } })
+                }
               }
+              console.log("JA SAM IZNAD OVOG APDEJTA!!")
+              const updateObjectSc = await db.models.objectSc.update({ imported: true }, { where: { id: item } })
 
-              const objectLocation = await db.models.objectLocation.create({objectClId: newObject.id, lat: objectInfo.lat, lng: objectInfo.lng, address: objectInfo.streetAddres,city: objectInfo.city})
+              const objectLocation = await db.models.objectLocation.create({ objectClId: newObject.id, lat: objectSc.lat, lng: objectSc.lng, address: objectSc.streetAddres, city: objectSc.city })
               //ZAVRSENO RAZRESAVANJE RADNOG VREMENA OBJEKTA!!! JEBOTE KURAC
-              if (objectInfo.result.photos.length) {
-                const profilna = fetchObjectImage(objectInfo.result.photos[0].photo_reference);
+              if (objectInfo.result.photos) {
+                const profilna = await fetchObjectImage(objectInfo.result.photos[0].photo_reference);
                 const updateProfilna = await db.models.objectFile.create({ objectClId: newObject.id, objectFileCategoryId: 1 })
               }
               if (objectInfo.result.website) {
-                const objectInfo = await db.models.objectInfo.create({ objectClId: newObject.id, websiteUrl: objectInfo.result.website })
+                const objectInfoDb = await db.models.objectInfo.create({ objectClId: newObject.id, websiteUrl: objectInfo.result.website })
               } else {
-                const objectInfo = await db.models.objectInfo.create({objectClId: newObject.id})
+                const objectInfoDb = await db.models.objectInfo.create({ objectClId: newObject.id })
               }
+              
 
             } else {
               db.models.objectCl.destroy({ where: { id: newObject.id } })
@@ -1241,8 +1246,9 @@ const router = (new KoaRouter())
         } else {
           console.log('ISTEKAO JE API');
         }
-        db.models.objectSc.update({ imported: true }, { where: { id: item } })
+
       }))
+      console.log("AJOJ MAJKO MOJA DRAGA")
       ctx.body = JSON.stringify({ objects: objectCount, token: newToken })
     } else {
       ctx.body = JSON.stringify({ objects: 0, token: newToken })
