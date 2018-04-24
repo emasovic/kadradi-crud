@@ -166,6 +166,31 @@ const UserProfile = db.define('userProfile', {
 
 Person.hasOne(UserProfile);
 
+const ObjectSc = db.define('objectSc', {
+  google_id: {
+    type: Sequelize.STRING,
+    unique: true
+  },
+  name: {
+    type: Sequelize.STRING
+  },
+  lat: {
+    type: Sequelize.STRING
+  },
+  lng: {
+    type: Sequelize.STRING
+  },
+  streetAddres: {
+    type:Sequelize.STRING
+  },
+  city: {
+    type: Sequelize.STRING
+  },
+  imported: {
+    type: Sequelize.BOOLEAN
+  }
+})
+
 const ObjectCl = db.define('objectCl', {
   name: {
     type: Sequelize.STRING,
@@ -186,6 +211,10 @@ const ObjectCl = db.define('objectCl', {
   },
   streetAddress: {
     type: Sequelize.STRING
+  },
+  google_id: {
+    type: Sequelize.STRING,
+    unique: true
   },
   postcode: {
     type: Sequelize.STRING
@@ -228,6 +257,7 @@ const ObjectCategorie = db.define('objectCategories', {
   }
 });
 ObjectCategorie.hasOne(ObjectCl);
+ObjectCategorie.hasOne(ObjectSc);
 
 const ParrentCategorie = db.define('parrentCategories', {
   name: {
@@ -732,7 +762,7 @@ const Inbox = db.define('inbox', {
 
   // Admin.create({username: "admin", password: "f1dc735ee3581693489eaf286088b916"})  
 // }).then(() => {
-  // calculateAverageForAll();
+//   // calculateAverageForAll();
 // });
 
 

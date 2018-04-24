@@ -1,6 +1,8 @@
 import GooglePlaces from 'node-googleplaces';
 import PubSub from 'pubsub-js';
 import db from '../../db/db';
+import fs from 'fs';
+import random from 'random-id';
 
 const googlePlaces = new GooglePlaces('AIzaSyDImc0NawEJTQwlDskJBSL7cidhVvlccvQ')
 
@@ -90,6 +92,16 @@ async function scrap(nextPage) {
     if (nextPage) {
       const screp = await withToken({lat, lng, radius, type: category.google, nextPage})
       await Promise.all(screp.results.map(item => {
+        db.models.objectSc.create({
+          google_id: item.place_id,
+          name: item.name,
+          lat: item.geometry.location.lat,
+          lng: item.geometry.location.lng,
+          streetAddress: item.vicinity.slice(0,item.vicinity.indexOf(',')),
+          city: item.vicinity.substring(item.vicinity.indexOf(',')+1),
+          objectCategoryId: category.base,
+          imported: false,
+        })
         PubSub.publish('object_found', { id: item.id, name: item.name, vicinity: item.vicinity, lat: item.geometry.location.lat, lng: item.geometry.location.lng });
       }))
       if (screp.next_page_token) {
@@ -100,6 +112,16 @@ async function scrap(nextPage) {
     } else {
       const screp = await withoutToken({lat, lng, radius, type: category.google})
       await Promise.all(screp.results.map(item => {
+        db.models.objectSc.create({
+          google_id: item.place_id,
+          name: item.name,
+          lat: item.geometry.location.lat,
+          lng: item.geometry.location.lng,
+          streetAddres: item.vicinity.slice(0,item.vicinity.indexOf(',')),
+          city: item.vicinity.substring(item.vicinity.indexOf(',')+1),
+          objectCategoryId: category.base,
+          imported: false
+        })
         PubSub.publish('object_found', { id: item.id, name: item.name, vicinity: item.vicinity, lat: item.geometry.location.lat, lng: item.geometry.location.lng });
       }))
       if (screp.next_page_token) {
