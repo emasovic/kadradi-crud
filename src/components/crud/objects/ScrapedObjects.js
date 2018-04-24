@@ -10,7 +10,8 @@ class ScrapedObjects extends Component {
       categories: [],
       objects: [],
       objectsToAdd: [],
-      pages: []
+      pages: [],
+      activeItem: '1',
     }
   }
   getAllObjCategories = async () => {
