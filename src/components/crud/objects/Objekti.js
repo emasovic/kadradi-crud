@@ -101,34 +101,35 @@ class Objekti extends Component {
             </Button> : null
         }
         {
-          this.state.objects.length ?
-            <Table compact celled definition>
-              <Table.Header>
-                <Table.Row>
-                  <Table.HeaderCell>Name</Table.HeaderCell>
-                  <Table.HeaderCell>Actions</Table.HeaderCell>
-                </Table.Row>
-              </Table.Header>
-              <Table.Body>
-                {
-                  this.state.objects.map((item, key) => {
-                    return (
-                      <Table.Row key={item.id}>
-                        <Table.Cell>{item.name}</Table.Cell>
-                        <Table.Cell>
-                          <Button icon onClick={() => this.editObj(item.id)}>
-                            <Icon name='edit' />
-                          </Button>
-                          <Button icon onClick={() => this.deleteObj(item.id)}>
-                            <Icon name='delete' />
-                          </Button>
-                        </Table.Cell>
-                      </Table.Row>
-                    )
-                  })
-                }
-              </Table.Body>
-            </Table> : null
+          
+            this.state.objects.length ?
+              <Table compact celled definition>
+                <Table.Header>
+                  <Table.Row>
+                    <Table.HeaderCell>Name</Table.HeaderCell>
+                    <Table.HeaderCell>Actions</Table.HeaderCell>
+                  </Table.Row>
+                </Table.Header>
+                <Table.Body>
+                  {
+                    this.state.objects.map((item, key) => {
+                      return (
+                        <Table.Row key={item.id}>
+                          <Table.Cell>{item.name}</Table.Cell>
+                          <Table.Cell>
+                            <Button icon onClick={() => this.editObj(item.id)}>
+                              <Icon name='edit' />
+                            </Button>
+                            <Button icon onClick={() => this.deleteObj(item.id)}>
+                              <Icon name='delete' />
+                            </Button>
+                          </Table.Cell>
+                        </Table.Row>
+                      )
+                    })
+                  }
+                </Table.Body>
+              </Table> : null
         }
         {
           this.state.pages.length ?

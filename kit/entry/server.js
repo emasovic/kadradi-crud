@@ -467,7 +467,11 @@ const router = (new KoaRouter())
             }
           )
         })
-        const objectPhones = await db.models.objectPhones.findAll({ where: { objectInfoId: objectId } });
+        // OBJECTNFOID
+
+        const objectInfo = await db.models.objectInfo.find({ where: { objectClId: objectId }});
+
+        const objectPhones = await db.models.objectPhones.findAll({ where: { objectInfoId: objectInfo.id } });
 
         let objectCategoriesArr = objectCategories.map(item => {
           return (
@@ -478,7 +482,6 @@ const router = (new KoaRouter())
             }
           )
         })
-        const objectInfo = await db.models.objectInfo.find({ where: { objectClId: objectId } });
         const objectLocation = await db.models.objectLocation.find({ where: { objectClId: objectId } });
         const objectFile = await db.models.objectFile.find({ attributes: ['id', 'fileUrl', 'desc'], where: { objectClId: objectId } });
 
@@ -585,6 +588,7 @@ const router = (new KoaRouter())
       ctx.body = JSON.stringify({ objectById: [], token: newToken })
     }
   })
+  
   /*
   ------------------------------
   OVO JE METODA ZA BRISANJE OBJEKATA
@@ -674,55 +678,145 @@ const router = (new KoaRouter())
       ctx.body = JSON.stringify({ deleted: false, token: newToken })
     }
   })
-  /*
-   ------------------------------
-   OVO JE METODA ZA DODAVANJE OBJEKATA
-   ------------------------------
- */
-  .post('/addObject', async (ctx, next) => {
-    const newToken = verifyToken(ctx.request.body.token);
-    // let objectClArr = ctx.request.body.objectClArr;
-    // let objectInfoArr = ctx.request.body.objectInfoArr;
-    // let objectLocation = ctx.request.body.objectLocationArr;
-    // let objectPhones = ctx.request.body.objectPhone;
+   /*
+    ------------------------------
+    OVO JE METODA ZA DODAVANJE OBJEKATA
+    ------------------------------
+  */
+.post('/addObject', async (ctx, next) => {
+  const newToken = verifyToken(ctx.request.body.token);
 
-    let objectClArr = {
-      name: "Sane gay",
-      objectCategoryId: 10,
-      shortDescription: "hihihi"
-    }
+  let addObject = ctx.request.body.addObject;
 
 
-    let objectInfoArr = {};
-    let objectLocationArr = {};
-    if (newToken.success) {
+  let objectClArr = addObject.objectCl;
+  let objectInfoArr = addObject.objectInfo;
+  let objectLocationArr = addObject.objectLocation;
+  let objectPhonesArr = addObject.objectPhones;
+  let objectWorkTimeArr = addObject.objectWorkTime;
+  let objectFileArr = addObject.objectFile;
+  let workTime = addObject.workTime;
+  let objectInfoObj = {};
+  let objectLocationObj = {};
+  let objectFileObj = {};
+  let objectWorkTimeObj = {};
+
+  if(newToken.success) {
       // sending all from objectCl in db
       const obId = await db.models.objectCl.create(objectClArr)
       // adding id into objects
-      objectInfoArr = { ...objectInfoArr, objectClId: obId.id }
-      objectLocationArr = { ...objectLocationArr, objectClId: obId.id }
+      objectInfoObj = {...objectInfoArr, objectClId: obId.id}
+      objectLocationObj = {...objectLocationArr, objectClId: obId.id}
+      objectFileObj = {...objectFileArr, objectClId: obId.id, objectFileCategoryId: 1}
+      objectWorkTimeObj = {...objectWorkTimeArr, objectClId: obId.id}
       // sending all from objectInfo in db
-      await db.models.objectInfo.create(objectInfoArr);
+      let infoId = await db.models.objectInfo.create(objectInfoObj);
       // sending all from objectLocation in db
-      await db.models.objectLocation.create(objectLocationArr);
+      let locationId = await db.models.objectLocation.create(objectLocationObj);
       // sending all from objectPhones in db
+      console.log("LOCATAAAAAAAAAAAAAAAAAAAAAA", locationId.id)
       objectPhonesArr.map(async item => {
-        item = { ...item, objectClId: obId.id }
+        item = {...item, objectInfoId: infoId.id}
         await db.models.objectPhones.create(item);
       })
+      // sending all from objectFile in db
+      await db.models.objectFile.create(objectFileObj);
+      // sending all from objectWorkTime in db
+      await db.models.objectWorkTime.create({objectClId: obId.id});
 
-
-      // ctx.body = JSON.stringify({ createdNewObject: true, token: newToken})
+      let workTimeObject = { isAlwaysOpened: false };
+      if(workTime.pon) {
+        if(workTime.pon.isWorking) {
+          let wtMon = await db.models.wtMon.findOrCreate({where: {opening: workTime.pon.opening, closing: workTime.pon.closing}})
+          workTimeObject = {...workTimeObject, wtMonId: wtMon[0].id}
+        } else {
+          workTimeObject = {...workTimeObject, wtMonId: null}
+        }
+      }
+      if(workTime.uto) {
+        if(workTime.uto.isWorking) {
+          let wtTue = await db.models.wtTue.findOrCreate({where: {opening: workTime.uto.opening, closing: workTime.uto.closing}})
+          workTimeObject = {...workTimeObject, wtTueId: wtTue[0].id}
+        } else {
+          workTimeObject = {...workTimeObject, wtTueId: null}
+        }
+      }
+      if(workTime.sre) {
+        if(workTime.sre.isWorking) {
+          let wtWed = await db.models.wtWed.findOrCreate({where: {opening: workTime.sre.opening, closing: workTime.sre.closing}})
+          workTimeObject = {...workTimeObject, wtWedId: wtWed[0].id}
+        } else {
+          workTimeObject = {...workTimeObject, wtWedId: null}
+        }
+      }
+      if(workTime.cet) {
+        if(workTime.cet.isWorking) {
+          let wtThu = await db.models.wtThu.findOrCreate({where: {opening: workTime.cet.opening, closing: workTime.cet.closing}})
+          workTimeObject = {...workTimeObject, wtThuId: wtThu[0].id}
+        } else {
+          workTimeObject = {...workTimeObject, wtThuId: null}
+        }
+      }
+      if(workTime.pet) {
+        if(workTime.pet.isWorking) {
+          let wtFri = await db.models.wtFri.findOrCreate({where: {opening: workTime.pet.opening, closing: workTime.pet.closing}})
+          workTimeObject = {...workTimeObject, wtFriId: wtFri[0].id}
+        } else {
+          workTimeObject = {...workTimeObject, wtFriId: null}
+        }
+      }
+      if(workTime.sub) {
+        if(workTime.sub.isWorking) {
+          let wtSat = await db.models.wtSat.findOrCreate({where: {opening: workTime.sub.opening, closing: workTime.sub.closing}})
+          workTimeObject = {...workTimeObject, wtSatId: wtSat[0].id}
+        } else {
+          workTimeObject = {...workTimeObject, wtSatId: null}
+        }
+      }
+      if(workTime.ned) {
+        if(workTime.ned.isWorking) {
+          let wtSun = await db.models.wtSun.findOrCreate({where: {opening: workTime.ned.opening, closing: workTime.ned.closing}}) 
+          workTimeObject = {...workTimeObject, wtSunId: wtSun[0].id}
+        } else {
+          workTimeObject = {...workTimeObject, wtSunId: null}
+        }
+      }
+      if(workTime.isAlwaysOpened) {
+        let obj = { isAlwaysOpened: true, wtMonId: 1, wtTueId: 1, wtWedId: 1, wtThuId: 1, wtFriId: 1, wtSatId: 1, wtSunId: 1 }
+        await db.models.objectWorkTime.update(obj, {where: {objectClId: obId.id}})
+      } else {
+        await db.models.objectWorkTime.update(workTimeObject, {where: {objectClId: obId.id}})
+      }
+      let updateObjectCl = {
+        locationId: locationId.id,
+      }
+      await db.models.objectCl.update(updateObjectCl, {where: {id: obId.id}})
+      ctx.body = JSON.stringify({ createdNewObject: true, token: newToken})
 
 
       // ctx.body = JSON.stringify({ createdNewObject: false, token: newToken})
 
 
-    } else {
-      ctx.body = JSON.stringify({ createdNewObject: false, token: newToken })
-    }
-  })
+  } else {
+    ctx.body = JSON.stringify({ createdNewObject: false, token: newToken})
+  }
+})
+///////////////////////////////////
+.post('/stefan', async (ctx, next) => {
+  const newToken = verifyToken(ctx.request.body.token)
+  if(newToken.success) {
+    
 
+
+
+
+  ctx.body = JSON.stringify({ stefan: 'car', token: newToken })
+  } else {
+    ctx.body = JSON.stringify({  token: newToken})
+  }
+})
+
+///////////////////////////////////
   /*
     ------------------------------
     OVO JE METODA ZA EDITOVANJE OBJEKATA
