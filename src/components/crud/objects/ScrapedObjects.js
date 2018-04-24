@@ -12,6 +12,7 @@ class ScrapedObjects extends Component {
       objectsToAdd: [],
       pages: [],
       activeItem: '1',
+      checked: false
     }
   }
   getAllObjCategories = async () => {
@@ -76,12 +77,24 @@ class ScrapedObjects extends Component {
       objectsToAdd: arr
     })
   }
+  selectAll = (e, data) => {
+    let arr = this.state.objectsToAdd
+    if(data.checked) {
+      this.state.objects.map(item => {
+        arr.push(item.id)
+      })
+      this.setState({
+        checked: true
+      })
+    }
+    console.log("DATA", data)
+  }
   addToApp = async () => {
     let response = await post.secure('/importObjects', {
       ids: this.state.objectsToAdd
     });
   }
-  goToObjDetail  = (googleId) => {
+  goToObjDetail = (googleId) => {
     this.props.history.push(`/objDetails/${googleId}`)
   }
   componentWillMount() {
@@ -104,7 +117,9 @@ class ScrapedObjects extends Component {
                     <Table.HeaderCell>Ime</Table.HeaderCell>
                     <Table.HeaderCell>Grad</Table.HeaderCell>
                     <Table.HeaderCell>Ulica</Table.HeaderCell>
-                    <Table.HeaderCell>Akcija</Table.HeaderCell>
+                    <Table.HeaderCell>
+                      <Checkbox label='Select all' onChange={this.selectAll} />
+                    </Table.HeaderCell>
                   </Table.Row>
                 </Table.Header>
                 <Table.Body>
@@ -116,7 +131,7 @@ class ScrapedObjects extends Component {
                           <Table.Cell>{item.city}</Table.Cell>
                           <Table.Cell>{item.streetAddres}</Table.Cell>
                           <Table.Cell>
-                          <Checkbox onChange={(e, data) => this.toggle(e, data, item.id)} />
+                          <Checkbox checked={this.state.checked} onChange={(e, data) => this.toggle(e, data, item.id)} />
                           </Table.Cell>
                         </Table.Row>
                       )
@@ -124,7 +139,7 @@ class ScrapedObjects extends Component {
                   }
                 </Table.Body>
               </Table>
-              <Button onClick={() => this.addToApp(item.id)}>
+              <Button onClick={() => this.addToApp()}>
               Dodaj u aplikaciju
               </Button>
             </div> : null
