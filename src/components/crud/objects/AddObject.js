@@ -92,6 +92,7 @@ class AddObject extends React.Component {
         childLocationArr: arr1
       })
     }
+    console.log("RESPONSE",response)
   }
   getCityPart = (e, { value }) => {
     let arr = this.state.childLocationArr.filter(id => id.parrentLocation == value)

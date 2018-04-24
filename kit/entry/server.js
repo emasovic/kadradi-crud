@@ -418,7 +418,7 @@ const router = (new KoaRouter())
   ------------------------------
   */
   .post('/getAllLocations', async (ctx, next) => {
-    const newTokenI = verifyToken(ctx.request.body.token);
+    const newToken = verifyToken(ctx.request.body.token);
     if (newToken.success) {
       const locations = await db.models.locations.findAll();
       ctx.body = JSON.stringify({ locations, token: newToken })
