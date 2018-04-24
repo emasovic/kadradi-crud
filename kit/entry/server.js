@@ -456,14 +456,9 @@ const router = (new KoaRouter())
             }
           )
         })
-<<<<<<< HEAD
-        const objectLocation = await db.models.objectLocation.find({ where: { objectClId: objectId }});
-        const objectFile = await db.models.objectFile.find({ attributes:['id', 'fileUrl', 'desc'], where: { objectClId: objectId }});
-=======
         const objectInfo = await db.models.objectInfo.find({ where: { objectClId: objectId } });
         const objectLocation = await db.models.objectLocation.find({ where: { objectClId: objectId } });
         const objectFile = await db.models.objectFile.find({ attributes: ['id', 'fileUrl', 'desc'], where: { objectClId: objectId } });
->>>>>>> fafe46dfa12d348b7aafab29f0f205564d8e8088
 
         let objectWorkTime = await db.models.objectWorkTime.find({ where: { objectClId: objectId } });
         let pon = {
@@ -658,7 +653,6 @@ const router = (new KoaRouter())
       ctx.body = JSON.stringify({ deleted: false, token: newToken })
     }
   })
-<<<<<<< HEAD
    /*
     ------------------------------
     OVO JE METODA ZA DODAVANJE OBJEKATA
@@ -690,35 +684,6 @@ const router = (new KoaRouter())
       objectLocationObj = {...objectLocationArr, objectClId: obId.id}
       objectFileObj = {...objectFileArr, objectClId: obId.id, objectFileCategoryId: 1}
       objectWorkTimeObj = {...objectWorkTimeArr, objectClId: obId.id}
-=======
-  /*
-   ------------------------------
-   OVO JE METODA ZA DODAVANJE OBJEKATA
-   ------------------------------
- */
-  .post('/addObject', async (ctx, next) => {
-    const newToken = verifyToken(ctx.request.body.token);
-    // let objectClArr = ctx.request.body.objectClArr;
-    // let objectInfoArr = ctx.request.body.objectInfoArr;
-    // let objectLocation = ctx.request.body.objectLocationArr;
-    // let objectPhones = ctx.request.body.objectPhone;
-
-    let objectClArr = {
-      name: "Sane gay",
-      objectCategoryId: 10,
-      shortDescription: "hihihi"
-    }
-
-
-    let objectInfoArr = {};
-    let objectLocationArr = {};
-    if (newToken.success) {
-      // sending all from objectCl in db
-      const obId = await db.models.objectCl.create(objectClArr)
-      // adding id into objects
-      objectInfoArr = { ...objectInfoArr, objectClId: obId.id }
-      objectLocationArr = { ...objectLocationArr, objectClId: obId.id }
->>>>>>> fafe46dfa12d348b7aafab29f0f205564d8e8088
       // sending all from objectInfo in db
       let infoId = await db.models.objectInfo.create(objectInfoObj);
       // sending all from objectLocation in db
@@ -726,11 +691,7 @@ const router = (new KoaRouter())
       // sending all from objectPhones in db
       console.log("LOCATAAAAAAAAAAAAAAAAAAAAAA", locationId.id)
       objectPhonesArr.map(async item => {
-<<<<<<< HEAD
         item = {...item, objectInfoId: infoId.id}
-=======
-        item = { ...item, objectClId: obId.id }
->>>>>>> fafe46dfa12d348b7aafab29f0f205564d8e8088
         await db.models.objectPhones.create(item);
       })
       // sending all from objectFile in db
@@ -811,7 +772,6 @@ const router = (new KoaRouter())
       // ctx.body = JSON.stringify({ createdNewObject: false, token: newToken})
 
 
-<<<<<<< HEAD
   } else {
     ctx.body = JSON.stringify({ createdNewObject: false, token: newToken})
   }
@@ -830,12 +790,6 @@ const router = (new KoaRouter())
     ctx.body = JSON.stringify({  token: newToken})
   }
 })
-=======
-    } else {
-      ctx.body = JSON.stringify({ createdNewObject: false, token: newToken })
-    }
-  })
->>>>>>> fafe46dfa12d348b7aafab29f0f205564d8e8088
 
 ///////////////////////////////////
   /*
