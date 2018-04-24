@@ -124,7 +124,7 @@ class ScrapedObjects extends Component {
                   }
                 </Table.Body>
               </Table>
-              <Button onClick={() => this.addToApp(item.id)}>
+              <Button onClick={() => this.addToApp()}>
               Dodaj u aplikaciju
               </Button>
             </div> : null
