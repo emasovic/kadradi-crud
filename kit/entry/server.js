@@ -392,7 +392,7 @@ const router = (new KoaRouter())
   ------------------------------
   */
   .post('/getAllLocations', async (ctx, next) => {
-    const newTokenI = verifyToken(ctx.request.body.token);
+    const newToken = verifyToken(ctx.request.body.token);
     if (newToken.success) {
       const locations = await db.models.locations.findAll();
       ctx.body = JSON.stringify({ locations, token: newToken })
@@ -456,7 +456,6 @@ const router = (new KoaRouter())
             }
           )
         })
-        const objectInfo = await db.models.objectInfo.find({ where: { objectClId: objectId } });
         const objectLocation = await db.models.objectLocation.find({ where: { objectClId: objectId } });
         const objectFile = await db.models.objectFile.find({ attributes: ['id', 'fileUrl', 'desc'], where: { objectClId: objectId } });
 
