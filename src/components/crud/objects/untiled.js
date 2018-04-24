@@ -1,6 +1,7 @@
 /addObject , {addObject}
 
 addObject: {
+  
   objectCl: {
     name: STRING,
     shortDescription: STRING,
@@ -10,7 +11,6 @@ addObject: {
   },
   objectInfo: {
     webSiteUrl: STRING,
-    hasRestaurant: BOOLEAN,
     popularBecauseOf: STRING,
   },
   /// kad je always open true ne salje ostale dane 

@@ -20,7 +20,7 @@ class AddObject extends React.Component {
       cityIdError: "",
       cityPart: "",
       cityPartError: "",
-      person: "",
+      person: null,
       image: "",
       objectLocation:"",
       objectInfo: "",
@@ -119,75 +119,77 @@ class AddObject extends React.Component {
     }
   }
   objectToBase = async () => {
+    // if(response.token.success){
+    //   console.log("POSLATO KA BAZI",response)
+    // }
     let response = await post.secure('/addObject', { 
       addObject:{
         objectCl: {
           name:this.state.name,
           shortDescription:this.state.additionalInfo,
           verified:this.state.verified,
-          // personId:this.state.,
+          locationId:this.state.cityPart,
+          personId:this.state.person,
           objectCategoryId: this.state.objectCategorie
         },
         objectInfo: {
-          webSiteUrl: this.state.objectInfo,
+          websiteUrl: this.state.objectInfo,
           popularBecauseOf: this.state.popular,
         },
-        /// kad je always open true ne salje ostale dane 
-        // workTime: {
-        //   isAlwaysOpened: BOOLEAN,
-        //   pon: {
-        //     isWorking: BOOLEAN,
-        //     opening: STRING (WITH 4 NUMBERS),
-        //     closing: STRING (WITH 4 NUMBERS),
-        //   },
-        //   uto: {
-        //     isWorking: BOOLEAN,
-        //     opening: STRING (WITH 4 NUMBERS),
-        //     closing: STRING (WITH 4 NUMBERS),
-        //   },  
-        //   sre: {
-        //     isWorking: BOOLEAN,
-        //     opening: STRING (WITH 4 NUMBERS),
-        //     closing: STRING (WITH 4 NUMBERS),
-        //   },
-        //   cet: {
-        //     isWorking: BOOLEAN,
-        //     opening: STRING (WITH 4 NUMBERS),
-        //     closing: STRING (WITH 4 NUMBERS),
-        //   },
-        //   pet: {
-        //     isWorking: BOOLEAN,
-        //     opening: STRING (WITH 4 NUMBERS),
-        //     closing: STRING (WITH 4 NUMBERS),
-        //   },
-        //   sub: {
-        //     isWorking: BOOLEAN,
-        //     opening: STRING (WITH 4 NUMBERS),
-        //     closing: STRING (WITH 4 NUMBERS),
-        //   }, 
-        //   ned: {
-        //     isWorking: BOOLEAN,
-        //     opening: STRING (WITH 4 NUMBERS),
-        //     closing: STRING (WITH 4 NUMBERS),
-        //   },
-        // },
-        // objectLocations: {
-        //   lat: FLOAT,
-        //   lng: FLOAT,
-        //   adress: STRING,
-        //   city: STRING,
-        //   zipCode: INT,
-        // },
+        // kad je always open true ne salje ostale dane 
+        workTime: {
+          isAlwaysOpened: true,
+          pon: {
+            isWorking: true,
+            opening: "1200",
+            closing: "1400"
+          },
+          uto: {
+            isWorking: true,
+            opening: "1200",
+            closing: "1400"
+          },  
+          sre: {
+            isWorking: true,
+            opening: "1200",
+            closing: "1400"
+          },
+          cet: {
+            isWorking: true,
+            opening: "1200",
+            closing: "1400"
+          },
+          pet: {
+            isWorking: true,
+            opening: "1200",
+            closing: "1400"
+          },
+          sub: {
+            isWorking: true,
+            opening: "1200",
+            closing: "1400"
+          }, 
+          ned: {
+            isWorking: true,
+            opening: "1200",
+            closing: "1400"
+          },
+        },
+        objectLocations: {
+          lat: 33.5,
+          lng: 14.5,
+          adress: this.state.address,
+          city: "Unknown",
+          zipCode: 2131231,
+        },
         objectPhones: this.state.phoneArr,
-        // objectFile: {
-        // fileUrl: STRING,
-        // desc: STRING
-        // }
+        objectFile: {
+        fileUrl: "kica",
+        desc: "babababa"
+        }
       }
     }) 
-    if(response.token.success){
-      console.log("POSLATO KA BAZI",response)
-    }
+    console.log("RESPONSE",response)
   }
   validation = (name, categorie, city, cityPart) => {
     let validate = false
