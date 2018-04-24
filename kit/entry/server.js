@@ -678,6 +678,25 @@ const router = (new KoaRouter())
       ctx.body = JSON.stringify({ deleted: false, token: newToken })
     }
   })
+     /*
+    ------------------------------
+    OVO JE METODA ZA IZLISTAVANJE KORISNIKA
+    ------------------------------
+  */
+ .post('/getUsers', async (ctx, next) => {
+  const newToken = verifyToken(ctx.request.body.token)
+  if (newToken.success) {
+    const email = ctx.request.body.email;
+    if(email.length > 2) {
+      let persons = await db.models.person.findAll({ where: { email: {[Op.iRegexp]: email} }, attributes: ['id', 'email', 'firstName', 'lastName']});
+      ctx.body = JSON.stringify({ users: persons, token: newToken })
+    } else {
+      ctx.body = JSON.stringify({ users: [], token: newToken })
+    }
+  } else {
+    ctx.body = JSON.stringify({ users: [], token: newToken })
+  }
+})
    /*
     ------------------------------
     OVO JE METODA ZA DODAVANJE OBJEKATA
@@ -714,7 +733,6 @@ const router = (new KoaRouter())
       // sending all from objectLocation in db
       let locationId = await db.models.objectLocation.create(objectLocationObj);
       // sending all from objectPhones in db
-      console.log("LOCATAAAAAAAAAAAAAAAAAAAAAA", locationId.id)
       objectPhonesArr.map(async item => {
         item = {...item, objectInfoId: infoId.id}
         await db.models.objectPhones.create(item);
@@ -787,10 +805,10 @@ const router = (new KoaRouter())
       } else {
         await db.models.objectWorkTime.update(workTimeObject, {where: {objectClId: obId.id}})
       }
-      let updateObjectCl = {
-        locationId: locationId.id,
-      }
-      await db.models.objectCl.update(updateObjectCl, {where: {id: obId.id}})
+      // let updateObjectCl = {
+      //   locationId: locationId.id,
+      // }
+      // await db.models.objectCl.update(updateObjectCl, {where: {id: obId.id}})
       ctx.body = JSON.stringify({ createdNewObject: true, token: newToken})
 
 
