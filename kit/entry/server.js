@@ -1028,8 +1028,10 @@ const router = (new KoaRouter())
         ctx.body = JSON.stringify({ details: objectDetails, token: newToken })
       }
     } else {
-      ctx.body = JSON.stringify({details: {}, token: newToken})
-      
+      ctx.body = JSON.stringify({ details: {}, token: newToken })
+    }
+  })
+
   .post('/importObjects', async (ctx, next) => {
     const newToken = verifyToken(ctx.request.body.token)
     if (newToken.success) {
@@ -1123,13 +1125,12 @@ const router = (new KoaRouter())
         } else {
           console.log('ISTEKAO JE API');
         }
-        db.models.objectSc.update({imported: true}, {where: {id: item}})
+        db.models.objectSc.update({ imported: true }, { where: { id: item } })
       }))
-      ctx.body = JSON.stringify({objects: objectCount, token: newToken})
+      ctx.body = JSON.stringify({ objects: objectCount, token: newToken })
     } else {
-      ctx.body = JSON.stringify({objects: 0, token: newToken})
+      ctx.body = JSON.stringify({ objects: 0, token: newToken })
     }
-
   })
 
   /*
