@@ -320,6 +320,17 @@ function compare(a, b) {
   return 0;
 }
 
+async function fetchObject(placeid) {
+  const url = 'https://maps.googleapis.com/maps/api/place/details/json?placeid=' + placeid + '&key=AIzaSyDImc0NawEJTQwlDskJBSL7cidhVvlccvQ';
+  let zaReturn = {};
+  await fetch(url)
+    .then(response => response.text())
+    .then(async response => {
+      const res = JSON.parse(response);
+      zaReturn = res;
+    })
+  return zaReturn;
+}
 
 // Build the router, based on our app's settings.  This will define which
 // Koa route handlers
@@ -1024,6 +1035,18 @@ const router = (new KoaRouter())
     }
   })
 
+  .post('/objectDetails', async (ctx, next) => {
+    const newToken = verifyToken(ctx.request.body.token)
+    if (newToken.success) {
+      const objectDetails = await fetchObject(ctx.request.body.placeId);
+      if (objectDetails.status == "OK") {
+        ctx.body = JSON.stringify({ details: objectDetails, token: newToken })
+      }
+    } else {
+      ctx.body = JSON.stringify({ details: {}, token: newToken })
+    }
+  })
+
   .post('/importObjects', async (ctx, next) => {
     const newToken = verifyToken(ctx.request.body.token)
     if (newToken.success) {
@@ -1124,13 +1147,12 @@ const router = (new KoaRouter())
         } else {
           console.log('ISTEKAO JE API');
         }
-        db.models.objectSc.update({imported: true}, {where: {id: item}})
+        db.models.objectSc.update({ imported: true }, { where: { id: item } })
       }))
-      ctx.body = JSON.stringify({objects: objectCount, token: newToken})
+      ctx.body = JSON.stringify({ objects: objectCount, token: newToken })
     } else {
-      ctx.body = JSON.stringify({objects: 0, token: newToken})
+      ctx.body = JSON.stringify({ objects: 0, token: newToken })
     }
-
   })
 
   /*
