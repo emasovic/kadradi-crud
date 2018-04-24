@@ -374,7 +374,7 @@ const router = (new KoaRouter())
 
   .post('/scrapCategories', async (ctx, next) => {
     const newToken = verifyToken(ctx.request.body.token);
-    if (newToken.success) {
+    if(newToken.success) {
       const categories = await db.models.objectCategories.findAll(
         { where: { googleType: { [Op.ne]: null } } }
       );

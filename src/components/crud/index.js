@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Grid, Container, Tab , Button} from 'semantic-ui-react';
 import Objekti from './objects/Objekti';
 import Korisnici from './users/Korisnici';
-import ScrapedObjects from './objects/ScrapedObjects';
+import ScrapedObjects from './scraper/ScrapedObjects';
 import Scraper from './scraper/Scraper';
 import post from '../fetch/post';
 
