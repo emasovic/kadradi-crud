@@ -3,6 +3,7 @@ import { Grid, Container, Tab , Button} from 'semantic-ui-react';
 import Objekti from './objects/Objekti';
 import Korisnici from './users/Korisnici';
 import ScrapedObjects from './scraper/ScrapedObjects';
+import OwningRequest from './users/OwningRequest'
 import Scraper from './scraper/Scraper';
 import post from '../fetch/post';
 
@@ -15,6 +16,7 @@ const panes = [
   { menuItem: 'Korisnici', render: () => <Tab.Pane><Korisnici /></Tab.Pane> },
   { menuItem: 'Skreper', render: () => <Tab.Pane><Scraper /></Tab.Pane> },
   { menuItem: 'Skrejpovani Objekti', render: () => <Tab.Pane><ScrapedObjects /></Tab.Pane> },
+  { menuItem: 'Zahtevi za posedovanje', render: () => <Tab.Pane><OwningRequest /></Tab.Pane> }
 ]
 
 class Crud extends Component {

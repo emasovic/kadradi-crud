@@ -154,6 +154,7 @@ class ScrapedObjects extends Component {
     let response = await post.secure('/importObjects', {
       ids: this.state.objectsToAdd
     });
+    console.log("REZPONZ", response)
   }
   goToObjDetail = (googleId) => {
     this.props.history.push(`/objDetails/${googleId}`)
@@ -162,7 +163,6 @@ class ScrapedObjects extends Component {
     this.getAllObjCategories()
   }
   render() {
-    console.log("STEJTz", this.state)
     return (
       <div style={{ height: '100vh' }}>
         <Dropdown placeholder='Izaberite kategoriju'

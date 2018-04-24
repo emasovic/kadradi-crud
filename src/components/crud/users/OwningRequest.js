@@ -12,12 +12,13 @@ class OwningRequest extends Component {
       activePage: 1
     }
   }
-  // getAllUserRequest = async () => {
-
-  // }
-  // componentWillMount() {
-  //   this.getAllUsers();
-  // }
+  getAllUserRequest = async () => {
+    let response = await post.secure('/owningRequest', {})
+    console.log("RESPONSEz", response)
+  }
+  componentWillMount() {
+    this.getAllUserRequest();
+  }
   render() {
     console.log("STATE USERS", this.state)
     return (
