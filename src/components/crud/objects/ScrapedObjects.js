@@ -79,7 +79,10 @@ class ScrapedObjects extends Component {
     let response = await post.secure('/importObjects', {
       ids: this.state.objectsToAdd
     });
-  } 
+  }
+  goToObjDetail  = (googleId) => {
+    this.props.history.push(`/objDetails/${googleId}`)
+  }
   componentWillMount() {
     this.getAllObjCategories()
   }
@@ -108,7 +111,7 @@ class ScrapedObjects extends Component {
                     this.state.objects.map((item, key) => {
                       return (
                         <Table.Row key={item.id}>
-                          <Table.Cell>{item.name}</Table.Cell>
+                          <Table.Cell onClick={() => this.goToObjDetail(item.google_id)}>{item.name}</Table.Cell>
                           <Table.Cell>{item.city}</Table.Cell>
                           <Table.Cell>{item.streetAddres}</Table.Cell>
                           <Table.Cell>
@@ -143,4 +146,4 @@ class ScrapedObjects extends Component {
     );
   }
 }
-export default ScrapedObjects;
+export default withRouter(ScrapedObjects);
