@@ -1174,7 +1174,7 @@ const router = (new KoaRouter())
           //ZAVRŠENA PRETRAGA OPŠTINE!!!!!!!!!!
           const newObject = await db.models.objectCl.create(objectClArgs);
           if (newObject != null) {
-            objectCount++;
+            objectCount = objectCount + 1;
             //RAZRESAVANJE RADNOG VREMENA OBJEKTA!!!
             const objectWorkTime = db.models.objectWorkTime.create({ objectClId: newObject.id });
             if (objectWorkTime != null) {
@@ -1240,7 +1240,7 @@ const router = (new KoaRouter())
 
             } else {
               db.models.objectCl.destroy({ where: { id: newObject.id } })
-              objectCount--;
+              objectCount = objectCount - 1;
             }
           }
         } else {
