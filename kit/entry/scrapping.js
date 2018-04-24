@@ -93,7 +93,7 @@ async function scrap(nextPage) {
       const screp = await withToken({lat, lng, radius, type: category.google, nextPage})
       await Promise.all(screp.results.map(item => {
         db.models.objectSc.create({
-          google_id: item.id,
+          google_id: item.place_id,
           name: item.name,
           lat: item.geometry.location.lat,
           lng: item.geometry.location.lng,
@@ -113,7 +113,7 @@ async function scrap(nextPage) {
       const screp = await withoutToken({lat, lng, radius, type: category.google})
       await Promise.all(screp.results.map(item => {
         db.models.objectSc.create({
-          google_id: item.id,
+          google_id: item.place_id,
           name: item.name,
           lat: item.geometry.location.lat,
           lng: item.geometry.location.lng,
