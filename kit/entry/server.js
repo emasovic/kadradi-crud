@@ -958,39 +958,16 @@ const router = (new KoaRouter())
   .post('/owningRequest', async (ctx, next) => {
     const newToken = verifyToken(ctx.request.body.token)
     if (newToken.success) {
-      let requests = await db.models.owningRequest.findAll({
-        attributes: ['id', 'personId', 'objectClId']
-      })
+      let requests = await db.models.owningRequest.findAll()
+      let rikvestovi = [];
       let korisnici = [];
       let objekti = [];
-
       await Promise.all(requests.map(async item => {
-        const korisnik = korisnici.find(function (kor) { return kor.id === item.personId })
-        const objekat = objekti.find(function (obj) { return obj.id === item.objectClId })
-        if (korisnik) {
-          item.user = korisnik
-        } else {
-          const userDb = await db.models.person.find({ where: { id: item.personId }, attributes: ['id', 'firstName', 'lastName', 'email'] })
-          if (userDb) {
-            item.user = userDb;
-            korisnici.push(userDb)
-          } else {
-            item.user = {}
-          }
-        }
-        if (objekat) {
-          item.objekat = objekat
-        } else {
-          const objekatDb = await db.models.objectCl.find({ where: { id: item.objectClId }, attributes: ['name', 'id'] })
-          if (objekatDb) {
-            item.objekat = objekatDb
-            objekti.push(objekatDb)
-          } else {
-            item.objekat = {};
-          }
-        }
+        const user = await db.models.person.find({where: {id: item.personId}}, {attributes: ['id', 'firstName', 'lastName', 'email']})
+        const object = await db.models.objectCl.find({where: {id: item.objectClId}})
+        rikvestovi.push({user, object, requestId: item.id})
       }))
-      ctx.body = JSON.stringify({ requests, token: newToken })
+      ctx.body = JSON.stringify({ requests: rikvestovi, token: newToken })
     } else {
       ctx.body = JSON.stringify({ requests: [], token: newToken })
     }
@@ -1176,7 +1153,7 @@ const router = (new KoaRouter())
           if (newObject != null) {
             objectCount = objectCount + 1;
             //RAZRESAVANJE RADNOG VREMENA OBJEKTA!!!
-            const objectWorkTime = db.models.objectWorkTime.create({ objectClId: newObject.id });
+            const objectWorkTime = await db.models.objectWorkTime.create({ objectClId: newObject.id });
             if (objectWorkTime != null) {
               if (objectInfo.result.opening_hours != undefined) {
                 if (objectInfo.result.opening_hours.periods.length > 0) {
