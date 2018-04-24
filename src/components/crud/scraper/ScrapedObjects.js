@@ -10,7 +10,10 @@ class ScrapedObjects extends Component {
       categories: [],
       objects: [],
       objectsToAdd: [],
+      isUpdating: false,
+      selectAll: false,
       pages: [],
+      categoryId: 0,
       activeItem: '1',
     }
   }
@@ -83,17 +86,16 @@ class ScrapedObjects extends Component {
     }
   }
   toggle = (e, data, id) => {
-    console.log("CHECKED", data.checked +' ' + id)
     let arr = this.state.objectsToAdd
     let objects = []
-    if(data.checked) {
+    if (data.checked) {
       arr.push(id)
       objects = this.state.objects.map(item => {
         let checked = item.checked;
-        if(item.id == id) {
+        if (item.id == id) {
           checked = true
         }
-        return(
+        return (
           {
             ...item,
             checked
@@ -105,10 +107,10 @@ class ScrapedObjects extends Component {
       arr.splice(idToDel, 1);
       objects = this.state.objects.map(item => {
         let checked = item.checked;
-        if(item.id == id) {
+        if (item.id == id) {
           checked = false
         }
-        return(
+        return (
           {
             ...item,
             checked
@@ -122,12 +124,14 @@ class ScrapedObjects extends Component {
     })
   }
   selectAll = (e, data) => {
-    let arr = this.state.objectsToAdd
-    let objects = []
-    if(data.checked) {
+    let arr = [];
+    let objects = [];
+    let checked = false
+    if (data.checked) {
+      checked = true
       objects = this.state.objects.map(item => {
         arr.push(item.id)
-        return(
+        return (
           {
             ...item,
             checked: true
@@ -136,7 +140,7 @@ class ScrapedObjects extends Component {
       })
     } else {
       objects = this.state.objects.map(item => {
-        return(
+        return (
           {
             ...item,
             checked: false
@@ -147,13 +151,25 @@ class ScrapedObjects extends Component {
     }
     this.setState({
       objectsToAdd: arr,
-      objects
+      objects,
+      selectAll: checked
     })
   }
   addToApp = async () => {
+    this.setState({
+      isUpdating: true
+    })
     let response = await post.secure('/importObjects', {
       ids: this.state.objectsToAdd
     });
+    if(response.objects > 0) {
+      this.categoryObjpageN(parseInt(this.state.activeItem))
+      this.setState({
+        isUpdating: false,
+        objectsToAdd: [],
+        selectAll: false
+      })
+    }
     console.log("REZPONZ", response)
   }
   goToObjDetail = (googleId) => {
@@ -163,6 +179,7 @@ class ScrapedObjects extends Component {
     this.getAllObjCategories()
   }
   render() {
+    console.log("STEJT", this.state)
     return (
       <div style={{ height: '100vh' }}>
         <Dropdown placeholder='Izaberite kategoriju'
@@ -179,7 +196,7 @@ class ScrapedObjects extends Component {
                     <Table.HeaderCell>Grad</Table.HeaderCell>
                     <Table.HeaderCell>Ulica</Table.HeaderCell>
                     <Table.HeaderCell>
-                      <Checkbox label='Select all' onChange={this.selectAll} />
+                      <Checkbox label='Select all' checked={this.state.selectAll} onChange={this.selectAll} />
                     </Table.HeaderCell>
                   </Table.Row>
                 </Table.Header>
@@ -192,7 +209,7 @@ class ScrapedObjects extends Component {
                           <Table.Cell>{item.city}</Table.Cell>
                           <Table.Cell>{item.streetAddres}</Table.Cell>
                           <Table.Cell>
-                          <Checkbox checked={item.checked} onChange={(e, data) => this.toggle(e, data, item.id)} />
+                            <Checkbox checked={item.checked} onChange={(e, data) => this.toggle(e, data, item.id)} />
                           </Table.Cell>
                         </Table.Row>
                       )
@@ -200,9 +217,13 @@ class ScrapedObjects extends Component {
                   }
                 </Table.Body>
               </Table>
-              <Button onClick={() => this.addToApp()}>
-              Dodaj u aplikaciju
-              </Button>
+              {
+                this.state.isUpdating ?
+                  <Button loading>Loading</Button>
+                  : <Button onClick={() => this.addToApp()}>
+                    Dodaj u aplikaciju
+                </Button>
+              }
             </div> : null
         }
         {

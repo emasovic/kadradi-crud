@@ -1143,7 +1143,7 @@ const router = (new KoaRouter())
         { where: { parrentLocation: { [Op.ne]: 0 } } }
       );
       let objectCount = 0;
-      Promise.all(ids.map(async item => {
+      await Promise.all(ids.map(async item => {
         const objectSc = await db.models.objectSc.find({ where: { id: item } })
         const objectInfo = await fetchObject(objectSc.google_id);
         if (objectInfo.status == "OK") {
