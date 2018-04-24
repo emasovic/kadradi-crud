@@ -373,7 +373,7 @@ const router = (new KoaRouter())
   })
 
   .post('/scrapCategories', async (ctx, next) => {
-    const newToken = verifyToken(ctx.request.body.roken);
+    const newToken = verifyToken(ctx.request.body.token);
     if (newToken.success) {
       const categories = await db.models.objectCategories.findAll(
         { where: { googleType: { [Op.ne]: null } } }
@@ -1174,7 +1174,7 @@ const router = (new KoaRouter())
           //ZAVRŠENA PRETRAGA OPŠTINE!!!!!!!!!!
           const newObject = await db.models.objectCl.create(objectClArgs);
           if (newObject != null) {
-            objectCount++;
+            objectCount = objectCount + 1;
             //RAZRESAVANJE RADNOG VREMENA OBJEKTA!!!
             const objectWorkTime = db.models.objectWorkTime.create({ objectClId: newObject.id });
             if (objectWorkTime != null) {
@@ -1240,7 +1240,7 @@ const router = (new KoaRouter())
 
             } else {
               db.models.objectCl.destroy({ where: { id: newObject.id } })
-              objectCount--;
+              objectCount = objectCount - 1;
             }
           }
         } else {
