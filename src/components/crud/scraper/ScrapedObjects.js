@@ -12,7 +12,6 @@ class ScrapedObjects extends Component {
       objectsToAdd: [],
       pages: [],
       activeItem: '1',
-      checked: false
     }
   }
   getAllObjCategories = async () => {
@@ -45,8 +44,17 @@ class ScrapedObjects extends Component {
         }
         pages.push(page)
       }
+      let arr = []
+      arr = response.objects.length ? response.objects.map(item => {
+        return (
+          {
+            ...item,
+            checked: false
+          }
+        )
+      }) : []
       this.setState({
-        objects: response.objects,
+        objects: arr,
         categoryId: value,
         pages
       })
@@ -58,36 +66,89 @@ class ScrapedObjects extends Component {
       page: name
     });
     if (response.token.success) {
+      let arr = []
+      arr = response.objects.length ? response.objects.map(item => {
+        return (
+          {
+            ...item,
+            checked: false
+          }
+        )
+      }) : []
       this.setState({
-        objects: response.objects,
+        objects: arr,
         activeItem: name.toString(),
         pageNumber: name
       })
     }
   }
   toggle = (e, data, id) => {
+    console.log("CHECKED", data.checked +' ' + id)
     let arr = this.state.objectsToAdd
+    let objects = []
     if(data.checked) {
       arr.push(id)
+      objects = this.state.objects.map(item => {
+        let checked = item.checked;
+        if(item.id == id) {
+          checked = true
+        }
+        return(
+          {
+            ...item,
+            checked
+          }
+        )
+      })
     } else {
       let idToDel = arr.indexOf(id)
       arr.splice(idToDel, 1);
+      objects = this.state.objects.map(item => {
+        let checked = item.checked;
+        if(item.id == id) {
+          checked = false
+        }
+        return(
+          {
+            ...item,
+            checked
+          }
+        )
+      })
     }
     this.setState({
-      objectsToAdd: arr
+      objectsToAdd: arr,
+      objects
     })
   }
   selectAll = (e, data) => {
     let arr = this.state.objectsToAdd
+    let objects = []
     if(data.checked) {
-      this.state.objects.map(item => {
+      objects = this.state.objects.map(item => {
         arr.push(item.id)
+        return(
+          {
+            ...item,
+            checked: true
+          }
+        )
       })
-      this.setState({
-        checked: true
+    } else {
+      objects = this.state.objects.map(item => {
+        return(
+          {
+            ...item,
+            checked: false
+          }
+        )
       })
+      arr = []
     }
-    console.log("DATA", data)
+    this.setState({
+      objectsToAdd: arr,
+      objects
+    })
   }
   addToApp = async () => {
     let response = await post.secure('/importObjects', {
@@ -101,7 +162,7 @@ class ScrapedObjects extends Component {
     this.getAllObjCategories()
   }
   render() {
-    console.log("STEJT", this.state)
+    console.log("STEJTz", this.state)
     return (
       <div style={{ height: '100vh' }}>
         <Dropdown placeholder='Izaberite kategoriju'
@@ -131,7 +192,7 @@ class ScrapedObjects extends Component {
                           <Table.Cell>{item.city}</Table.Cell>
                           <Table.Cell>{item.streetAddres}</Table.Cell>
                           <Table.Cell>
-                          <Checkbox checked={this.state.checked} onChange={(e, data) => this.toggle(e, data, item.id)} />
+                          <Checkbox checked={item.checked} onChange={(e, data) => this.toggle(e, data, item.id)} />
                           </Table.Cell>
                         </Table.Row>
                       )
@@ -150,7 +211,7 @@ class ScrapedObjects extends Component {
               {
                 this.state.pages.map((item, key) => {
                   return (
-                    <Menu.Item name={item.number.toString()}
+                    <Menu.Item key={item.number} name={item.number.toString()}
                       active={this.state.activeItem === item.number.toString()}
                       onClick={() => this.categoryObjpageN(item.number)} />
                   )
