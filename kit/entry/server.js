@@ -1176,44 +1176,46 @@ const router = (new KoaRouter())
               if (objectInfo.result.opening_hours != undefined) {
                 if (objectInfo.result.opening_hours.periods.length > 0) {
                   let workingTimeArgs = {};
-                  Promise.all(objectInfo.result.opening_hours.periods.map(async vreme => {
+                  await Promise.all(await objectInfo.result.opening_hours.periods.map(async vreme => {
                     if (vreme.open.day == 1) {
                       const wtMon = await db.models.wtMon.findOrCreate({ where: { opening: vreme.open.time, closing: vreme.close.time } })
                       if (wtMon != null) {
-                        workingTimeArgs.wtMonId = wtMon.id
+                        workingTimeArgs.wtMonId = wtMon[0].id
+                        console.log(wtMon[0].id, " OVO JE JEBENI KURCEVI WTMON")
                       }
                     } else if (vreme.open.day == 2) {
                       const wtTue = await db.models.wtTue.findOrCreate({ where: { opening: vreme.open.time, closing: vreme.close.time } })
                       if (wtTue != null) {
-                        workingTimeArgs.wtTueId = wtTue.id
+                        workingTimeArgs.wtTueId = wtTue[0].id
                       }
                     } else if (vreme.open.day == 3) {
                       const wtWed = await db.models.wtWed.findOrCreate({ where: { opening: vreme.open.time, closing: vreme.close.time } })
                       if (wtWed != null) {
-                        workingTimeArgs.wtWedId = wtWed.id
+                        workingTimeArgs.wtWedId = wtWed[0].id
                       }
                     } else if (vreme.open.day == 4) {
                       const wtThu = await db.models.wtThu.findOrCreate({ where: { opening: vreme.open.time, closing: vreme.close.time } })
                       if (wtThu != null) {
-                        workingTimeArgs.wtThuId = wtThu.id
+                        workingTimeArgs.wtThuId = wtThu[0].id
                       }
                     } else if (vreme.open.day == 5) {
                       const wtFri = await db.models.wtFri.findOrCreate({ where: { opening: vreme.open.time, closing: vreme.close.time } })
                       if (wtFri != null) {
-                        workingTimeArgs.wtFriId = wtFri.id
+                        workingTimeArgs.wtFriId = wtFri[0].id
                       }
                     } else if (vreme.open.day == 6) {
                       const wtSat = await db.models.wtSat.findOrCreate({ where: { opening: vreme.open.time, closing: vreme.close.time } })
                       if (wtSat != null) {
-                        workingTimeArgs.wtSatId = wtSat.id
+                        workingTimeArgs.wtSatId = wtSat[0].id
                       }
                     } else if (vreme.open.day == 7) {
                       const wtSun = await db.models.wtSun.findOrCreate({ where: { opening: vreme.open.time, closing: vreme.close.time } })
                       if (wtSun != null) {
-                        workingTimeArgs.wtSunId = wtSun.id
+                        workingTimeArgs.wtSunId = wtSun[0].id
                       }
                     }
                   }))
+                  console.log(workingTimeArgs, " OVO SU WORKING TIME ARGUMENTI JEBOTE KURAC U DUPE")
                   const wtUpdate = await db.models.objectWorkTime.update(workingTimeArgs, { where: { id: objectWorkTime.id } })
                 }
               }
