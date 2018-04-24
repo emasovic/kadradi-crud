@@ -198,7 +198,6 @@ const ObjectCl = db.define('objectCl', {
   },
   shortDescription: {
     type: Sequelize.STRING,
-    allowNull: false
   },
   avgRating: {
     type: Sequelize.FLOAT,
