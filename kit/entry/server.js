@@ -958,7 +958,7 @@ const router = (new KoaRouter())
   .post('/owningRequest', async (ctx, next) => {
     const newToken = verifyToken(ctx.request.body.token)
     if (newToken.success) {
-      const requests = await db.models.owningRequest.findAll({
+      let requests = await db.models.owningRequest.findAll({
         attributes: ['id', 'personId', 'objectClId']
       })
       let korisnici = [];
