@@ -102,6 +102,7 @@ import PATHS from 'config/paths';
 
 //IMPORT POSTGRESQL DATABASE
 import db from '../../db/db';
+const Op = db.Op;
 
 //SCRAPING
 import scrap from './scrapping';
@@ -113,6 +114,7 @@ import jwt from 'jsonwebtoken';
 
 //IMPORT ZA GOOGLE PLACES
 import GooglePlaces from 'node-googleplaces';
+import { POINT_CONVERSION_HYBRID } from 'constants';
 const googlePlaces = new GooglePlaces('AIzaSyDImc0NawEJTQwlDskJBSL7cidhVvlccvQ')
 
 // ----------------------
@@ -359,6 +361,19 @@ const router = (new KoaRouter())
       ctx.body = JSON.stringify({ categories: [], token: newToken })
     }
   })
+
+  .post('/scrapCategories', async (ctx, next) => {
+    const newToken = verifyToken(ctx.request.body.roken);
+    if(newToken.success) {
+      const categories = await db.models.objectCategories.findAll(
+        {where: {googleType: { [Op.ne]: null } }}
+      );
+      ctx.body = JSON.stringify({categories, token: newToken})
+    } else {
+      ctx.body = JSON.stringify({categories: [], token: newToken})
+    }
+  })
+
   /*
   ------------------------------
   OVO JE METODA ZA IZLISTAVANJE OBJEKATA IZ KATEGORIJA
@@ -1013,7 +1028,9 @@ const router = (new KoaRouter())
     const newToken = verifyToken(ctx.request.body.token)
     if (newToken.success) {
       const ids = ctx.request.body.ids;
-      const locations = await db.models.locations.findAll();
+      const locations = await db.models.locations.findAll(
+        {where: {parrentLocation: {[Op.ne]: 0}}}
+      );
       let objectCount = 0;
       Promise.all(ids.map(async item => {
         const objectSc = await db.models.objectSc.find({ where: { id: item } })
@@ -1086,6 +1103,8 @@ const router = (new KoaRouter())
                 }))
                 const wtUpdate = await db.models.objectWorkTime.update(workingTimeArgs, { where: { id: objectWorkTime.id } })
               }
+
+              const objectLocation = await db.models.objectLocation.create({objectClId: newObject.id, lat: objectInfo.lat, lng: objectInfo.lng, address: objectInfo.streetAddres,city: objectInfo.city})
               //ZAVRSENO RAZRESAVANJE RADNOG VREMENA OBJEKTA!!! JEBOTE KURAC
               if (objectInfo.result.photos.length) {
                 const profilna = fetchObjectImage(objectInfo.result.photos[0].photo_reference);
@@ -1093,7 +1112,10 @@ const router = (new KoaRouter())
               }
               if (objectInfo.result.website) {
                 const objectInfo = await db.models.objectInfo.create({ objectClId: newObject.id, websiteUrl: objectInfo.result.website })
+              } else {
+                const objectInfo = await db.models.objectInfo.create({objectClId: newObject.id})
               }
+
             } else {
               db.models.objectCl.destroy({ where: { id: newObject.id } })
               objectCount--;
