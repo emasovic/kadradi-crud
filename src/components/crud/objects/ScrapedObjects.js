@@ -1,24 +1,20 @@
 import React, { Component } from 'react';
-import { Grid, Menu, Tab, Button, Dropdown, Table, Icon } from 'semantic-ui-react';
+import { Grid, Menu, Tab, Button, Dropdown, Table, Checkbox } from 'semantic-ui-react';
 import post from '../../fetch/post';
 import { withRouter } from 'react-router';
 
-class Objekti extends Component {
+class ScrapedObjects extends Component {
   constructor(props) {
     super(props);
     this.state = {
       categories: [],
       objects: [],
-      pages: [],
-      categoryId: 0,
-      pageNumber: 1,
-      activeItem: '1',
+      objectsToAdd: [],
+      pages: []
     }
   }
   getAllObjCategories = async () => {
-    let response = await post.secure('/allCategories', {
-      token: this.props.token
-    });
+    let response = await post.secure('/allCategories', {});
     if (response.token.success) {
       let categories = response.categories.map(item => {
         return (
@@ -35,8 +31,7 @@ class Objekti extends Component {
     }
   }
   categoryObjpage1 = async (e, { value }) => {
-    let response = await post.secure('/objectsFromCategories', {
-      token: this.props.token,
+    let response = await post.secure('/scrapedObjects', {
       categoryId: value,
       page: 1
     });
@@ -56,8 +51,7 @@ class Objekti extends Component {
     }
   }
   categoryObjpageN = async (name) => {
-    let response = await post.secure('/objectsFromCategories', {
-      token: this.props.token,
+    let response = await post.secure('/scrapedObjects', {
       categoryId: this.state.categoryId,
       page: name
     });
@@ -69,25 +63,28 @@ class Objekti extends Component {
       })
     }
   }
-  editObj = (objectId) => {
-    this.props.history.push(`/edit/${objectId}`);
-  }
-  addObject = () => {
-    this.props.history.push(`/addObject/`)
-  }
-  deleteObj = async (objectId) => {
-    let response = await post.secure('/deleteObject', {
-      token: this.props.token,
-      objectId
-    });
-    if (response.deleted) {
-      this.categoryObjpageN(this.state.pageNumber)
+  toggle = (e, data, id) => {
+    let arr = this.state.objectsToAdd
+    if(data.checked) {
+      arr.push(id)
+    } else {
+      let idToDel = arr.indexOf(id)
+      arr.splice(idToDel, 1);
     }
+    this.setState({
+      objectsToAdd: arr
+    })
   }
+  addToApp = async () => {
+    let response = await post.secure('/importObjects', {
+      ids: this.state.objectsToAdd
+    });
+  } 
   componentWillMount() {
     this.getAllObjCategories()
   }
   render() {
+    console.log("STEJT", this.state)
     return (
       <div style={{ height: '100vh' }}>
         <Dropdown placeholder='Izaberite kategoriju'
@@ -95,19 +92,15 @@ class Objekti extends Component {
           onChange={this.categoryObjpage1}
           options={this.state.categories} />
         {
-          this.state.categoryId != 0 ?
-            <Button floated='left' icon labelPosition='left' primary size='small' onClick={this.addObject}>
-              <Icon name='user' /> Add New
-            </Button> : null
-        }
-        {
-          
-            this.state.objects.length ?
+          this.state.objects.length ?
+            <div>
               <Table compact celled definition>
                 <Table.Header>
                   <Table.Row>
-                    <Table.HeaderCell>Name</Table.HeaderCell>
-                    <Table.HeaderCell>Actions</Table.HeaderCell>
+                    <Table.HeaderCell>Ime</Table.HeaderCell>
+                    <Table.HeaderCell>Grad</Table.HeaderCell>
+                    <Table.HeaderCell>Ulica</Table.HeaderCell>
+                    <Table.HeaderCell>Akcija</Table.HeaderCell>
                   </Table.Row>
                 </Table.Header>
                 <Table.Body>
@@ -116,20 +109,21 @@ class Objekti extends Component {
                       return (
                         <Table.Row key={item.id}>
                           <Table.Cell>{item.name}</Table.Cell>
+                          <Table.Cell>{item.city}</Table.Cell>
+                          <Table.Cell>{item.streetAddres}</Table.Cell>
                           <Table.Cell>
-                            <Button icon onClick={() => this.editObj(item.id)}>
-                              <Icon name='edit' />
-                            </Button>
-                            <Button icon onClick={() => this.deleteObj(item.id)}>
-                              <Icon name='delete' />
-                            </Button>
+                          <Checkbox onChange={(e, data) => this.toggle(e, data, item.id)} />
                           </Table.Cell>
                         </Table.Row>
                       )
                     })
                   }
                 </Table.Body>
-              </Table> : null
+              </Table>
+              <Button onClick={() => this.addToApp(item.id)}>
+              Dodaj u aplikaciju
+              </Button>
+            </div> : null
         }
         {
           this.state.pages.length ?
@@ -149,4 +143,4 @@ class Objekti extends Component {
     );
   }
 }
-export default withRouter(Objekti);
+export default ScrapedObjects;
