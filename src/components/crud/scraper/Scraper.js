@@ -47,9 +47,7 @@ class Scraper extends Component {
     }
   };
   getAllObjCategories = async () => {
-    let response = await post.secure('/allCategories', {
-      token: this.props.token
-    });
+    let response = await post.secure('/scrapCategories', {});
     if (response.token.success) {
       let categories = response.categories.map(item => {
         return (
@@ -159,7 +157,7 @@ class Scraper extends Component {
           this.props.coords != null ?
             <div className={styles.map}>
               <Dropdown placeholder='Radius' name='radius' selection options={radius} onChange={this.dropDownSetRadius} />
-              <Dropdown placeholder='Kategorije' name='kategorije' selection options={this.state.categories} onChange={this.dropDownSetCategoryId} />
+              <Dropdown placeholder='Kategorije' search name='kategorije' selection options={this.state.categories} onChange={this.dropDownSetCategoryId} />
               <Button primary onClick={() => this.fetchObjects()}>Fetch</Button>
               {
                 this.state.isScraping ?
