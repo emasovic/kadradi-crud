@@ -111,6 +111,9 @@ import PubSub from 'pubsub-js';
 //IMPORT JSONWEBTOKEN
 import jwt from 'jsonwebtoken';
 
+//IMPORT LODASH
+
+import _ from 'lodash';
 
 //IMPORT ZA GOOGLE PLACES
 import GooglePlaces from 'node-googleplaces';
@@ -823,7 +826,11 @@ const router = (new KoaRouter())
 .post('/stefan', async (ctx, next) => {
   const newToken = verifyToken(ctx.request.body.token)
   if(newToken.success) {
-    
+    let stefan;
+    if(ctx.request.body.stefan) {
+      console.log('usao')
+      stefan = ctx.request.body.stefan
+    }
 
 
 
@@ -844,7 +851,6 @@ const router = (new KoaRouter())
 
     const newToken = verifyToken(ctx.request.body.token)
     if (newToken.success) {
-
       const editObject = ctx.request.body.editObject;
       const objectId = ctx.request.body.objectId;
       const workTime = editObject.workTime;
@@ -852,11 +858,9 @@ const router = (new KoaRouter())
       const objectInfoArr = editObject.objectInfo;
       const objectLocationArr = editObject.objectLocation;
       const objectPhonesArr = editObject.objectPhones;
-
-      try {
+      const deletePhones = editObject.deletePhones;
         let workTimeObject = { isAlwaysOpened: false };
         await db.models.objectWorkTime.findOrCreate({ where: { objectClId: objectId } })
-
         if (workTime.pon) {
           if (workTime.pon.isWorking) {
             let wtMon = await db.models.wtMon.findOrCreate({ where: { opening: workTime.pon.opening, closing: workTime.pon.closing } })
@@ -919,19 +923,26 @@ const router = (new KoaRouter())
         } else {
           await db.models.objectWorkTime.update(workTimeObject, { where: { objectClId: objectId } })
         }
-
-        await db.models.objectCl.update(objectClArr, { where: { id: objectId } })
-        await db.models.objectInfo.update(objectInfoArr, { where: { id: objectId } })
-        await db.models.objectLocation.update(objectLocationArr, { where: { id: objectId } })
-        objectPhonesArr.map(async item => {
-          await db.models.objectPhones.update(item, { where: { id: item.id } })
-        })
+        if(objectClArr) {
+          await db.models.objectCl.update(objectClArr, { where: { id: objectId } })
+        }
+        if(objectInfoArr) {
+          await db.models.objectInfo.update(objectInfoArr, { where: { id: objectId } })
+        }
+        if(objectLocationArr) {
+          await db.models.objectLocation.update(objectLocationArr, { where: { id: objectId } })
+        }
+        if(!_.isEmpty(objectPhonesArr)) {
+          objectPhonesArr.map(async item => {
+            await db.models.objectPhones.update(item, { where: { id: item.id } })
+          })
+        }
+        if(!_.isEmpty(deletePhones)) {
+          deletePhones.map(async item => {
+            await db.models.objectPhones.destroy({ where: { id: item } })
+          })
+        }
         ctx.body = JSON.stringify({ token: newToken })
-      } catch (err) {
-        await transaction.rollback();
-        ctx.body = JSON.stringify({ update: false, token: newToken })
-      }
-      ctx.body = JSON.stringify({ token: newToken })
     } else {
       ctx.body = JSON.stringify({ token: newToken })
     }
