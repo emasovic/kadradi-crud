@@ -111,6 +111,9 @@ import PubSub from 'pubsub-js';
 //IMPORT JSONWEBTOKEN
 import jwt from 'jsonwebtoken';
 
+//IMPORT LODASH
+
+import _ from 'lodash';
 
 //IMPORT ZA GOOGLE PLACES
 import GooglePlaces from 'node-googleplaces';
@@ -452,6 +455,10 @@ const router = (new KoaRouter())
     if (newToken.success) {
       if (objectId) {
         const objectCl = await db.models.objectCl.find({ where: { id: objectId } });
+        let owningPerson = {};
+        if(objectCl.personId) {
+          owningPerson = await db.models.person.find({ where: { id: objectCl.personId }, attributes: ['id', 'email', 'firstName', 'lastName'] });
+        }
         const objectCategories = await db.models.objectCategories.findAll({
           attributes: ['nameJ', 'id']
         });
@@ -580,7 +587,7 @@ const router = (new KoaRouter())
           objectWorkTimes,
         }
 
-        const objectById = { objectCl, objectInfo, objectLocation, objectCategoriesArr, objectPhones, locations, objectTimes, objectFile };
+        const objectById = { owningPerson, objectCl, objectInfo, objectLocation, objectCategoriesArr, objectPhones, locations, objectTimes, objectFile };
         ctx.body = JSON.stringify({ objectById, token: newToken })
       }
     } else {
@@ -822,11 +829,11 @@ const router = (new KoaRouter())
 .post('/stefan', async (ctx, next) => {
   const newToken = verifyToken(ctx.request.body.token)
   if(newToken.success) {
-    
-
-
-
-
+    let stefan;
+    if(ctx.request.body.stefan) {
+      console.log('usao')
+      stefan = ctx.request.body.stefan
+    }
   ctx.body = JSON.stringify({ stefan: 'car', token: newToken })
   } else {
     ctx.body = JSON.stringify({  token: newToken})
@@ -843,7 +850,6 @@ const router = (new KoaRouter())
 
     const newToken = verifyToken(ctx.request.body.token)
     if (newToken.success) {
-
       const editObject = ctx.request.body.editObject;
       const objectId = ctx.request.body.objectId;
       const workTime = editObject.workTime;
@@ -851,11 +857,9 @@ const router = (new KoaRouter())
       const objectInfoArr = editObject.objectInfo;
       const objectLocationArr = editObject.objectLocation;
       const objectPhonesArr = editObject.objectPhones;
-
-      try {
+      const deletePhones = editObject.deletePhones;
         let workTimeObject = { isAlwaysOpened: false };
         await db.models.objectWorkTime.findOrCreate({ where: { objectClId: objectId } })
-
         if (workTime.pon) {
           if (workTime.pon.isWorking) {
             let wtMon = await db.models.wtMon.findOrCreate({ where: { opening: workTime.pon.opening, closing: workTime.pon.closing } })
@@ -918,19 +922,31 @@ const router = (new KoaRouter())
         } else {
           await db.models.objectWorkTime.update(workTimeObject, { where: { objectClId: objectId } })
         }
-
-        await db.models.objectCl.update(objectClArr, { where: { id: objectId } })
-        await db.models.objectInfo.update(objectInfoArr, { where: { id: objectId } })
-        await db.models.objectLocation.update(objectLocationArr, { where: { id: objectId } })
-        objectPhonesArr.map(async item => {
-          await db.models.objectPhones.update(item, { where: { id: item.id } })
-        })
+        if(objectClArr) {
+          await db.models.objectCl.update(objectClArr, { where: { id: objectId } })
+        }
+        if(objectInfoArr) {
+          await db.models.objectInfo.update(objectInfoArr, { where: { id: objectId } })
+        }
+        if(objectLocationArr) {
+          await db.models.objectLocation.update(objectLocationArr, { where: { id: objectId } })
+        }
+        if(!_.isEmpty(objectPhonesArr)) {
+          objectPhonesArr.map(async item => {
+            await db.models.objectPhones.update(item, { where: { id: item.id } })
+          })
+        }
+        if(!_.isEmpty(deletePhones)) {
+          deletePhones.map(async item => {
+            await db.models.objectPhones.destroy({ where: { id: item } })
+          })
+        }
+        if(!_.isEmpty(Phones)) {
+          deletePhones.map(async item => {
+            await db.models.objectPhones.destroy({ where: { id: item } })
+          })
+        }
         ctx.body = JSON.stringify({ token: newToken })
-      } catch (err) {
-        await transaction.rollback();
-        ctx.body = JSON.stringify({ update: false, token: newToken })
-      }
-      ctx.body = JSON.stringify({ token: newToken })
     } else {
       ctx.body = JSON.stringify({ token: newToken })
     }
