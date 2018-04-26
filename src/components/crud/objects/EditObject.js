@@ -7,16 +7,19 @@ import Style from './objectsEdit.css';
 import TableRow from 'semantic-ui-react';
 import moment from 'moment';
 import Geosuggest from 'react-geosuggest';
+import FileBase64 from 'react-file-base64';
 
 class EditObject extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       objToEdit: {},
+      objectImage: [],
       objectCategoriesArr: [],
       locationId: 0,
       name: '',
       objectCategoryId: '',
+      editObject: {},
       personId: '',
       shortDescription: '',
       address: '',
@@ -35,9 +38,15 @@ class EditObject extends React.Component {
       phones: [],
       popularBecauseOf: '',
       isAlwaysOpen: false,
+      isAlwaysOpnenO: false,
       workTime24h: false,
+      sendEditObject: {},  
+      workTimeObj: {},
+      test: {},    
+    
     };
   }
+
   objectEdit = e => {
     if (e.target.name === 'locationId') {
       this.setState({
@@ -95,7 +104,6 @@ class EditObject extends React.Component {
       token: this.props.token,
     });
     if (response.token.success) {
-      console.log("RESPONSE", response.objectById)
       this.setState({
         objToEdit: response.objectById,
         locationId: response.objectById.objectCl.locationId,
@@ -112,9 +120,11 @@ class EditObject extends React.Component {
         city: response.objectById.objectLocation.city,
         workTime: response.objectById.objectTimes.objectWorkTimes,
         isAlwaysOpen: response.objectById.objectTimes.isAlwaysOpened,
+        isAlwaysOpnenO: response.objectById.objectTimes.isAlwaysOpened,
+        objectImage: response.objectById.objectFile,
+        test: response.objectById.locations,
         phones: JSON.parse(JSON.stringify(response.objectById.objectPhones))
       });
-      console.log("OVO", this.state.workTime)
       let jsArr = JSON.parse(JSON.stringify(this.state.workTime));
       this.setState({
         workTimeEdit: jsArr,
@@ -122,7 +132,7 @@ class EditObject extends React.Component {
       this.setParentObj(response.objectById.locations);
       this.setCurrentParrent(response.objectById.locations);
       // console.log('JEL GA IMA OVDE bRE?', response.objectById.locations);
-      // console.log('RESPONSE', response);
+      console.log('RESPONSE', response);
     } else {
       console.log('stajebreovo');
     }
@@ -133,7 +143,9 @@ class EditObject extends React.Component {
     this.setState({
       objectCategoryId: value,
     });
+    console.log("value", value)
   }
+
   setParentObj = parrent => {
     let obArr = [];
     let nekiObj = {
@@ -144,7 +156,6 @@ class EditObject extends React.Component {
     };
 
     for (let child in parrent) {
-      console.log('PARRENT LOCATION: ', parrent[child].text);
 
       if (parrent[child].parrentLocation === 0) {
         obArr[child] = parrent[child];
@@ -157,7 +168,6 @@ class EditObject extends React.Component {
   }
 
   setCurrentParrent = (parrent) => {
-    console.log("USAOOOOOOO");
     for (let child in parrent){
       if(parrent[child].locationId === this.state.childLocation){
         let currentParrent = parrent[child].parrentLocation;
@@ -174,15 +184,14 @@ class EditObject extends React.Component {
         currentChild: a,
       })
     }   
-    console.log("EVO GA CURRRENT", this.state.currentChild);
   }
-  changeC = (e,{value}) => {
+  changeC = async (e,{value}) => {
     this.setState({
       locationId : value,
     })
   }
 
-  setLo = (e, { value }) => {
+  setLo = async (e, { value }) => {
     let arr = this.state.objToEdit.locations.filter(word => word.parrentLocation == value);
     let arrFirst = this.state.childLocation[0];
     this.setState({
@@ -190,12 +199,22 @@ class EditObject extends React.Component {
       newVal: value,
       locationId: arrFirst,
     });
+    this.test(value);
+    
+  }
+  test = (val) => {
+    for(let i in this.state.par){
+      if(this.state.par[i].key ===  val){
+        this.setState({
+          city: this.state.par[i].text
+        })
+      }
+
+    }
   }
   editWorkingTime(value,a){
     let time = value.format('HH:mm');
     let newTime = time.slice(0,2) + time.slice(3,5);
-    console.log("NEW TIMEEE:", newTime);
-    console.log(this.state.workTimeEdit[a].open)
     let arr = this.state.workTimeEdit;
     arr[a].open = newTime;
     this.setState({
@@ -205,8 +224,6 @@ class EditObject extends React.Component {
   editWorkingTimeClose(value,a){
     let time = value.format('HH:mm');
     let newTime = time.slice(0,2) + time.slice(3,5);
-    console.log("NEW TIMEEE:", newTime);
-    console.log(this.state.workTimeEdit[a].open)
     
     let arr = this.state.workTimeEdit;
     arr[a].close = newTime;
@@ -241,37 +258,6 @@ class EditObject extends React.Component {
       })
     }
   }
-  editWorkingTimeBtn(){
-    let obj = {};
-    let objTosend = {}
-    let newArr = this.state.workTimeEdit;
-
-    this.state.workTime.map(item => {
-      let a = this.state.workTime.indexOf(item);
-      console.log(this.state.workTimeEdit[a]);
-      
-      if(this.state.isAlwaysOpen ){
-        obj = {
-          ...obj,
-          isAlwaysOpen: true,
-        }
-      }else{
-        if(item.open !== newArr[a].open || item.close !== newArr[a].close || item.isWorking !== newArr[a].isWorking){
-          let name = newArr[a].name;
-          obj = {
-            ...obj,
-            isAlwaysOpen: false,
-            [name]:{
-             open: newArr[a].open,
-             close: newArr[a].close,
-             isWorking: newArr[a].isWorking,
-            }
-          }
-        }  
-      }    
-    })
-    console.log("objjjjjjjjjjjj", obj)
-  }
   changePhones = (e, id) => {
     let arr = this.state.phones
     if(e.target.name === 'number') {
@@ -292,7 +278,6 @@ class EditObject extends React.Component {
     })
   }
   onSuggestSelect = (suggest) => {
-    console.log('sug',suggest)
     let street = suggest.description.split(",");
     this.setState({
       address: street[0],
@@ -300,14 +285,38 @@ class EditObject extends React.Component {
       lng: suggest.location.lng,
     })
   }
+  getImage = (img) => {
+      console.log("imggggg",img);
+    //    const config = {
+    //    bucketName: 'kadradi-slike',
+    //    region: 'eu-central-1',
+    //    accessKeyId: 'AKIAJWJPWC6HGBPXQ4AQ',
+    //    secretAccessKey: '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',
+    //  }
+    this.setState({
+      objectImg: img
+    })
+  //  ReactS3.upload(img.file, config)
+  //   .then((data) => this.setState({
+  //     objectImage:{
+  //       fileUrl: data.location
+  //     }
+  //   })) 
+  //   .catch((err) => console.error(err)) 
+}
+
   prepareToEditObject = async () => {
     let { objToEdit } = this.state;
     let objectClArr = {};
+    let objectWorkTimeArr = {};
     let objectLocationArr = {};
     let objectInfoArr = {};
-    let objectClKeys = Object.keys(objToEdit.objectCl);
-    let objectInfoKeys = Object.keys(objToEdit.objectInfo);
-    let objectLocationKeys = Object.keys(objToEdit.objectLocation);
+    let objectClKeys = ['name', 'shortDescription', 'verified', 'personId', 'objectCategoryId', 'locationId'];
+    let objectInfoKeys = ['websiteUrl', 'popularBecauseOf'];
+    let objectLocationKeys = ['lat', 'lng', 'address', 'city', 'zipCode'];
+    let obj = {};
+    let newArr = this.state.workTimeEdit;
+
     objectClKeys.map(item => {
       if (objToEdit.objectCl[item] != this.state[item]) {
         objectClArr = {
@@ -332,9 +341,75 @@ class EditObject extends React.Component {
        }
       }
     })
+    this.state.workTime.map(item => {
+      let a = this.state.workTime.indexOf(item);
+      let flag1 = this.state.isAlwaysOpen;
+      let flag2 = this.state.isAlwaysOpnenO;
+
+        if(this.state.isAlwaysOpen){
+            console.log("NIJE JEDNAKO");
+            if(this.state.isAlwaysOpen != this.state.isAlwaysOpnenO){
+              obj = {
+                ...obj,
+                isAlwaysOpen: true,
+              }
+            }
+        }else{
+          if(item.open !== newArr[a].open || item.close !== newArr[a].close || item.isWorking !== newArr[a].isWorking){
+            let name = newArr[a].name;
+            obj = {
+              ...obj,
+              [name]:{
+               open: newArr[a].open,
+               close: newArr[a].close,
+               isWorking: newArr[a].isWorking,
+              }
+            }
+            obj = {
+              ...obj,
+              isAlwaysOpen: false,            
+            }
+          }
+          if(obj.length === 0){
+            let name = newArr[a].name;            
+            obj = {
+              ...obj,
+              [name]:{
+                open: '01',
+                close: '01',
+                isWorking: true,
+              }
+            }
+          } 
+        }    
+    })
+    
+    let wrkTime = this.state.workTimeObj;
+    objectWorkTimeArr = {
+      ...objectWorkTimeArr,
+      obj
+    }
+
+    // console.log('objectCl', objectClArr)
+    // console.log('objectinfo', objectInfoArr)
+    // console.log('loca', objectLocationArr)
+    this.setState({
+      sendEditObject: {
+        obj,
+        objectInfoArr,
+        objectClArr, 
+        objectLocationArr,  
+      }
+    })
   }
-  
+
   render() {
+    console.log("AAAAAA", this.state.objectImage)
+    // console.log("aaaaaaaaaaaaaaaaaaaaaaaaaa",this.state.objectImage);
+    // console.log(this.state.city);
+    // console.log(this.state.sendEditObject)
+    // console.log("CHILDDD", this.state.childLocation)
+    // console.log('LOCATIONID', this.state.childLocation);
     return (
       <div>
         {/* <Input label='locationId: ' name='locationId' value={this.state.locationId} onChange={this.objectEdit} /><br /> */}
@@ -357,7 +432,14 @@ class EditObject extends React.Component {
           value={this.state.newVal}
           options={this.state.par}
           onChange={this.setLo} /><br />
-        <Checkbox checked={this.state.isAlwaysOpen} toggle onClick={()=> this.isAlwaysOpenToggle() } />                                
+        <FileBase64 multiple={false} onDone={this.getImage.bind(this)}/>  
+        <br />
+        <img  src={this.state.objectImage.fileUrl} style={{height: '250px', width: '250px'}}/>                                      
+        <br />
+        Opis slike:<br />
+        <TextArea autoHeight name='opis slike'  value={this.state.objectImage.desc} style={{minHeight:'50px',minWidth:'300px'}}/><br />
+        <br />
+        <Checkbox checked={this.state.isAlwaysOpen} toggle onClick={()=> this.isAlwaysOpenToggle() } />        
         <Table compact celled definition>
           <Table.Header>
             <Table.Row>
