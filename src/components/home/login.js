@@ -7,7 +7,7 @@ import md5 from 'md5';
 
 @connect(state => ({ token: state.token }))
 
-class Login extends React.Component{
+class Login extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -49,30 +49,30 @@ class Login extends React.Component{
     }
   }
   render() {
-    return(
+    return (
       <div className={css.wrapper}>
-      <div className={css.holder}>
-        <div>
-          <Input
-            onChange={(e) => this.setName(e)}
-            focus
-            placeholder='Username...'
-            style={{ marginRight: '10px' }} />
-          <Input
-            onChange={(e) => this.setPass(e)}
-            type='password'
-            focus placeholder='Password...'
-            style={{ marginRight: '10px' }} />
-          <Button onClick={() => this.submitFunction()}>Submit</Button>
-        </div>
-        <div style={{color: "red"}}>
-          {
-            !this.state.failLogin ? null :
-            <p>Username or password is incorect!</p>
-          }
+        <div className={css.holder}>
+          <div>
+            <Input
+              onChange={(e) => this.setName(e)}
+              focus
+              placeholder='Username...'
+              style={{ marginRight: '10px' }} />
+            <Input
+              onChange={(e) => this.setPass(e)}
+              type='password'
+              focus placeholder='Password...'
+              style={{ marginRight: '10px' }} />
+            <Button onClick={() => this.submitFunction()}>Submit</Button>
+          </div>
+          <div style={{ color: "red" }}>
+            {
+              !this.state.failLogin ? null :
+                <p>Username or password is incorect!</p>
+            }
+          </div>
         </div>
       </div>
-    </div>
     )
   }
 }

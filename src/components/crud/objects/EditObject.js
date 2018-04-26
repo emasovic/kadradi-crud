@@ -45,6 +45,9 @@ class EditObject extends React.Component {
       numberAdd: '',
       phonesAdd : [],
       phonesRemove : [],
+      count: 1,
+      deletedPhones: [],
+      token: '',
     };
   }
   objectEdit = e => {
@@ -131,6 +134,9 @@ class EditObject extends React.Component {
       objectId,
       token: this.props.token,
     });
+    this.setState({
+      token: response.token.success
+    })
     if (response.token.success) {
       console.log("RESPONSE", response.objectById)
       this.setState({
@@ -165,7 +171,7 @@ class EditObject extends React.Component {
       // console.log('JEL GA IMA OVDE bRE?', response.objectById.locations);
       // console.log('RESPONSE', response);
     } else {
-      console.log('stajebreovo');
+      console.log('stajebreovo',response.token.success);
     }
     console.log('RESPONSE', response);
   }
@@ -357,12 +363,32 @@ class EditObject extends React.Component {
     })
   }
   addPhone = (tel, desc) => {
-    this.state.phonesAdd.push({
+    let niz = this.state.phonesAdd.push({
       description: desc,
-      number: tel
+      number: tel,
+      id: this.state.count
     })
     this.setState({
-      phonesAdd: this.state.phonesAdd
+      phonesAdd: this.state.phonesAdd,
+      count: this.state.count + 1
+    })
+  }
+  removePhone = (index) => {
+    let index1 = this.state.phonesAdd.findIndex(x => x.id == index)
+    let arr = this.state.phonesAdd
+    arr.splice(index1, 1)
+    this.setState({
+      phonesAdd: arr
+    })
+  } 
+  deletePhone = (index) => {
+    let index1 = this.state.phones.findIndex(x => x.id == index) 
+    let delArr = this.state.deletedPhones
+    let arr = this.state.phones
+    arr.splice(index1, 1)
+    delArr.push(index)
+    this.setState({
+      deletedPhones: delArr
     })
   }
   prepareToEditObject = async () => {
@@ -407,7 +433,8 @@ class EditObject extends React.Component {
     console.log("STEJT",this.state)
     return (
       <div>
-        { this.state.loading ? <div style={{marginTop:"100px"}}><Loader size='large' active inline='centered'/></div> :
+        {
+          this.state.token === false ? 'isteko token' : this.state.loading ? <div style={{marginTop:"100px"}}><Loader size='large' active inline='centered'/></div> :
         <div>
           <Input label="Name: " name="name" value={this.state.name} onChange={this.objectEdit} /><br />
           <span>Category: </span>
@@ -493,6 +520,7 @@ class EditObject extends React.Component {
                 <div key={key}>
                   <Input name='desc' value={item.desc} onChange={(e) => this.changePhones(e, item.id)}/>
                   <Input name='number' value={item.number} onChange={(e) => this.changePhones(e, item.id)}/>
+                  <Button icon='minus' onClick={() => this.deletePhone(item.id)}/>
                 </div>
               )
             }) : null
@@ -504,14 +532,17 @@ class EditObject extends React.Component {
             this.state.phonesAdd.length ? 
               this.state.phonesAdd.map((item, index) => {
                 return (
-                  <div>
-                    <Number index={index} value={item.number} desc={item.description} />
+                  <div key={index}>
+                    {/* <Number index={index} value={item.number} desc={item.description} /> */}
+                    <Input label="Phone Desc" value={item.description}/>
+                    <Input label="Phone number" value={item.number} />
+                    <Button icon='minus' onClick={() => this.removePhone(item.id)}/>
                   </div>
                 )
               }) : null
           }
           <Button primary onClick={() => this.prepareToEditObject()}>Save</Button>
-        </div>
+        </div> 
         }
       </div>
     );
