@@ -10,13 +10,13 @@ class Proba extends React.Component{
           isAlwaysOpened: false,
           pon: {
             isWorking: true,
-            opening: '5467',
-            closing: '5467',
+            opening: '0050',
+            closing: '0101',
           },
           uto: {
             isWorking: true,
-            opening: '9977',
-            closing: '9977',
+            opening: '0303',
+            closing: '0505',
           },
         },
         objectCl: {
@@ -24,7 +24,7 @@ class Proba extends React.Component{
           shortDescription: 'STEFAN PROBA1',
           verified: true,
           personId: 2,
-          objectCategoryId: 6
+          objectCategoryId: 6,
         },
         objectLocation: {
           lat: 40,
@@ -44,18 +44,24 @@ class Proba extends React.Component{
         },
         objectPhones: [
           {
-            id: 1,
-            desc: 'HOOOOOOOOOOOOOT',
-            number: '0621887914',
-          }
-        ]
+            id: 3,
+            desc: 'stefan',
+            number: '3333333'            
+          },
+          {
+            id: 2,
+            desc: 'stefan2',
+            number: '4444444'            
+          },
+        ], 
+        // deletePhones: [1]
       },
     });
     console.log(response)
   }
   getObjById = async () => {
     let response = await post.secure('/objectById', {
-      objectId: 33,
+      objectId: 1,
     });
     console.log(response)
   }
@@ -106,19 +112,21 @@ class Proba extends React.Component{
         objectPhones: [
           {
             desc: 'lalalal',
-            number: '12830192310',
+            number: '111111111',
           },
           {
             desc: 'nanananl',
-            number: '48332423',
+            number: '222222222222',
           },
         ]
       },
     });
   }
   stefan = async () => {
-    let response = await post.secure('/stefan', {});
-    console.log('RES', response)
+    let response = await post.secure('/stefan', {
+      stefan: 'lala'
+    });
+    
   }
   getUsers = async (e) => {
     let response = await post.secure('/getUsers', {
