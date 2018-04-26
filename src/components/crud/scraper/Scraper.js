@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Map, InfoWindow, Marker, GoogleApiWrapper } from 'google-maps-react';
 import { geolocated } from 'react-geolocated';
 import styles from './scraper.css'
-import { Input, Button, Dropdown } from 'semantic-ui-react';
+import { Input, Button, Dropdown, Dimmer, Loader } from 'semantic-ui-react';
 import post from '../../fetch/post';
 import io from 'socket.io-client';
 
@@ -25,7 +25,8 @@ class Scraper extends Component {
       categoryId: 0,
       radius: 0,
       lat: 0,
-      lng: 0
+      lng: 0,
+      isScraping: false
     }
   }
   onMarkerClick = (props, marker, e) => {
@@ -46,9 +47,7 @@ class Scraper extends Component {
     }
   };
   getAllObjCategories = async () => {
-    let response = await post.secure('/allCategories', {
-      token: this.props.token
-    });
+    let response = await post.secure('/scrapCategories', {});
     if (response.token.success) {
       let categories = response.categories.map(item => {
         return (
@@ -91,18 +90,28 @@ class Scraper extends Component {
     }
   }
   scrapeObjects = async () => {
-    this.setState({scrapedObject: []})
+    this.setState({ scrapedObject: [] })
     let response = await post.secure('/startScraping', {
       categoryId: this.state.categoryId,
       lat: this.state.lat,
       lng: this.state.lng,
       radius: this.state.radius
     });
+    this.setState({
+      isScraping: true
+    })
     let socket = io('http://localhost:8081')
     socket.on('object_found', (data) => {
       this.setState({
         scrapedObject: [...this.state.scrapedObject, data]
       })
+    });
+    socket.on('scrape_info', (data) => {
+      if (data == false) {
+        this.setState({
+          isScraping: false
+        })
+      }
     });
   }
   componentWillMount() {
@@ -112,21 +121,31 @@ class Scraper extends Component {
     let radius = [
       {
         key: 1,
+        value: 0.2,
+        text: '0.2'
+      },
+      {
+        key: 2,
+        value: 0.5,
+        text: '0.5'
+      },
+      {
+        key: 3,
         value: 1,
         text: '1'
       },
       {
-        key: 2,
+        key: 4,
         value: 2,
         text: '2'
       },
       {
-        key: 3,
+        key: 5,
         value: 5,
         text: '5'
       },
       {
-        key: 4,
+        key: 6,
         value: 10,
         text: '10'
       },
@@ -138,9 +157,13 @@ class Scraper extends Component {
           this.props.coords != null ?
             <div className={styles.map}>
               <Dropdown placeholder='Radius' name='radius' selection options={radius} onChange={this.dropDownSetRadius} />
-              <Dropdown placeholder='Kategorije' name='kategorije' selection options={this.state.categories} onChange={this.dropDownSetCategoryId} />
+              <Dropdown placeholder='Kategorije' search name='kategorije' selection options={this.state.categories} onChange={this.dropDownSetCategoryId} />
               <Button primary onClick={() => this.fetchObjects()}>Fetch</Button>
-              <Button primary onClick={() => this.scrapeObjects()}>Scrape</Button>
+              {
+                this.state.isScraping ?
+                  <Button loading primary>Loading</Button>
+                  : <Button primary onClick={() => this.scrapeObjects()}>Scrape</Button>
+              }
               <Map
                 onClick={this.onMapClicked}
                 google={this.props.google}

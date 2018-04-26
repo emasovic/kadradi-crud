@@ -102,6 +102,7 @@ import PATHS from 'config/paths';
 
 //IMPORT POSTGRESQL DATABASE
 import db from '../../db/db';
+const Op = db.Op;
 
 //SCRAPING
 import scrap from './scrapping';
@@ -110,8 +111,13 @@ import PubSub from 'pubsub-js';
 //IMPORT JSONWEBTOKEN
 import jwt from 'jsonwebtoken';
 
+//IMPORT LODASH
+
+import _ from 'lodash';
+
 //IMPORT ZA GOOGLE PLACES
 import GooglePlaces from 'node-googleplaces';
+import { POINT_CONVERSION_HYBRID } from 'constants';
 const googlePlaces = new GooglePlaces('AIzaSyDImc0NawEJTQwlDskJBSL7cidhVvlccvQ')
 
 // ----------------------
@@ -129,7 +135,7 @@ const createNeworkInterface = (() => {
       config.graphQLSchema,
       {
         // Attach the request's context, which certain GraphQL queries might
-        // need for accessing cookies, auth headers, etc.
+        // need for accessitng cookies, auth headers, etc.
         context,
       },
     );
@@ -245,13 +251,35 @@ export function createReactHandler(css = [], scripts = [], chunkManifest = {}) {
   };
 }
 
+async function fetchObject(placeid) {
+  const url = 'https://maps.googleapis.com/maps/api/place/details/json?placeid=' + placeid + '&key=AIzaSyDImc0NawEJTQwlDskJBSL7cidhVvlccvQ';
+  let zaReturn = {};
+  await fetch(url)
+    .then(response => response.text())
+    .then(async response => {
+      const res = JSON.parse(response);
+      zaReturn = res;
+    })
+  return zaReturn;
+}
+
+async function fetchObjectImage(imageReference) {
+  const url = 'https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=' + imageReference + '&key=AIzaSyB5o17Ztzcsqm5UbxzJQ_P0Fi8xtxkk0GE';
+  let zaReturn = '';
+  await fetch(url)
+    .then(response => response.text())
+    .then(async response => {
+      zaReturn = response;
+    })
+  return zaReturn
+}
+
 function verifyToken(token) {
   try {
     const currentTimeStamp = Math.floor(Date.now() / 1000);
     const tokenVerify = jwt.verify(token, 'nasasifra');
     let response = {};
     if ((tokenVerify.exp - currentTimeStamp) <= 10) {
-      console.log('manje je')
       const newToken = jwt.sign({ id: tokenVerify.id, username: tokenVerify.username, email: tokenVerify.email }, 'nasasifra', { expiresIn: 60 * 60 });
       return { success: true, token: newToken };
     } else {
@@ -266,6 +294,45 @@ function verifyToken(token) {
   }
 }
 
+function Deg2Rad(deg) {
+  return (deg * Math.PI) / 180;
+}
+
+function izracunajDistancu(lat1, lon1, lat2, lon2) {
+  const fi1 = Deg2Rad(lat1);
+  const fi2 = Deg2Rad(lat2);
+  const delta1 = Deg2Rad(lat2 - lat1);
+  const delta2 = Deg2Rad(lon2 - lon1);
+
+  const R = 6371e3;
+  const a = Math.sin(delta1 / 2) * Math.sin(delta1 / 2) +
+    Math.cos(fi1) * Math.cos(fi2) *
+    Math.sin(delta2 / 2) * Math.sin(delta2 / 2);
+  var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  var d = R * c;
+  return d / 1000;
+}
+function compare(a, b) {
+  if (a.distance < b.distance) {
+    return -1;
+  }
+  if (a.distance > b.distance) {
+    return 1;
+  }
+  return 0;
+}
+
+async function fetchObject(placeid) {
+  const url = 'https://maps.googleapis.com/maps/api/place/details/json?placeid=' + placeid + '&key=AIzaSyDImc0NawEJTQwlDskJBSL7cidhVvlccvQ';
+  let zaReturn = {};
+  await fetch(url)
+    .then(response => response.text())
+    .then(async response => {
+      const res = JSON.parse(response);
+      zaReturn = res;
+    })
+  return zaReturn;
+}
 
 // Build the router, based on our app's settings.  This will define which
 // Koa route handlers
@@ -307,6 +374,19 @@ const router = (new KoaRouter())
       ctx.body = JSON.stringify({ categories: [], token: newToken })
     }
   })
+
+  .post('/scrapCategories', async (ctx, next) => {
+    const newToken = verifyToken(ctx.request.body.token);
+    if(newToken.success) {
+      const categories = await db.models.objectCategories.findAll(
+        { where: { googleType: { [Op.ne]: null } } }
+      );
+      ctx.body = JSON.stringify({ categories, token: newToken })
+    } else {
+      ctx.body = JSON.stringify({ categories: [], token: newToken })
+    }
+  })
+
   /*
   ------------------------------
   OVO JE METODA ZA IZLISTAVANJE OBJEKATA IZ KATEGORIJA
@@ -339,29 +419,29 @@ const router = (new KoaRouter())
   OVO JE METODA ZA IZLISTAVANJE OBJEKATA IZ KATEGORIJA
   ------------------------------
   */
- .post('/getAllLocations', async (ctx, next) => {
-  const newTokenI = verifyToken(ctx.request.body.token);
-  if(newToken.success) {
-    const locations = await db.models.locations.findAll();
-    ctx.body = JSON.stringify({ locations, token: newToken})
-  } else {
-      ctx.body = JSON.stringify({ locations: [], token: newToken})
+  .post('/getAllLocations', async (ctx, next) => {
+    const newToken = verifyToken(ctx.request.body.token);
+    if (newToken.success) {
+      const locations = await db.models.locations.findAll();
+      ctx.body = JSON.stringify({ locations, token: newToken })
+    } else {
+      ctx.body = JSON.stringify({ locations: [], token: newToken })
     }
   })
-   /*
-    ------------------------------
-    OVO JE METODA ZA DODAVANJE OBJEKATA
-    ------------------------------
-  */
- .post('/categoriesArray', async (ctx, next) => {
-  const newToken = verifyToken(ctx.request.body.token);
-  if(newToken.success) {
-    const objectCategories = await db.models.objectCategories.findAll({
-      attributes: ['nameM', 'id']
-    });
-    ctx.body = JSON.stringify({categoriesArray: objectCategories, token: newToken})
-  } else {
-      ctx.body = JSON.stringify({categoriesArray: [], token: newToken})
+  /*
+   ------------------------------
+   OVO JE METODA ZA DODAVANJE OBJEKATA
+   ------------------------------
+ */
+  .post('/categoriesArray', async (ctx, next) => {
+    const newToken = verifyToken(ctx.request.body.token);
+    if (newToken.success) {
+      const objectCategories = await db.models.objectCategories.findAll({
+        attributes: ['nameM', 'id']
+      });
+      ctx.body = JSON.stringify({ categoriesArray: objectCategories, token: newToken })
+    } else {
+      ctx.body = JSON.stringify({ categoriesArray: [], token: newToken })
     }
   })
   /*
@@ -375,6 +455,10 @@ const router = (new KoaRouter())
     if (newToken.success) {
       if (objectId) {
         const objectCl = await db.models.objectCl.find({ where: { id: objectId } });
+        let owningPerson = {};
+        if(objectCl.personId) {
+          owningPerson = await db.models.person.find({ where: { id: objectCl.personId }, attributes: ['id', 'email', 'firstName', 'lastName'] });
+        }
         const objectCategories = await db.models.objectCategories.findAll({
           attributes: ['nameJ', 'id']
         });
@@ -389,7 +473,11 @@ const router = (new KoaRouter())
             }
           )
         })
-        const objectPhones = await db.models.objectPhones.findAll({ where: { objectInfoId: objectId } });
+        // OBJECTNFOID
+
+        const objectInfo = await db.models.objectInfo.find({ where: { objectClId: objectId }});
+
+        const objectPhones = await db.models.objectPhones.findAll({ where: { objectInfoId: objectInfo.id } });
 
         let objectCategoriesArr = objectCategories.map(item => {
           return (
@@ -400,11 +488,10 @@ const router = (new KoaRouter())
             }
           )
         })
-        const objectInfo = await db.models.objectInfo.find({ where: { objectClId: objectId }});
-        const objectLocation = await db.models.objectLocation.find({ where: { objectClId: objectId }});
-        const objectFile = await db.models.objectFile.find({ attributes:['id', 'fileUrl', 'desc'], where: { objectClId: objectId }});
+        const objectLocation = await db.models.objectLocation.find({ where: { objectClId: objectId } });
+        const objectFile = await db.models.objectFile.find({ attributes: ['id', 'fileUrl', 'desc'], where: { objectClId: objectId } });
 
-        let objectWorkTime = await db.models.objectWorkTime.find({ where: { objectClId: objectId }});
+        let objectWorkTime = await db.models.objectWorkTime.find({ where: { objectClId: objectId } });
         let pon = {
           isWorking: false,
           name: "Pon",
@@ -448,65 +535,66 @@ const router = (new KoaRouter())
           close: '0'
         }
         let isAlwaysOpened = false;
-        if(objectWorkTime.isAlwaysOpened) {
+        if (objectWorkTime.isAlwaysOpened) {
           isAlwaysOpened = true;
         }
-        if(objectWorkTime.wtMonId !== null) {
+        if (objectWorkTime.wtMonId !== null) {
           let wtMon = await db.models.wtMon.find({ where: { id: objectWorkTime.wtMonId } });
           pon.isWorking = true;
           pon.open = wtMon.opening;
           pon.close = wtMon.closing;
         }
-        if(objectWorkTime.wtTueId !== null) {
+        if (objectWorkTime.wtTueId !== null) {
           let wtTue = await db.models.wtTue.find({ where: { id: objectWorkTime.wtTueId } });
           uto.isWorking = true;
           uto.open = wtTue.opening;
           uto.close = wtTue.closing;
         }
-        if(objectWorkTime.wtWedId !== null) {
+        if (objectWorkTime.wtWedId !== null) {
           let wtWed = await db.models.wtWed.find({ where: { id: objectWorkTime.wtWedId } });
           sre.isWorking = true;
           sre.open = wtWed.opening;
           sre.close = wtWed.closing;
         }
-        if(objectWorkTime.wtThuId !== null) {
+        if (objectWorkTime.wtThuId !== null) {
           let wtThu = await db.models.wtThu.find({ where: { id: objectWorkTime.wtThuId } });
           cet.isWorking = true;
           cet.open = wtThu.opening;
           cet.close = wtThu.closing;
         }
-        if(objectWorkTime.wtFriId !== null) {
+        if (objectWorkTime.wtFriId !== null) {
           let wtFri = await db.models.wtFri.find({ where: { id: objectWorkTime.wtFriId } });
           pet.isWorking = true;
           pet.open = wtFri.opening;
           pet.close = wtFri.closing;
         }
-        if(objectWorkTime.wtSatId !== null) {
+        if (objectWorkTime.wtSatId !== null) {
           let wtSat = await db.models.wtSat.find({ where: { id: objectWorkTime.wtSatId } });
           sub.isWorking = true;
           sub.open = wtSat.opening;
           sub.close = wtSat.closing;
         }
-        if(objectWorkTime.wtSunId !== null) {
+        if (objectWorkTime.wtSunId !== null) {
           let wtSun = await db.models.wtSun.find({ where: { id: objectWorkTime.wtSunId } });
           ned.isWorking = true;
           ned.open = wtSun.opening;
           ned.close = wtSun.closing;
         }
 
-        const objectWorkTimes = [ pon, uto, sre, cet, pet, sub, ned ];
+        const objectWorkTimes = [pon, uto, sre, cet, pet, sub, ned];
         const objectTimes = {
           isAlwaysOpened,
           objectWorkTimes,
         }
-        
-        const objectById = { objectCl, objectInfo, objectLocation, objectCategoriesArr, objectPhones, locations, objectTimes, objectFile };
+
+        const objectById = { owningPerson, objectCl, objectInfo, objectLocation, objectCategoriesArr, objectPhones, locations, objectTimes, objectFile };
         ctx.body = JSON.stringify({ objectById, token: newToken })
       }
     } else {
       ctx.body = JSON.stringify({ objectById: [], token: newToken })
     }
   })
+  
   /*
   ------------------------------
   OVO JE METODA ZA BRISANJE OBJEKATA
@@ -596,6 +684,25 @@ const router = (new KoaRouter())
       ctx.body = JSON.stringify({ deleted: false, token: newToken })
     }
   })
+     /*
+    ------------------------------
+    OVO JE METODA ZA IZLISTAVANJE KORISNIKA
+    ------------------------------
+  */
+ .post('/getUsers', async (ctx, next) => {
+  const newToken = verifyToken(ctx.request.body.token)
+  if (newToken.success) {
+    const email = ctx.request.body.email;
+    if(email.length > 2) {
+      let persons = await db.models.person.findAll({ where: { email: {[Op.iRegexp]: email} }, attributes: ['id', 'email', 'firstName', 'lastName']});
+      ctx.body = JSON.stringify({ users: persons, token: newToken })
+    } else {
+      ctx.body = JSON.stringify({ users: [], token: newToken })
+    }
+  } else {
+    ctx.body = JSON.stringify({ users: [], token: newToken })
+  }
+})
    /*
     ------------------------------
     OVO JE METODA ZA DODAVANJE OBJEKATA
@@ -603,72 +710,45 @@ const router = (new KoaRouter())
   */
 .post('/addObject', async (ctx, next) => {
   const newToken = verifyToken(ctx.request.body.token);
-  // let objectClArr = ctx.request.body.objectClArr;
-  // let objectInfoArr = ctx.request.body.objectInfoArr;
-  // let objectLocation = ctx.request.body.objectLocationArr;
-  // let objectPhones = ctx.request.body.objectPhone;
 
-  let objectClArr = {
-    name: "Sane gay",
-    objectCategoryId: 10,
-    shortDescription: "hihihi"
-  }
+  let addObject = ctx.request.body.addObject;
 
-  
-  let objectInfoArr = {};
-  let objectLocationArr = {};
+
+  let objectClArr = addObject.objectCl;
+  let objectInfoArr = addObject.objectInfo;
+  let objectLocationArr = addObject.objectLocation;
+  let objectPhonesArr = addObject.objectPhones;
+  let objectWorkTimeArr = addObject.objectWorkTime;
+  let objectFileArr = addObject.objectFile;
+  let workTime = addObject.workTime;
+  let objectInfoObj = {};
+  let objectLocationObj = {};
+  let objectFileObj = {};
+  let objectWorkTimeObj = {};
+
   if(newToken.success) {
       // sending all from objectCl in db
       const obId = await db.models.objectCl.create(objectClArr)
       // adding id into objects
-      objectInfoArr = {...objectInfoArr, objectClId: obId.id}
-      objectLocationArr = {...objectLocationArr, objectClId: obId.id}
+      objectInfoObj = {...objectInfoArr, objectClId: obId.id}
+      objectLocationObj = {...objectLocationArr, objectClId: obId.id}
+      objectFileObj = {...objectFileArr, objectClId: obId.id, objectFileCategoryId: 1}
+      objectWorkTimeObj = {...objectWorkTimeArr, objectClId: obId.id}
       // sending all from objectInfo in db
-      await db.models.objectInfo.create(objectInfoArr);
+      let infoId = await db.models.objectInfo.create(objectInfoObj);
       // sending all from objectLocation in db
-      await db.models.objectLocation.create(objectLocationArr);
+      let locationId = await db.models.objectLocation.create(objectLocationObj);
       // sending all from objectPhones in db
       objectPhonesArr.map(async item => {
-        item = {...item, objectClId: obId.id}
+        item = {...item, objectInfoId: infoId.id}
         await db.models.objectPhones.create(item);
       })
+      // sending all from objectFile in db
+      await db.models.objectFile.create(objectFileObj);
+      // sending all from objectWorkTime in db
+      await db.models.objectWorkTime.create({objectClId: obId.id});
 
-
-      // ctx.body = JSON.stringify({ createdNewObject: true, token: newToken})
-
-
-      // ctx.body = JSON.stringify({ createdNewObject: false, token: newToken})
-
-
-  } else {
-    ctx.body = JSON.stringify({ createdNewObject: false, token: newToken})
-  }
-})
-
-  /*
-    ------------------------------
-    OVO JE METODA ZA EDITOVANJE OBJEKATA
-    ------------------------------
-  */
- .post('/editObject', async (ctx, next) => {
-
-  const newToken = verifyToken(ctx.request.body.token)
-
-  let editObject = ctx.request.body.editObject;
-
-  const objectId = ctx.request.body.objectId;
-
-
-  let workTime = editObject.workTime;
-  let objectClArr = editObject.objectCl;
-  let objectInfoArr = editObject.objectInfo;
-  let objectLocationArr = editObject.objectLocation;
-  let objectPhonesArr = editObject.objectPhones;
-  if(newToken.success) {
-    try {
       let workTimeObject = { isAlwaysOpened: false };
-      await db.models.objectWorkTime.findOrCreate({where: {objectClId: objectId}})
-      
       if(workTime.pon) {
         if(workTime.pon.isWorking) {
           let wtMon = await db.models.wtMon.findOrCreate({where: {opening: workTime.pon.opening, closing: workTime.pon.closing}})
@@ -727,27 +807,150 @@ const router = (new KoaRouter())
       }
       if(workTime.isAlwaysOpened) {
         let obj = { isAlwaysOpened: true, wtMonId: 1, wtTueId: 1, wtWedId: 1, wtThuId: 1, wtFriId: 1, wtSatId: 1, wtSunId: 1 }
-        await db.models.objectWorkTime.update(obj, {where: {objectClId: objectId}})
+        await db.models.objectWorkTime.update(obj, {where: {objectClId: obId.id}})
       } else {
-        await db.models.objectWorkTime.update(workTimeObject, {where: {objectClId: objectId}})
+        await db.models.objectWorkTime.update(workTimeObject, {where: {objectClId: obId.id}})
       }
+      // let updateObjectCl = {
+      //   locationId: locationId.id,
+      // }
+      // await db.models.objectCl.update(updateObjectCl, {where: {id: obId.id}})
+      ctx.body = JSON.stringify({ createdNewObject: true, token: newToken})
 
-      await db.models.objectCl.update(objectClArr, {where: {id: objectId}})
-      await db.models.objectInfo.update(objectInfoArr, {where: {id: objectId}})
-      await db.models.objectLocation.update(objectLocationArr, {where: {id: objectId}})
-      objectPhonesArr.map(async item => {
-        await db.models.objectPhones.update(item, {where: {id: item.id}})
-      })
-      ctx.body = JSON.stringify({ token: newToken})
-    } catch (err) {
-      await transaction.rollback();
-      ctx.body = JSON.stringify({ update: false, token: newToken})
+
+      // ctx.body = JSON.stringify({ createdNewObject: false, token: newToken})
+
+
+  } else {
+    ctx.body = JSON.stringify({ createdNewObject: false, token: newToken})
+  }
+})
+///////////////////////////////////
+.post('/stefan', async (ctx, next) => {
+  const newToken = verifyToken(ctx.request.body.token)
+  if(newToken.success) {
+    let stefan;
+    if(ctx.request.body.stefan) {
+      console.log('usao')
+      stefan = ctx.request.body.stefan
     }
-    ctx.body = JSON.stringify({ token: newToken})
+  ctx.body = JSON.stringify({ stefan: 'car', token: newToken })
   } else {
     ctx.body = JSON.stringify({  token: newToken})
   }
 })
+
+///////////////////////////////////
+  /*
+    ------------------------------
+    OVO JE METODA ZA EDITOVANJE OBJEKATA
+    ------------------------------
+  */
+  .post('/editObject', async (ctx, next) => {
+
+    const newToken = verifyToken(ctx.request.body.token)
+    if (newToken.success) {
+      const editObject = ctx.request.body.editObject;
+      const objectId = ctx.request.body.objectId;
+      const workTime = editObject.workTime;
+      const objectClArr = editObject.objectCl;
+      const objectInfoArr = editObject.objectInfo;
+      const objectLocationArr = editObject.objectLocation;
+      const objectPhonesArr = editObject.objectPhones;
+      const deletePhones = editObject.deletePhones;
+        let workTimeObject = { isAlwaysOpened: false };
+        await db.models.objectWorkTime.findOrCreate({ where: { objectClId: objectId } })
+        if (workTime.pon) {
+          if (workTime.pon.isWorking) {
+            let wtMon = await db.models.wtMon.findOrCreate({ where: { opening: workTime.pon.opening, closing: workTime.pon.closing } })
+            workTimeObject = { ...workTimeObject, wtMonId: wtMon[0].id }
+          } else {
+            workTimeObject = { ...workTimeObject, wtMonId: null }
+          }
+        }
+        if (workTime.uto) {
+          if (workTime.uto.isWorking) {
+            let wtTue = await db.models.wtTue.findOrCreate({ where: { opening: workTime.uto.opening, closing: workTime.uto.closing } })
+            workTimeObject = { ...workTimeObject, wtTueId: wtTue[0].id }
+          } else {
+            workTimeObject = { ...workTimeObject, wtTueId: null }
+          }
+        }
+        if (workTime.sre) {
+          if (workTime.sre.isWorking) {
+            let wtWed = await db.models.wtWed.findOrCreate({ where: { opening: workTime.sre.opening, closing: workTime.sre.closing } })
+            workTimeObject = { ...workTimeObject, wtWedId: wtWed[0].id }
+          } else {
+            workTimeObject = { ...workTimeObject, wtWedId: null }
+          }
+        }
+        if (workTime.cet) {
+          if (workTime.cet.isWorking) {
+            let wtThu = await db.models.wtThu.findOrCreate({ where: { opening: workTime.cet.opening, closing: workTime.cet.closing } })
+            workTimeObject = { ...workTimeObject, wtThuId: wtThu[0].id }
+          } else {
+            workTimeObject = { ...workTimeObject, wtThuId: null }
+          }
+        }
+        if (workTime.pet) {
+          if (workTime.pet.isWorking) {
+            let wtFri = await db.models.wtFri.findOrCreate({ where: { opening: workTime.pet.opening, closing: workTime.pet.closing } })
+            workTimeObject = { ...workTimeObject, wtFriId: wtFri[0].id }
+          } else {
+            workTimeObject = { ...workTimeObject, wtFriId: null }
+          }
+        }
+        if (workTime.sub) {
+          if (workTime.sub.isWorking) {
+            let wtSat = await db.models.wtSat.findOrCreate({ where: { opening: workTime.sub.opening, closing: workTime.sub.closing } })
+            workTimeObject = { ...workTimeObject, wtSatId: wtSat[0].id }
+          } else {
+            workTimeObject = { ...workTimeObject, wtSatId: null }
+          }
+        }
+        if (workTime.ned) {
+          if (workTime.ned.isWorking) {
+            let wtSun = await db.models.wtSun.findOrCreate({ where: { opening: workTime.ned.opening, closing: workTime.ned.closing } })
+            workTimeObject = { ...workTimeObject, wtSunId: wtSun[0].id }
+          } else {
+            workTimeObject = { ...workTimeObject, wtSunId: null }
+          }
+        }
+        if (workTime.isAlwaysOpened) {
+          let obj = { isAlwaysOpened: true, wtMonId: 1, wtTueId: 1, wtWedId: 1, wtThuId: 1, wtFriId: 1, wtSatId: 1, wtSunId: 1 }
+          await db.models.objectWorkTime.update(obj, { where: { objectClId: objectId } })
+        } else {
+          await db.models.objectWorkTime.update(workTimeObject, { where: { objectClId: objectId } })
+        }
+        if(objectClArr) {
+          await db.models.objectCl.update(objectClArr, { where: { id: objectId } })
+        }
+        if(objectInfoArr) {
+          await db.models.objectInfo.update(objectInfoArr, { where: { id: objectId } })
+        }
+        if(objectLocationArr) {
+          await db.models.objectLocation.update(objectLocationArr, { where: { id: objectId } })
+        }
+        if(!_.isEmpty(objectPhonesArr)) {
+          objectPhonesArr.map(async item => {
+            await db.models.objectPhones.update(item, { where: { id: item.id } })
+          })
+        }
+        if(!_.isEmpty(deletePhones)) {
+          deletePhones.map(async item => {
+            await db.models.objectPhones.destroy({ where: { id: item } })
+          })
+        }
+        if(!_.isEmpty(Phones)) {
+          deletePhones.map(async item => {
+            await db.models.objectPhones.destroy({ where: { id: item } })
+          })
+        }
+        ctx.body = JSON.stringify({ token: newToken })
+    } else {
+      ctx.body = JSON.stringify({ token: newToken })
+    }
+  })
 
   /*
     ------------------------------
@@ -789,39 +992,16 @@ const router = (new KoaRouter())
   .post('/owningRequest', async (ctx, next) => {
     const newToken = verifyToken(ctx.request.body.token)
     if (newToken.success) {
-      const requests = await db.models.owningRequest.findAll({
-        attributes: ['id', 'personId', 'objectClId']
-      })
+      let requests = await db.models.owningRequest.findAll()
+      let rikvestovi = [];
       let korisnici = [];
       let objekti = [];
-
       await Promise.all(requests.map(async item => {
-        const korisnik = korisnici.find(function (kor) { return kor.id === item.personId })
-        const objekat = objekti.find(function (obj) { return obj.id === item.objectClId })
-        if (korisnik) {
-          item.user = korisnik
-        } else {
-          const userDb = await db.models.person.find({ where: { id: item.personId }, attributes: ['id', 'firstName', 'lastName', 'email'] })
-          if (userDb) {
-            item.user = userDb;
-            korisnici.push(userDb)
-          } else {
-            item.user = {}
-          }
-        }
-        if (objekat) {
-          item.objekat = objekat
-        } else {
-          const objekatDb = await db.models.objectCl.find({ where: { id: item.objectClId }, attributes: ['name', 'id'] })
-          if (objekatDb) {
-            item.objekat = objekatDb
-            objekti.push(objekatDb)
-          } else {
-            item.objekat = {};
-          }
-        }
+        const user = await db.models.person.find({where: {id: item.personId}}, {attributes: ['id', 'firstName', 'lastName', 'email']})
+        const object = await db.models.objectCl.find({where: {id: item.objectClId}})
+        rikvestovi.push({user, object, requestId: item.id})
       }))
-      ctx.body = JSON.stringify({ requests, token: newToken })
+      ctx.body = JSON.stringify({ requests: rikvestovi, token: newToken })
     } else {
       ctx.body = JSON.stringify({ requests: [], token: newToken })
     }
@@ -897,19 +1077,27 @@ const router = (new KoaRouter())
         .then(res => res.json())
         .then(res => {
           Promise.all(res.data.nearestObjects.map(item => {
-            objekti.push({name: item.name, lat: item.objectLocations.lat, lng: item.objectLocations.lng })
+            objekti.push({ name: item.name, lat: item.objectLocations.lat, lng: item.objectLocations.lng })
           }))
         });
+
+      const firstObjects = await db.models.objectSc.findAll({ where: { objectCategoryId: ctx.request.body.categoryId, imported: false } });
+      Promise.all(firstObjects.map(item => {
+        const distance = izracunajDistancu(ctx.request.body.lat, ctx.request.body.lng, item.lat, item.lng);
+        if (distance < ctx.request.body.radius) {
+          objekti.push({ name: item.name, lat: item.lat, lng: item.lng })
+        }
+      }))
+
       ctx.body = { objects: objekti, token: newToken }
     } else {
-      ctx.body = { objects: [], token: newToken}
+      ctx.body = { objects: [], token: newToken }
     }
 
   })
 
   .post('/startScraping', async (ctx, next) => {
     const newToken = verifyToken(ctx.request.body.token);
-    console.log('askjdnaskjdnsa')
     if (newToken.success) {
       scrap.startScraping(ctx.request.body.categoryId, ctx.request.body.lat, ctx.request.body.lng, ctx.request.body.radius);
       ctx.body = JSON.stringify({ success: true, token: newToken });
@@ -918,7 +1106,7 @@ const router = (new KoaRouter())
     // ctx.body = "Skrejpujem";
   })
 
-  .post('/idiDalje', async(ctx, next) => {
+  .post('/idiDalje', async (ctx, next) => {
     scrap.idiDalje();
     ctx.body = "idem Dalje"
   })
@@ -929,11 +1117,185 @@ const router = (new KoaRouter())
     ctx.body = "SCRAPING JE STAO"
   })
 
+  .post('/scrapedObjects', async (ctx, next) => {
+    const categoryId = ctx.request.body.categoryId;
+    const newToken = verifyToken(ctx.request.body.token);
+    const page = ctx.request.body.page;
+    const limit = 10;
+    const offset = limit * (page - 1)
+    const pages = await db.models.objectSc.findAndCountAll({
+      where: { objectCategoryId: categoryId, imported: false }
+    });
+    const pagesLength = Math.ceil(pages.count / limit);
+    if (newToken.success) {
+      const objects = await db.models.objectSc.findAll({
+        limit: limit,
+        offset: offset,
+        where: { objectCategoryId: categoryId, imported: false }
+      });
+      ctx.body = JSON.stringify({ objects, pagesLength, token: newToken });
+    } else {
+      ctx.body = JSON.stringify({ objects: [], token: newToken })
+    }
+  })
+
+  .post('/objectDetails', async (ctx, next) => {
+    const newToken = verifyToken(ctx.request.body.token)
+    if (newToken.success) {
+      const objectDetails = await fetchObject(ctx.request.body.placeId);
+      if (objectDetails.status == "OK") {
+        ctx.body = JSON.stringify({ details: objectDetails, token: newToken })
+      }
+    } else {
+      ctx.body = JSON.stringify({ details: {}, token: newToken })
+    }
+  })
+
+  .post('/importObjects', async (ctx, next) => {
+    const newToken = verifyToken(ctx.request.body.token)
+    if (newToken.success) {
+      const ids = ctx.request.body.ids;
+      const locations = await db.models.locations.findAll(
+        { where: { parrentLocation: { [Op.ne]: 0 } } }
+      );
+      let objectCount = 0;
+      await Promise.all(ids.map(async item => {
+        const objectSc = await db.models.objectSc.find({ where: { id: item } })
+        const objectInfo = await fetchObject(objectSc.google_id);
+        if (objectInfo.status == "OK") {
+          let objectClArgs = {
+            name: objectSc.name,
+            city: objectSc.city,
+            streetAddress: objectSc.streetAddres,
+            google_id: objectSc.google_id,
+            objectCategoryId: objectSc.objectCategoryId,
+            shortDescription: objectSc.name
+          };
+
+          // PRETRAGA OPŠTINE!!!!!
+          Promise.all(locations.map(item => {
+            if (objectClArgs.locationId == undefined) {
+              Promise.all(objectInfo.result.address_components.map(item2 => {
+                if (item.name == item2.long_name) {
+                  objectClArgs.locationId = item.id;
+                }
+              }))
+            }
+          }))
+          //ZAVRŠENA PRETRAGA OPŠTINE!!!!!!!!!!
+          const newObject = await db.models.objectCl.create(objectClArgs);
+          if (newObject != null) {
+            objectCount = objectCount + 1;
+            //RAZRESAVANJE RADNOG VREMENA OBJEKTA!!!
+            const objectWorkTime = await db.models.objectWorkTime.create({ objectClId: newObject.id });
+            if (objectWorkTime != null) {
+              if (objectInfo.result.opening_hours != undefined) {
+                if (objectInfo.result.opening_hours.periods.length > 0) {
+                  let workingTimeArgs = {};
+                  await Promise.all(await objectInfo.result.opening_hours.periods.map(async vreme => {
+                    if (vreme.open.day == 1) {
+                      const wtMon = await db.models.wtMon.findOrCreate({ where: { opening: vreme.open.time, closing: vreme.close.time } })
+                      if (wtMon != null) {
+                        workingTimeArgs.wtMonId = wtMon[0].id
+                        console.log(wtMon[0].id, " OVO JE JEBENI KURCEVI WTMON")
+                      }
+                    } else if (vreme.open.day == 2) {
+                      const wtTue = await db.models.wtTue.findOrCreate({ where: { opening: vreme.open.time, closing: vreme.close.time } })
+                      if (wtTue != null) {
+                        workingTimeArgs.wtTueId = wtTue[0].id
+                      }
+                    } else if (vreme.open.day == 3) {
+                      const wtWed = await db.models.wtWed.findOrCreate({ where: { opening: vreme.open.time, closing: vreme.close.time } })
+                      if (wtWed != null) {
+                        workingTimeArgs.wtWedId = wtWed[0].id
+                      }
+                    } else if (vreme.open.day == 4) {
+                      const wtThu = await db.models.wtThu.findOrCreate({ where: { opening: vreme.open.time, closing: vreme.close.time } })
+                      if (wtThu != null) {
+                        workingTimeArgs.wtThuId = wtThu[0].id
+                      }
+                    } else if (vreme.open.day == 5) {
+                      const wtFri = await db.models.wtFri.findOrCreate({ where: { opening: vreme.open.time, closing: vreme.close.time } })
+                      if (wtFri != null) {
+                        workingTimeArgs.wtFriId = wtFri[0].id
+                      }
+                    } else if (vreme.open.day == 6) {
+                      const wtSat = await db.models.wtSat.findOrCreate({ where: { opening: vreme.open.time, closing: vreme.close.time } })
+                      if (wtSat != null) {
+                        workingTimeArgs.wtSatId = wtSat[0].id
+                      }
+                    } else if (vreme.open.day == 7) {
+                      const wtSun = await db.models.wtSun.findOrCreate({ where: { opening: vreme.open.time, closing: vreme.close.time } })
+                      if (wtSun != null) {
+                        workingTimeArgs.wtSunId = wtSun[0].id
+                      }
+                    }
+                  }))
+                  console.log(workingTimeArgs, " OVO SU WORKING TIME ARGUMENTI JEBOTE KURAC U DUPE")
+                  const wtUpdate = await db.models.objectWorkTime.update(workingTimeArgs, { where: { id: objectWorkTime.id } })
+                }
+              }
+              console.log("JA SAM IZNAD OVOG APDEJTA!!")
+              const updateObjectSc = await db.models.objectSc.update({ imported: true }, { where: { id: item } })
+
+              const objectLocation = await db.models.objectLocation.create({ objectClId: newObject.id, lat: objectSc.lat, lng: objectSc.lng, address: objectSc.streetAddres, city: objectSc.city })
+              //ZAVRSENO RAZRESAVANJE RADNOG VREMENA OBJEKTA!!! JEBOTE KURAC
+              if (objectInfo.result.photos) {
+                const profilna = await fetchObjectImage(objectInfo.result.photos[0].photo_reference);
+                const updateProfilna = await db.models.objectFile.create({ objectClId: newObject.id, objectFileCategoryId: 1 })
+              }
+              if (objectInfo.result.website) {
+                const objectInfoDb = await db.models.objectInfo.create({ objectClId: newObject.id, websiteUrl: objectInfo.result.website })
+              } else {
+                const objectInfoDb = await db.models.objectInfo.create({ objectClId: newObject.id })
+              }
+              
+
+            } else {
+              db.models.objectCl.destroy({ where: { id: newObject.id } })
+              objectCount = objectCount - 1;
+            }
+          }
+        } else {
+          console.log('ISTEKAO JE API');
+        }
+
+      }))
+      console.log("AJOJ MAJKO MOJA DRAGA")
+      ctx.body = JSON.stringify({ objects: objectCount, token: newToken })
+    } else {
+      ctx.body = JSON.stringify({ objects: 0, token: newToken })
+    }
+  })
+
   /*
       ^^^^^^^^^^^^^^^^^^
       ||||||||||||||||||
       SCRAPING
   */
+
+  /* 
+  /////////////////////////////
+  ///// TEST /////////////////
+  */
+  .post('/transactionTest', async (ctx, next) => {
+    const transakcija = db.transaction(function (t) {
+      return db.models.admin.create({
+        username: 'fdsxzc',
+        password: 'tebra'
+      }, { transaction: t }).then(function (user) {
+        return db.models.person.create({
+          email: 'niggafromdhud',
+          firstName: 'Niko',
+          lastName: "nikic"
+        }, { transaction: t }).then(function (result) {
+          console.log(result)
+        }).catch(function (err) {
+          console.log(err)
+        })
+      })
+    })
+  })
 
 
   // Favicon.ico.  By default, we'll serve this as a 204 No Content.
@@ -1119,7 +1481,7 @@ const listen = () => {
       let newObject = PubSub.subscribe('object_found', function (msg, data) {
         io.emit('object_found', data);
       });
-      let scrapeInfo = PubSub.subscribe('scrape_info', function(msg, data){
+      let scrapeInfo = PubSub.subscribe('scrape_info', function (msg, data) {
         io.emit('scrape_info', data)
       })
     });
