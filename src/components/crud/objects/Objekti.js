@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Grid, Menu, Tab, Button, Dropdown, Table, Icon } from 'semantic-ui-react';
+import { Grid, Menu, Tab, Button, Dropdown, Table, Icon, Loader } from 'semantic-ui-react';
 import post from '../../fetch/post';
 import { withRouter } from 'react-router';
 
@@ -13,6 +13,7 @@ class Objekti extends Component {
       categoryId: 0,
       pageNumber: 1,
       activeItem: '1',
+      loading: false,
     }
   }
   getAllObjCategories = async () => {
@@ -35,6 +36,9 @@ class Objekti extends Component {
     }
   }
   categoryObjpage1 = async (e, { value }) => {
+    this.setState({
+      loading: true,
+    })
     let response = await post.secure('/objectsFromCategories', {
       token: this.props.token,
       categoryId: value,
@@ -51,7 +55,8 @@ class Objekti extends Component {
       this.setState({
         objects: response.objects,
         categoryId: value,
-        pages
+        pages,
+        loading: false,
       })
     }
   }
@@ -101,7 +106,7 @@ class Objekti extends Component {
             </Button> : null
         }
         {
-          
+          this.state.loading ? <div style={{marginTop:"100px"}}><Loader size='large' active inline='centered'/></div> :
             this.state.objects.length ?
               <Table compact celled definition>
                 <Table.Header>
