@@ -61,7 +61,7 @@ class Proba extends React.Component{
   }
   getObjById = async () => {
     let response = await post.secure('/objectById', {
-      objectId: 33,
+      objectId: 1,
     });
     console.log(response)
   }

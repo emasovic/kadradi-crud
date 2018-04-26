@@ -456,6 +456,10 @@ const router = (new KoaRouter())
     if (newToken.success) {
       if (objectId) {
         const objectCl = await db.models.objectCl.find({ where: { id: objectId } });
+        let owningPerson = {};
+        if(objectCl.personId) {
+          owningPerson = await db.models.person.find({ where: { id: objectCl.personId }, attributes: ['id', 'email', 'firstName', 'lastName'] });
+        }
         const objectCategories = await db.models.objectCategories.findAll({
           attributes: ['nameJ', 'id']
         });
@@ -584,7 +588,7 @@ const router = (new KoaRouter())
           objectWorkTimes,
         }
 
-        const objectById = { objectCl, objectInfo, objectLocation, objectCategoriesArr, objectPhones, locations, objectTimes, objectFile };
+        const objectById = { owningPerson, objectCl, objectInfo, objectLocation, objectCategoriesArr, objectPhones, locations, objectTimes, objectFile };
         ctx.body = JSON.stringify({ objectById, token: newToken })
       }
     } else {
@@ -831,10 +835,6 @@ const router = (new KoaRouter())
       console.log('usao')
       stefan = ctx.request.body.stefan
     }
-
-
-
-
   ctx.body = JSON.stringify({ stefan: 'car', token: newToken })
   } else {
     ctx.body = JSON.stringify({  token: newToken})
@@ -938,6 +938,11 @@ const router = (new KoaRouter())
           })
         }
         if(!_.isEmpty(deletePhones)) {
+          deletePhones.map(async item => {
+            await db.models.objectPhones.destroy({ where: { id: item } })
+          })
+        }
+        if(!_.isEmpty(Phones)) {
           deletePhones.map(async item => {
             await db.models.objectPhones.destroy({ where: { id: item } })
           })
