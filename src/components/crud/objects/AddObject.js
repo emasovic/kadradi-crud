@@ -1,8 +1,11 @@
 import React from 'react';
 import post from '../../fetch/post';
-import { Input, Button, Dropdown, Checkbox, Segment,TextArea } from 'semantic-ui-react';
+import { Input, Button, Dropdown, Checkbox, Segment, TextArea, Table } from 'semantic-ui-react';
 import SugestInput from './SugestInput'
-import Geosuggest from 'react-geosuggest';
+import Geosuggest from 'react-geosuggest'
+import TimePicker from 'rc-time-picker'
+import moment from 'moment'
+import TableRow from 'semantic-ui-react'
 
 class AddObject extends React.Component {
   constructor(props) {
@@ -16,6 +19,7 @@ class AddObject extends React.Component {
       cityArr: [],
       childLocationArr: [],
       childLocation: [],
+      city:"",
       cityId: "",
       cityIdError: "",
       cityPart: "",
@@ -37,6 +41,53 @@ class AddObject extends React.Component {
       getUser: "",
       emailArr: [],
       count: 1,
+      workTime: {},
+      workTimeArr: [
+
+        {
+          name: "Ponedeljak",
+          isWorking: false,
+          opening: "0900",
+          closing: "1700"
+        },
+        {
+          name: "Utorak",
+          isWorking: false,
+          opening: "0900",
+          closing: "1700"
+        },
+        {
+          name: "Sreda",
+          isWorking: false,
+          opening: "0900",
+          closing: "1700"
+        },
+        {
+          name: "Cetvrtak",
+          isWorking: false,
+          opening: "0900",
+          closing: "1700"
+        },
+        {
+          name: "Petak",
+          isWorking: false,
+          opening: "0900",
+          closing: "1700"
+        },
+        {
+          name: "Subota",
+          isWorking: false,
+          opening: "0900",
+          closing: "1700"
+        },
+        {
+          name: "Nedelja",
+          isWorking: false,
+          opening: "0900",
+          closing: "1700"
+        }
+      ],
+      isAlwaysOpened: false,
     }
   }
   componentWillMount() {
@@ -91,12 +142,19 @@ class AddObject extends React.Component {
           })
         }
       })
-
+      console.log("RESPONSE",response)
       this.setState({
         cityArr: arr,
         childLocationArr: arr1
       })
     }
+  }
+  getCityName = () => {
+    let index1 = this.state.cityArr.findIndex(x => x.key == this.state.cityId)
+    let name = this.state.cityArr[index1].text
+    this.setState ({
+      city:name
+    })
   }
   getCityPart = (e, { value }) => {
     let arr = this.state.childLocationArr.filter(id => id.parrentLocation == value)
@@ -122,9 +180,6 @@ class AddObject extends React.Component {
     }
   }
   objectToBase = async () => {
-    // if(response.token.success){
-    //   console.log("POSLATO KA BAZI",response)
-    // }
     let response = await post.secure('/addObject', {
       addObject: {
         objectCl: {
@@ -139,52 +194,14 @@ class AddObject extends React.Component {
           websiteUrl: this.state.websiteUrl,
           popularBecauseOf: this.state.popular,
         },
-        // kad je always open true ne salje ostale dane 
-        workTime: {
-          isAlwaysOpened: true,
-          pon: {
-            isWorking: true,
-            opening: "1200",
-            closing: "1400"
-          },
-          uto: {
-            isWorking: true,
-            opening: "1200",
-            closing: "1400"
-          },
-          sre: {
-            isWorking: true,
-            opening: "1200",
-            closing: "1400"
-          },
-          cet: {
-            isWorking: true,
-            opening: "1200",
-            closing: "1400"
-          },
-          pet: {
-            isWorking: true,
-            opening: "1200",
-            closing: "1400"
-          },
-          sub: {
-            isWorking: true,
-            opening: "1200",
-            closing: "1400"
-          },
-          ned: {
-            isWorking: true,
-            opening: "1200",
-            closing: "1400"
-          },
-        },
         objectLocations: {
-          lat:this.state.lat,
+          lat: this.state.lat,
           lng: this.state.lng,
-          adress: this.state.address,
-          city: "Unknown",
-          zipCode: 2131231,
+          adress:this.state.addres,
+          city: this.state.city,
+          zipCode:this.state.zipCode,
         },
+        workTime:this.state.workTime,
         objectPhones: this.state.phoneArr,
         objectFile: {
           fileUrl: "kica",
@@ -193,7 +210,131 @@ class AddObject extends React.Component {
       }
     })
   }
+  createWorkTime = () => {
+    let pon;
+    let uto;
+    let sre;
+    let cet;
+    let pet;
+    let sub;
+    let ned;
+    let workTimeObj;
+    let workTimeArr = this.state.workTimeArr.map(item => {
+      if (item.name === 'Ponedeljak') {
+        if (item.isWorking) {
+          pon = {
+            opening: item.opening,
+            closing: item.closing,
+            isWorking: true,
+          }
+          workTimeObj = { ...workTimeObj, pon }
+        } else {
+          pon = {
+            isWorking: false
+          }
+          workTimeObj = { ...workTimeObj, pon }
+        }
+      }
+      if (item.name === 'Utorak') {
+        if (item.isWorking) {
+          uto = {
+            opening: item.opening,
+            closing: item.closing,
+            isWorking: true,
+          }
+          workTimeObj = { ...workTimeObj, uto }
+        } else {
+          uto = {
+            isWorking: false
+          }
+          workTimeObj = { ...workTimeObj, uto }
+        }
+      }
+      if (item.name === 'Sreda') {
+        if (item.isWorking) {
+          sre = {
+            opening: item.opening,
+            closing: item.closing,
+            isWorking: true,
+          }
+          workTimeObj = { ...workTimeObj, sre }
+        } else {
+          sre = {
+            isWorking: false
+          }
+          workTimeObj = { ...workTimeObj, sre }
+        }
+      }
+      if (item.name === 'Cetvrtak') {
+        if (item.isWorking) {
+          cet = {
+            opening: item.opening,
+            closing: item.closing,
+            isWorking: true,
+          }
+          workTimeObj = { ...workTimeObj, cet }
+        } else {
+          cet = {
+            isWorking: false
+          }
+          workTimeObj = { ...workTimeObj, cet }
+        }
+      }
+      if (item.name === 'Petak') {
+        if (item.isWorking) {
+          pet = {
+            opening: item.opening,
+            closing: item.closing,
+            isWorking: true,
+          }
+          workTimeObj = { ...workTimeObj, pet }
+        } else {
+          pet = {
+            isWorking: false
+          }
+          workTimeObj = { ...workTimeObj, pet }
+        }
+      }
+      if (item.name === 'Subota') {
+        if (item.isWorking) {
+          sub = {
+            opening: item.opening,
+            closing: item.closing,
+            isWorking: true,
+          }
+          workTimeObj = { ...workTimeObj, sub }
+        } else {
+          sub = {
+            isWorking: false
+          }
+          workTimeObj = { ...workTimeObj, sub }
+        }
+      }
+      if (item.name === 'Nedelja') {
+        if (item.isWorking) {
+          ned = {
+            opening: item.opening,
+            closing: item.closing,
+            isWorking: true,
+          }
+          workTimeObj = { ...workTimeObj, ned }
+        } else {
+          ned = {
+            isWorking: false
+          }
+          workTimeObj = { ...workTimeObj, ned }
+        }
+      }
+
+    })
+    if (this.state.isAlwaysOpened === true) {
+      this.setState({ workTime: { isAlwaysOpened: this.state.isAlwaysOpened} })
+    } else {
+      this.setState({ workTime: workTimeObj })
+    }
+  }
   validation = (name, categorie, city, cityPart) => {
+    this.createWorkTime();
     let validate = false
     if (this.state.name === '') {
       this.setState({ nameError: "Must enter object name!" })
@@ -209,6 +350,7 @@ class AddObject extends React.Component {
       this.setState({ cityIdError: "Must choose city!" })
     } else {
       this.setState({ cityIdError: "" })
+      this.getCityName();
     }
     if (this.state.cityPart === '') {
       this.setState({ cityPartError: "Must choose city part" })
@@ -263,18 +405,61 @@ class AddObject extends React.Component {
     this.setState({ [name]: value, })
     this.getUser(event.target.value);
   }
-  clearUserId = () =>{
+  clearUserId = () => {
     this.setState({
-      personId:null,
-      emailArr:[]
+      personId: null,
+      emailArr: []
     })
+  }
+  editWorkingTime(value, a) {
+    let time = value.format('HH:mm');
+    let newTime = time.slice(0, 2) + time.slice(3, 5);
+    let arr = this.state.workTimeArr;
+    arr[a].opening = newTime;
+    this.setState({
+      workTimeArr: arr,
+    })
+  }
+  editWorkingTimeClose(value, a) {
+    let time = value.format('HH:mm');
+    let newTime = time.slice(0, 2) + time.slice(3, 5);
+    let arr = this.state.workTimeArr;
+    arr[a].closing = newTime;
+    this.setState({
+      workTimeArr: arr,
+    })
+  }
+  isWorkingToggle(a) {
+    let isWrk
+    if (this.state.workTimeArr[a].isWorking) {
+      isWrk = false;
+    }
+    else {
+      isWrk = true;
+    }
+
+    let arr = this.state.workTimeArr;
+    arr[a].isWorking = isWrk;
+    this.setState({
+      workTimeArr: arr,
+    });
+  }
+  isAlwaysOpenToggle() {
+    if (this.state.isAlwaysOpened) {
+      this.setState({
+        isAlwaysOpened: false,
+      })
+    } else {
+      this.setState({
+        isAlwaysOpened: true,
+      })
+    }
   }
 
   render() {
-    console.log("STATE",this.state)
+    console.log("STATE", this.state)
     return (
       <div>
-        {/* <Input label='locationId: ' name='locationId' value={this.state.locationId} onChange={this.objectEdit} /><br /> */}
         <Input label='Name: ' name='name' error={this.state.nameError} onChange={this.handleInput} required /><br />
         <span>Category: </span>
         <Dropdown
@@ -308,15 +493,62 @@ class AddObject extends React.Component {
         <div>
           <span>Person Id</span>
           <Dropdown placeholder='Search for user' name="personId" onChange={this.handleChange} onSearchChange={this.handleUser} search selection options={this.state.emailArr} size='small' noResultsMessage="No users with that email" />
-          <Button icon='minus' onClick={this.clearUserId} /><br/>
+          <Button icon='minus' onClick={this.clearUserId} /><br />
         </div>
         <div>
           <span>Verified:</span>
           <Checkbox
-            toggle name="verified" checked={this.state.checked}  onChange={this.toggle} />
-        </div>
-        <span>Popular beacuse of:</span><br/>
-        <TextArea autoHeight name='popular'  onChange={this.handleInput} style={{minHeight:'50px',minWidth:'300px'}} placeholder="Popular because of..." /><br />
+            toggle name="verified" checked={this.state.checked} onChange={this.toggle} />
+        </div> <br />
+        <Checkbox checked={this.state.isAlwaysOpened} toggle onClick={() => this.isAlwaysOpenToggle()} />
+        <Table compact celled definition>
+          <Table.Header>
+            <Table.Row>
+              <Table.HeaderCell>Dan:</Table.HeaderCell>
+              <Table.HeaderCell>Start</Table.HeaderCell>
+              <Table.HeaderCell>End</Table.HeaderCell>
+              <Table.HeaderCell>Da li radi?</Table.HeaderCell>
+            </Table.Row>
+          </Table.Header>
+          {
+            this.state.workTimeArr.length ?
+              this.state.workTimeArr.map((item, key) => {
+                let openning = item.opening.slice(0, 2) + ":" + item.opening.slice(2, 4);
+                let closing = item.closing.slice(0, 2) + ":" + item.closing.slice(2, 4);
+                return (
+                  <Table.Body>
+                    <Table.Row >
+                      <Table.Cell>{item.name}</Table.Cell>
+                      <Table.Cell>
+                        <TimePicker
+                          defaultValue={moment(openning, 'HH:mm')}
+                          // value={moment(openning)}
+                          disabled={!this.state.isAlwaysOpened ? item.isWorking ? false : true : true}
+                          showSecond={false}
+                          onChange={(value) => this.editWorkingTime(value, key)} />
+                      </Table.Cell>
+                      <Table.Cell>
+                        <TimePicker
+                          disabled={!this.state.isAlwaysOpened ? item.isWorking ? false : true : true}
+                          defaultValue={moment(closing, 'HH:mm')}
+                          onChange={(value) => this.editWorkingTimeClose(value, key)}
+                          showSecond={false} />
+                      </Table.Cell>
+                      <Table.Cell>
+                        <Checkbox checked={item.isWorking} disabled={this.state.isAlwaysOpened ? true : false} toggle onClick={() => this.isWorkingToggle(key)}
+                        />
+                      </Table.Cell>
+                    </Table.Row>
+                  </Table.Body>
+                );
+              })
+              :
+              null
+          }
+          <Button primary onClick={() => this.editWorkingTimeBtn()}>Izmeni</Button>
+        </Table>
+        <span>Popular beacuse of:</span><br />
+        <TextArea autoHeight name='popular' onChange={this.handleInput} style={{ minHeight: '50px', minWidth: '300px' }} placeholder="Popular because of..." /><br />
         <Input label='Image: ' name='image' onChange={this.handleInput} placeholder="Image url..." /><br />
 
         <Input
@@ -325,25 +557,25 @@ class AddObject extends React.Component {
           name='phone'
           placeholder="Number"
           onChange={this.handleInput} />
-        <Button icon='plus' onClick={() => this.addNumber(this.state.phone, this.state.phoneDesc)} /><br/>
+        <Button icon='plus' onClick={() => this.addNumber(this.state.phone, this.state.phoneDesc)} /><br />
 
         {this.state.phoneArr.length ? this.state.phoneArr.map((item, index) => {
           return (
             <div>
-              <Input 
-                  action={<Input label="Phone Desc" disabled value={item.desc} />}
-                  label={"Telephone No."+`${index+1}`} 
-                  disabled 
-                  value={item.number} />
-              <Button icon='minus' onClick={() => this.removeNumber(item.id)} /><br/>
+              <Input
+                action={<Input label="Phone Desc" disabled value={item.desc} />}
+                label={"Telephone No." + `${index + 1}`}
+                disabled
+                value={item.number} />
+              <Button icon='minus' onClick={() => this.removeNumber(item.id)} /><br />
             </div>
           )
         }
-        ) : null }
+        ) : null}
 
         <Input label='Web site: ' name='websiteUrl' onChange={this.handleInput} placeholder="Webiste url.." /><br />
-        <span>Short Description:</span><br/>
-        <TextArea autoHeight name='shortDescription'  onChange={this.handleInput} style={{minHeight:'50px',minWidth:'300px'}} placeholder="Short description..." /><br />
+        <span>Short Description:</span><br />
+        <TextArea autoHeight name='shortDescription' onChange={this.handleInput} style={{ minHeight: '50px', minWidth: '300px' }} placeholder="Short description..." /><br />
         <Button primary onClick={this.addObject}>Add</Button>
         <div>
           <Segment inverted color='red' compact secondary style={{ display: `${this.state.display}` }}>
