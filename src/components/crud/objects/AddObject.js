@@ -33,14 +33,15 @@ class AddObject extends React.Component {
       phoneDesc: "",
       phoneArr: [],
       shortDescription: "",
-      address: "",
-      lat: "",
-      lng: "",
+      // address: "",
+      // lat: "",
+      // lng: "",
       verified: false,
       display: "none",
       getUser: "",
       emailArr: [],
       count: 1,
+      zipCode:0,
       workTime: {},
       workTimeArr: [
 
@@ -113,7 +114,7 @@ class AddObject extends React.Component {
     })
   }
   addNumber = (tel, desc) => {
-    let arr = this.state.phoneArr.push({ desc: desc, number: tel, id: this.state.count })
+    let arr = this.state.phoneArr.push({ desc: desc, number: tel })
     this.setState({
       phoneArr: this.state.phoneArr,
       count: this.state.count + 1
@@ -194,12 +195,12 @@ class AddObject extends React.Component {
           websiteUrl: this.state.websiteUrl,
           popularBecauseOf: this.state.popular,
         },
-        objectLocations: {
+        objectLocation: {
           lat: this.state.lat,
           lng: this.state.lng,
-          adress:this.state.addres,
+          adress:this.state.address,
           city: this.state.city,
-          zipCode:this.state.zipCode,
+          zipCode:111111,
         },
         workTime:this.state.workTime,
         objectPhones: this.state.phoneArr,
@@ -491,6 +492,7 @@ class AddObject extends React.Component {
         <span>Adress: </span>
         <Geosuggest initialValue={this.state.address} onSuggestSelect={this.onSuggestSelect} /><br />
         <div>
+        <Input label='Zip Code: ' name='zipCode' onChange={this.handleInput} placeholder="Zip code" /><br />
           <span>Person Id</span>
           <Dropdown placeholder='Search for user' name="personId" onChange={this.handleChange} onSearchChange={this.handleUser} search selection options={this.state.emailArr} size='small' noResultsMessage="No users with that email" />
           <Button icon='minus' onClick={this.clearUserId} /><br />
