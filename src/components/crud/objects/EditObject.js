@@ -53,6 +53,7 @@ class EditObject extends React.Component {
       count: 1,
       deletedPhones: [],
       token: '',
+      emailArr: [],
     };
   }
 
@@ -179,6 +180,7 @@ class EditObject extends React.Component {
         zipCode: response.objectById.objectLocation.zipCode,
       });
       let jsArr = JSON.parse(JSON.stringify(this.state.workTime));
+
       this.setState({
         workTimeEdit: jsArr,
       })
@@ -191,6 +193,7 @@ class EditObject extends React.Component {
     }
     console.log('RESPONSE', response);
   }
+
 
   setCategoryObj = async (e, { value }) => {
     this.setState({
@@ -397,11 +400,38 @@ class EditObject extends React.Component {
       deletedPhones: delArr
     })
   }
-
+  getUser = async (email) => {
+    let response = await post.secure('/getUsers', { email })
+    if (response.token.success) {
+      let arr = response.users.map(item => {
+        return (
+          {
+            key: item.id,
+            value: item.id,
+            text: item.email + " " + "(" + item.firstName + " " + item.lastName + ")",
+          }
+        )
+      })
+      this.setState({ emailArr: arr })
+    }
+  }
+  handleChange = (e, { name, value }) => this.setState({ [name]: value }) 
+  handleUser = (event) => {
+    const target = event.target;
+    const value = target.value;
+    const name = target.name;
+    this.setState({ [name]: value, })
+    this.getUser(event.target.value);
+  }
+  clearUserId = () =>{
+    this.setState({
+      personId:null,
+      emailArr:[]
+    })
+  }
   editImgDesc(e) {
     console.log("newVAlue", e.target.value)
   }
-
   prepareToEditObject = async () => {
     let { objToEdit } = this.state;
     let objectClArr = {};
@@ -498,16 +528,12 @@ class EditObject extends React.Component {
         objectLocationArr,
       }
     })
+    
   }
+  
 
   render() {
-    console.log("AAAAAA", this.state.objectImage);
-    console.log("SEND EDIT", this.state.sendEditObject)
-    // console.log("aaaaaaaaaaaaaaaaaaaaaaaaaa",this.state.objectImage);
-    // console.log(this.state.city);
-    // console.log(this.state.sendEditObject)
-    // console.log("CHILDDD", this.state.childLocation)
-    // console.log('LOCATIONID', this.state.childLocation);
+    console.log("STATE", this.state)
     return (
       <div>
         {
