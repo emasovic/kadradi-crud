@@ -128,6 +128,15 @@ class EditObject extends React.Component {
         numberAdd: e.target.value
       })
     }
+    if (e.target.name === 'imgDesc') {
+      this.setState({
+        objectImage: {
+          desc: e.target.value,
+          fileUrl: this.state.objectImage.fileUrl,
+          id: this.state.objectImage.id,
+        }
+      })
+    }
   }
   componentWillMount() {
     this.getObjectById();
@@ -420,6 +429,9 @@ class EditObject extends React.Component {
       emailArr:[]
     })
   }
+  editImgDesc(e) {
+    console.log("newVAlue", e.target.value)
+  }
   prepareToEditObject = async () => {
     let { objToEdit } = this.state;
     let objectClArr = {};
@@ -528,100 +540,110 @@ class EditObject extends React.Component {
           this.state.token === false ? 'isteko token' : this.state.loading ? <div style={{ marginTop: "100px" }}><Loader size='large' active inline='centered' /></div> :
             <div>
               {/* <Input label='locationId: ' name='locationId' value={this.state.locationId} onChange={this.objectEdit} /><br /> */}
-              <Input label="Name: " name="name" value={this.state.name} onChange={this.objectEdit} /><br />
-              <span>Category: </span>
-              <Dropdown
-                value={this.state.objectCategoryId}
-                selection
-                onChange={this.setCategoryObj}
-                options={this.state.objToEdit.objectCategoriesArr} /><br />
-              <span>Community: </span>
-              <Dropdown
-                selection
-                value={this.state.locationId}
-                options={this.state.childLocation}
-                onChange={this.changeC}
-              /><br />
-              <Dropdown
-                selection
-                value={this.state.newVal}
-                options={this.state.par}
-                onChange={this.setLo} /><br />
-              <FileBase64 multiple={false} onDone={this.getImage.bind(this)} />
-              <br />
-              <img src={this.state.objectImage.fileUrl} style={{ height: '250px', width: '250px' }} />
-              <br />
-              Opis slike:<br />
-              <TextArea autoHeight name='opis slike' value={this.state.objectImage.desc} style={{ minHeight: '50px', minWidth: '300px' }} /><br />
-              <br />
-              <Checkbox checked={this.state.isAlwaysOpen} toggle onClick={() => this.isAlwaysOpenToggle()} />
-              <Table compact celled definition>
-                <Table.Header>
-                  <Table.Row>
-                    <Table.HeaderCell>Dan:</Table.HeaderCell>
-                    <Table.HeaderCell>Start</Table.HeaderCell>
-                    <Table.HeaderCell>End</Table.HeaderCell>
-                    <Table.HeaderCell>Da li radi?</Table.HeaderCell>
-                  </Table.Row>
-                </Table.Header>
-                {
-                  this.state.workTimeEdit.length ?
-                    this.state.workTimeEdit.map((item, key) => {
-                      let openning = item.open.slice(0, 2) + ":" + item.open.slice(2, 4);
-                      let closing = item.close.slice(0, 2) + ":" + item.close.slice(2, 4);
-                      return (
-                        <Table.Body key={key}>
-                          <Table.Row >
-                            <Table.Cell>{item.name}</Table.Cell>
-                            <Table.Cell>
-                              <TimePicker
-                                defaultValue={moment(openning, 'HH:mm')}
-                                // value={moment(openning)}
-                                disabled={!this.state.isAlwaysOpen ? item.isWorking ? false : true : true}
-                                showSecond={false}
-                                onChange={(value) => this.editWorkingTime(value, key)} />
-                            </Table.Cell>
-                            <Table.Cell>
-                              <TimePicker
-                                disabled={!this.state.isAlwaysOpen ? item.isWorking ? false : true : true}
-                                defaultValue={moment(closing, 'HH:mm')}
-                                onChange={(value) => this.editWorkingTimeClose(value, key)}
-                                showSecond={false} />
-                            </Table.Cell>
-                            <Table.Cell>
-                              <Checkbox checked={item.isWorking} disabled={this.state.isAlwaysOpen ? true : false} toggle onClick={() => this.isWorkingToggle(key)}
-                              />
-                            </Table.Cell>
-                          </Table.Row>
-                        </Table.Body>
-                      );
-                    })
-                    :
-                    null
-                }
-              </Table>
-              <Input label='personId: ' value={this.state.personId}/><br />
-              <Dropdown 
-                name="personId" 
-                onChange={this.handleChange} 
-                onSearchChange={this.handleUser} 
-                search 
-                selection 
-                options={this.state.emailArr} 
-                size='small' 
-                noResultsMessage="No users with that email" 
-              />
-              Short Description :<br />
-              <TextArea autoHeight name='shortDescription' value={this.state.shortDescription} onChange={this.objectEdit} style={{ minHeight: '50px', minWidth: '300px' }} /><br />
-              <Geosuggest initialValue={this.state.address} onSuggestSelect={this.onSuggestSelect} />
-              Verified:<Checkbox toggle checked={this.state.verified} onClick={() => this.isVerify()} /><br />
-              Lat:<Input name='lat' value={this.state.lat} onChange={this.objectEdit} /><br />
-              Lng: <Input name='lng' value={this.state.lng} onChange={this.objectEdit} /><br />
-              Zip Code: <Input name='zipCode' value={this.state.zipCode} onChange={this.objectEdit} /><br />
-              <Input label='WebSiteUrl: ' name='websiteUrl' value={this.state.websiteUrl} onChange={this.objectEdit} /><br />
-              <FileBase64 multiple={true} onDone={this.getImage.bind(this)} /><br />
-              popularBeacuseOf:<br />
-              <TextArea autoHeight name='popularBecauseOf' value={this.state.popularBecauseOf} onChange={this.objectEdit} style={{ minHeight: '50px', minWidth: '300px' }} /><br />
+
+              <div className={Style.section} >
+                <div style={{width: '100%', height: '60px', background: 'blue'}}>
+                  <div class={{width: '50%', float:'left'}}>
+                    <span>OSNOVNE INFORMACIJE:</span>
+                  </div>
+                  <div class={{width: '50%', float:'left'}}>
+                    <span>OSNOVNE INFORMACIJE:</span>
+                  </div>
+                </div>                
+                <Input label="Name: " name="name" value={this.state.name} onChange={this.objectEdit} /><br />
+                <span>Category: </span>
+                <Dropdown
+                  value={this.state.objectCategoryId}
+                  selection
+                  onChange={this.setCategoryObj}
+                  options={this.state.objToEdit.objectCategoriesArr} /><br />
+                <Input label='personId: ' name='personId' value={this.state.personId} onChange={this.objectEdit} /><br />
+                Short Description :<br />
+                <TextArea autoHeight name='shortDescription' value={this.state.shortDescription} onChange={this.objectEdit} style={{ minHeight: '50px', minWidth: '300px' }} /><br />
+                Verified:<Checkbox toggle checked={this.state.verified} onClick={() => this.isVerify()} /><br />
+                <Input label='WebSiteUrl: ' name='websiteUrl' value={this.state.websiteUrl} onChange={this.objectEdit} /><br />
+                <FileBase64 multiple={true} onDone={this.getImage.bind(this)} /><br />
+                popularBeacuseOf:<br />
+                <TextArea autoHeight name='popularBecauseOf' value={this.state.popularBecauseOf} onChange={this.objectEdit} style={{ minHeight: '50px', minWidth: '300px' }} /><br />
+              </div>
+              <div className={Style.section} >
+                <span style={{ background: 'white', padding: '5px', marginLeft: '30px', border: '1px solid blue' }}>Lokacija: </span>
+                <br />
+                <span>Community: </span>
+                <Dropdown
+                  selection
+                  value={this.state.locationId}
+                  options={this.state.childLocation}
+                  onChange={this.changeC}
+                /><br />
+                <Dropdown
+                  selection
+                  value={this.state.newVal}
+                  options={this.state.par}
+                  onChange={this.setLo} /><br />
+                Lat:<Input name='lat' value={this.state.lat} onChange={this.objectEdit} /><br />
+                Lng: <Input name='lng' value={this.state.lng} onChange={this.objectEdit} /><br />
+                Zip Code: <Input name='zipCode' value={this.state.zipCode} onChange={this.objectEdit} /><br />
+                <Geosuggest initialValue={this.state.address} onSuggestSelect={this.onSuggestSelect} />
+              </div>
+              <div className={Style.section} >
+                <FileBase64 multiple={false} onDone={this.getImage.bind(this)} />
+                <br />
+                <img src={this.state.objectImage.fileUrl} style={{ height: '250px', width: '250px' }} />
+                <br />
+                Opis slike:<br />
+                <TextArea autoHeight name='imgDesc' value={this.state.objectImage.desc} onChange={this.objectEdit} style={{ minHeight: '50px', minWidth: '300px' }} /><br />
+                <br />
+              </div>
+              <div className={Style.section}>
+                <span>Radi 24/7?</span>
+                <Checkbox checked={this.state.isAlwaysOpen} toggle onClick={() => this.isAlwaysOpenToggle()} />
+                <Table compact celled definition>
+                  <Table.Header>
+                    <Table.Row>
+                      <Table.HeaderCell>Dan:</Table.HeaderCell>
+                      <Table.HeaderCell>Start</Table.HeaderCell>
+                      <Table.HeaderCell>End</Table.HeaderCell>
+                      <Table.HeaderCell>Da li radi?</Table.HeaderCell>
+                    </Table.Row>
+                  </Table.Header>
+                  {
+                    this.state.workTimeEdit.length ?
+                      this.state.workTimeEdit.map((item, key) => {
+                        let openning = item.open.slice(0, 2) + ":" + item.open.slice(2, 4);
+                        let closing = item.close.slice(0, 2) + ":" + item.close.slice(2, 4);
+                        return (
+                          <Table.Body key={key}>
+                            <Table.Row >
+                              <Table.Cell>{item.name}</Table.Cell>
+                              <Table.Cell>
+                                <TimePicker
+                                  defaultValue={moment(openning, 'HH:mm')}
+                                  // value={moment(openning)}
+                                  disabled={!this.state.isAlwaysOpen ? item.isWorking ? false : true : true}
+                                  showSecond={false}
+                                  onChange={(value) => this.editWorkingTime(value, key)} />
+                              </Table.Cell>
+                              <Table.Cell>
+                                <TimePicker
+                                  disabled={!this.state.isAlwaysOpen ? item.isWorking ? false : true : true}
+                                  defaultValue={moment(closing, 'HH:mm')}
+                                  onChange={(value) => this.editWorkingTimeClose(value, key)}
+                                  showSecond={false} />
+                              </Table.Cell>
+                              <Table.Cell>
+                                <Checkbox checked={item.isWorking} disabled={this.state.isAlwaysOpen ? true : false} toggle onClick={() => this.isWorkingToggle(key)}
+                                />
+                              </Table.Cell>
+                            </Table.Row>
+                          </Table.Body>
+                        );
+                      })
+                      :
+                      null
+                  }
+                </Table>
+              </div>
               {
                 this.state.phones.length ?
                   this.state.phones.map((item, key) => {
