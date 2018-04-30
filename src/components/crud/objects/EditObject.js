@@ -54,6 +54,9 @@ class EditObject extends React.Component {
       deletedPhones: [],
       token: '',
       emailArr: [],
+      user: {},
+      currentUser: {},
+
     };
   }
 
@@ -143,6 +146,12 @@ class EditObject extends React.Component {
     this.setState({
       loading: true
     })
+    if(this.state.emailArr.length){
+      current = this.state.emailArr[0]
+      this.setState({
+        currentUser: current,
+      })
+    }
   }
   getObjectById = async () => {
     const objectId = this.props.match.params.id;
@@ -178,11 +187,19 @@ class EditObject extends React.Component {
         lat: response.objectById.objectLocation.lat,
         lng: response.objectById.objectLocation.lng,
         zipCode: response.objectById.objectLocation.zipCode,
+        user: response.objectById.owningPerson,
       });
       let jsArr = JSON.parse(JSON.stringify(this.state.workTime));
 
       this.setState({
         workTimeEdit: jsArr,
+        emailArr: [
+          {
+            key: response.objectById.owningPerson.id,
+            text: response.objectById.owningPerson.email,
+            value: response.objectById.owningPerson.id,
+          }
+        ]
       })
       this.setParentObj(response.objectById.locations);
       this.setCurrentParrent(response.objectById.locations);
@@ -530,9 +547,10 @@ class EditObject extends React.Component {
     })
     
   }
-  
+
 
   render() {
+
     console.log("STATE", this.state)
     return (
       <div>
@@ -558,6 +576,17 @@ class EditObject extends React.Component {
                   onChange={this.setCategoryObj}
                   options={this.state.objToEdit.objectCategoriesArr} /><br />
                 <Input label='personId: ' name='personId' value={this.state.personId} onChange={this.objectEdit} /><br />
+                <Dropdown 
+                name="personId" 
+                onChange={this.handleChange} 
+                onSearchChange={this.handleUser} 
+                search 
+                selection 
+                defaultValue={this.state.emailArr.length ? this.state.emailArr[0].text : 'null'}
+                options={this.state.emailArr} 
+                size='small' 
+                noResultsMessage="No users with that email" 
+              /><br />
                 Short Description :<br />
                 <TextArea autoHeight name='shortDescription' value={this.state.shortDescription} onChange={this.objectEdit} style={{ minHeight: '50px', minWidth: '300px' }} /><br />
                 Verified:<Checkbox toggle checked={this.state.verified} onClick={() => this.isVerify()} /><br />
