@@ -380,11 +380,6 @@ class AddObject extends React.Component {
         open:true,
         confirmText:"Objekat uspesno dodat!"
       })
-    } else {
-      this.setState({
-        open:true,
-        confirmText:"Doslo je do greske pokusajte ponovo!"
-      })
     }
   }
   onSuggestSelect = (suggest) => {
@@ -479,6 +474,7 @@ class AddObject extends React.Component {
     }
   }
   render() {
+    console.log("STATE", this.state)
     return (
       <div>
         <div>
