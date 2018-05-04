@@ -8,6 +8,7 @@ import TableRow from 'semantic-ui-react';
 import moment from 'moment';
 import Geosuggest from 'react-geosuggest';
 import FileBase64 from 'react-file-base64';
+import css from './AddObject.css'
 
 class EditObject extends React.Component {
   constructor(props) {
@@ -56,10 +57,8 @@ class EditObject extends React.Component {
       emailArr: [],
       user: {},
       currentUser: {},
-
     };
   }
-
   objectEdit = e => {
     if (e.target.name === 'locationId') {
       this.setState({
@@ -455,9 +454,11 @@ class EditObject extends React.Component {
     let objectWorkTimeArr = {};
     let objectLocationArr = {};
     let objectInfoArr = {};
+    let objectPhonesArr = {};
     let objectClKeys = ['name', 'shortDescription', 'verified', 'personId', 'objectCategoryId', 'locationId'];
     let objectInfoKeys = ['websiteUrl', 'popularBecauseOf'];
     let objectLocationKeys = ['lat', 'lng', 'address', 'city', 'zipCode'];
+    let objectPhonesKeys = ['deletedPhones','phonesAdd'];
     let obj = {};
     let newArr = this.state.workTimeEdit;
 
@@ -481,6 +482,14 @@ class EditObject extends React.Component {
       if (objToEdit.objectInfo[item] != this.state[item]) {
         objectInfoArr = {
           ...objectInfoArr,
+          [item]: this.state[item]
+        }
+      }
+    })
+    objectPhonesKeys.map((item) => {
+      if (objToEdit.objectPhones[item] != this.state[item]) {
+        objectPhonesArr = {
+          ...objectPhonesArr,
           [item]: this.state[item]
         }
       }
@@ -543,6 +552,7 @@ class EditObject extends React.Component {
         objectInfoArr,
         objectClArr,
         objectLocationArr,
+        objectPhonesArr
       }
     })
     
@@ -560,62 +570,78 @@ class EditObject extends React.Component {
               {/* <Input label='locationId: ' name='locationId' value={this.state.locationId} onChange={this.objectEdit} /><br /> */}
 
               <div className={Style.section} >
-                <div style={{width: '100%', height: '60px', background: 'blue'}}>
-                  <div class={{width: '50%', float:'left'}}>
+                  <div className={css.header}>
                     <span>OSNOVNE INFORMACIJE:</span>
                   </div>
-                  <div class={{width: '50%', float:'left'}}>
-                    <span>OSNOVNE INFORMACIJE:</span>
-                  </div>
-                </div>                
-                <Input label="Name: " name="name" value={this.state.name} onChange={this.objectEdit} /><br />
-                <span>Category: </span>
+                <div style={{display:'flex',alignItems:'center',justifyContent:'space-around',marginBottom:'30px'}}>
+                <span className={css.labels}>Ime:</span>              
+                <Input name="name" value={this.state.name} onChange={this.objectEdit} style={{width:'200px'}}/>
+                <span className={css.labels}>Kategorija:</span>  
                 <Dropdown
                   value={this.state.objectCategoryId}
                   selection
                   onChange={this.setCategoryObj}
-                  options={this.state.objToEdit.objectCategoriesArr} /><br />
-                <Input label='personId: ' name='personId' value={this.state.personId} onChange={this.objectEdit} /><br />
+                  options={this.state.objToEdit.objectCategoriesArr} />
+                {/* <Input label='personId: ' name='personId' value={this.state.personId} onChange={this.objectEdit} /><br /> */}
+                <span className={css.labels}>Vlasnik objekta:</span>
                 <Dropdown 
                 name="personId" 
                 onChange={this.handleChange} 
                 onSearchChange={this.handleUser} 
                 search 
                 selection 
-                defaultValue={this.state.emailArr.length ? this.state.emailArr[0].text : 'null'}
+                defaultValue={this.state.emailArr.length ? this.state.emailArr[0].text : null}
                 options={this.state.emailArr} 
                 size='small' 
                 noResultsMessage="No users with that email" 
-              /><br />
-                Short Description :<br />
-                <TextArea autoHeight name='shortDescription' value={this.state.shortDescription} onChange={this.objectEdit} style={{ minHeight: '50px', minWidth: '300px' }} /><br />
-                Verified:<Checkbox toggle checked={this.state.verified} onClick={() => this.isVerify()} /><br />
-                <Input label='WebSiteUrl: ' name='websiteUrl' value={this.state.websiteUrl} onChange={this.objectEdit} /><br />
-                <FileBase64 multiple={true} onDone={this.getImage.bind(this)} /><br />
-                popularBeacuseOf:<br />
-                <TextArea autoHeight name='popularBecauseOf' value={this.state.popularBecauseOf} onChange={this.objectEdit} style={{ minHeight: '50px', minWidth: '300px' }} /><br />
+              />
+                <span className={css.labels}>Proveren:</span>
+                <Checkbox toggle checked={this.state.verified} onClick={() => this.isVerify()} />
+                </div>
+                {/* <FileBase64 multiple={true} onDone={this.getImage.bind(this)} /><br /> */}
+                <div style={{display:'flex',alignItems:'center',justifyContent:'space-around'}}>
+                <span className={css.labels}>Veb sajt:</span>
+                <Input name='websiteUrl' value={this.state.websiteUrl} onChange={this.objectEdit} style={{width:'350px'}}/>
+                <span className={css.labels}>Popularan zbog:</span>
+                <TextArea autoHeight name='popularBecauseOf' value={this.state.popularBecauseOf} onChange={this.objectEdit} style={{ minHeight: '50px', minWidth: '300px' }} />
+                <span className={css.labels}>Kratak opis:</span>
+                <TextArea autoHeight name='shortDescription' value={this.state.shortDescription} onChange={this.objectEdit} style={{ minHeight: '50px', minWidth: '300px' }} />
+                </div>
               </div>
               <div className={Style.section} >
-                <span style={{ background: 'white', padding: '5px', marginLeft: '30px', border: '1px solid blue' }}>Lokacija: </span>
-                <br />
-                <span>Community: </span>
+                <div className={css.header}>
+                <span >LOKACIJA: </span>
+                </div>
+                <div style={{display:'flex',alignItems:'center',justifyContent:'space-around',marginBottom:'30px'}}>
+                  <span className={css.labels}>Izaberite ulicu:</span>
+                  <Geosuggest initialValue={this.state.address} onSuggestSelect={this.onSuggestSelect} />
+                  <span className={css.labels}>Lat:</span>
+                  <Input name='lat' value={this.state.lat} onChange={this.objectEdit} />
+                  <span className={css.labels}>Lng:</span>
+                  <Input name='lng' value={this.state.lng} onChange={this.objectEdit} />
+                  <span className={css.labels}>Zip kod:</span>
+                  <Input name='zipCode' value={this.state.zipCode} onChange={this.objectEdit} />
+                </div>
+                <div style={{display:'flex',alignItems:'center',justifyContent:'space-around'}}>
+                <span className={css.labels}>Opstina: </span>
                 <Dropdown
                   selection
                   value={this.state.locationId}
                   options={this.state.childLocation}
                   onChange={this.changeC}
-                /><br />
+                />
+                <span className={css.labels}>Grad:</span>
                 <Dropdown
                   selection
                   value={this.state.newVal}
                   options={this.state.par}
-                  onChange={this.setLo} /><br />
-                Lat:<Input name='lat' value={this.state.lat} onChange={this.objectEdit} /><br />
-                Lng: <Input name='lng' value={this.state.lng} onChange={this.objectEdit} /><br />
-                Zip Code: <Input name='zipCode' value={this.state.zipCode} onChange={this.objectEdit} /><br />
-                <Geosuggest initialValue={this.state.address} onSuggestSelect={this.onSuggestSelect} />
+                  onChange={this.setLo} />
+                  </div>
               </div>
               <div className={Style.section} >
+              <div className={css.header}>
+                <span >SLIKA: </span>
+                </div>
                 <FileBase64 multiple={false} onDone={this.getImage.bind(this)} />
                 <br />
                 <img src={this.state.objectImage.fileUrl} style={{ height: '250px', width: '250px' }} />
@@ -625,6 +651,9 @@ class EditObject extends React.Component {
                 <br />
               </div>
               <div className={Style.section}>
+              <div className={css.header}>
+                <span >RADNO VREME: </span>
+                </div>
                 <span>Radi 24/7?</span>
                 <Checkbox checked={this.state.isAlwaysOpen} toggle onClick={() => this.isAlwaysOpenToggle()} />
                 <Table compact celled definition>
