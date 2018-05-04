@@ -42,6 +42,8 @@ class AddObject extends React.Component {
       zipCode: 0,
       workTime: {},
       loading: false,
+      lat:"",
+      lng:0,
       workTimeArr: [
 
         {
@@ -199,8 +201,8 @@ class AddObject extends React.Component {
           popularBecauseOf: this.state.popular,
         },
         objectLocation: {
-          lat: this.state.lat,
-          lng: this.state.lng,
+          lat: parseFloat(this.state.lat),
+          lng: parseFloat(this.state.lng),
           adress: this.state.address,
           city: this.state.city,
           zipCode: this.state.zipCode,
@@ -213,6 +215,12 @@ class AddObject extends React.Component {
         }
       }
     })
+    if(response.token.success){
+      console.log("Upisao u bazu")
+    }
+    else{
+      console.log("NIJE UPISANO")
+    }
   }
   createWorkTime = () => {
     let pon;
@@ -473,6 +481,20 @@ class AddObject extends React.Component {
       })
     }
   }
+  handleLat = (e) => {
+    const onlyNums = e.target.value.replace(/[^0-9.]/g, '')
+      this.setState({
+        lat:onlyNums
+      })
+    }
+   
+ handleLng = (e) =>{
+    const onlyNums = e.target.value.replace(/[^0-9.]/g, '')
+      this.setState({
+        lng:onlyNums
+      })
+    }
+  
   render() {
     console.log("STATE", this.state)
     return (
@@ -540,16 +562,26 @@ class AddObject extends React.Component {
                     <Button icon='minus' onClick={this.clearUserId} />
                   </div>
                 </div>
+                <div className={css.addressDiv}>
+                    <div className={css.elementWraper}>
+                    <span className={css.labels}>Adresa: </span>
+                    <Geosuggest initialValue={this.state.address} onSuggestSelect={this.onSuggestSelect} />
+                    </div>
+                    <div className={css.elementWraper}>
+                    <span className={css.labels}>Lat: </span>
+                    <Input value={this.state.lat} onChange={this.handleLat} placeholder="Uneti Lat" />
+                    </div>
+                    <div className={css.elementWraper}>
+                    <span className={css.labels}>Lng: </span>
+                    <Input value={this.state.lng} onChange={this.handleLng} placeholder="Uneti Lng" />
+                  </div>
+                  </div>
               </div>
               <div className={css.section} >
                 <div className={css.header}>
                   <span>DODATNE  INFORMACIJE:</span>
                 </div>
                 <div className={css.content}>
-                  <div className={css.addressDiv}>
-                    <span className={css.labels}>Adresa: </span>
-                    <Geosuggest initialValue={this.state.address} onSuggestSelect={this.onSuggestSelect} />
-                  </div>
                   <div className={css.elementWraper}>
                     <span className={css.labels}>Postanski broj: </span>
                     <Input onChange={this.isNumberKey} placeholder="Uneti broj" />
