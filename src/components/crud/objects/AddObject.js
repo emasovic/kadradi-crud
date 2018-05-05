@@ -42,8 +42,11 @@ class AddObject extends React.Component {
       zipCode: 0,
       workTime: {},
       loading: false,
+      token:'',
       lat:"",
-      lng:0,
+      lng:"",
+      address:"",
+      addressError:"",
       workTimeArr: [
 
         {
@@ -105,6 +108,9 @@ class AddObject extends React.Component {
     const value = target.value;
     const name = target.name;
     this.setState({ [name]: value });
+  }
+  handleGeoSugest = (value) => {
+    this.setState({address:value})
   }
   handleChange = (e, { name, value }) => this.setState({ [name]: value })
 
@@ -181,7 +187,8 @@ class AddObject extends React.Component {
       })
       this.setState({
         categories: arr,
-        loading: false
+        loading: false,
+        token: response.token.success
       })
     }
   }
@@ -215,12 +222,6 @@ class AddObject extends React.Component {
         }
       }
     })
-    if(response.token.success){
-      console.log("Upisao u bazu")
-    }
-    else{
-      console.log("NIJE UPISANO")
-    }
   }
   createWorkTime = () => {
     let pon;
@@ -345,7 +346,7 @@ class AddObject extends React.Component {
       return workTimeObj
     }
   }
-  validation = (name, categorie, city, cityPart) => {
+  validation = (name, categorie, city, cityPart,address) => {
     let validate = false
     if (this.state.name === '') {
       this.setState({ nameError: "Morate uneti ime objekta!" })
@@ -368,7 +369,12 @@ class AddObject extends React.Component {
     } else {
       this.setState({ cityPartError: "" })
     }
-    if (name !== "" && categorie !== "" && city !== "" && cityPart !== "") {
+    if (this.state.address === '' || this.state.lng === "" || this.state.lat==="") {
+      this.setState({ addressError: "Morate uneti adresu sa parametrima Lat i Lng !" })
+    } else {
+      this.setState({ addressError: "" })
+    }
+    if (name !== "" && categorie !== "" && city !== "" && cityPart !== "" && address !== "") {
       validate = true
       this.setState({ display: "none" })
     } else {
@@ -379,7 +385,7 @@ class AddObject extends React.Component {
 
   }
   addObject = () => {
-    let validate = this.validation(this.state.name, this.state.objectCategorie, this.state.cityId, this.state.cityPart)
+    let validate = this.validation(this.state.name, this.state.objectCategorie, this.state.cityId, this.state.cityPart,this.state.address)
     let workTime = this.createWorkTime()
     if (validate) {
       this.objectToBase(workTime);
@@ -482,14 +488,14 @@ class AddObject extends React.Component {
     }
   }
   handleLat = (e) => {
-    const onlyNums = e.target.value.replace(/[^0-9.]/g, '')
+    const onlyNums = e.target.value.replace(/[^0-9.-]/g, '')
       this.setState({
         lat:onlyNums
       })
     }
    
  handleLng = (e) =>{
-    const onlyNums = e.target.value.replace(/[^0-9.]/g, '')
+    const onlyNums = e.target.value.replace(/[^0-9.-]/g, '')
       this.setState({
         lng:onlyNums
       })
@@ -510,7 +516,7 @@ class AddObject extends React.Component {
         </TransitionablePortal>
         </div>
         {
-          this.state.loading ? <div style={{ marginTop: "100px" }}><Loader size='large' active inline='centered' /></div> :
+          this.state.token === false ? 'isteko token' : this.state.loading ? <div style={{ marginTop: "100px" }}><Loader size='large' active inline='centered' /></div> : 
             <div>
               <div className={css.section} >
 
@@ -565,7 +571,7 @@ class AddObject extends React.Component {
                 <div className={css.addressDiv}>
                     <div className={css.elementWraper}>
                     <span className={css.labels}>Adresa: </span>
-                    <Geosuggest initialValue={this.state.address} onSuggestSelect={this.onSuggestSelect} />
+                    <Geosuggest onChange={this.handleGeoSugest} onSuggestSelect={this.onSuggestSelect} initialValue={this.state.address}  />
                     </div>
                     <div className={css.elementWraper}>
                     <span className={css.labels}>Lat: </span>
@@ -701,6 +707,7 @@ class AddObject extends React.Component {
                     <li>{this.state.objectCategorieError}</li>
                     <li>{this.state.cityIdError}</li>
                     <li>{this.state.cityPartError}</li>
+                    <li>{this.state.addressError}</li>
                   </ul>
 
                 </Message>
