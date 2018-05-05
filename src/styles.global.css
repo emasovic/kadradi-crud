@@ -161,3 +161,6 @@ li.rc-time-picker-panel-select-option-disabled:hover {
     overflow: hidden;
     border-width: 0;
   }
+  .geosuggest__input-wrapper, .geosuggest {
+    display: inline;
+  }

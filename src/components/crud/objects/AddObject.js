@@ -1,11 +1,12 @@
 import React from 'react';
 import post from '../../fetch/post';
-import { Input, Button, Dropdown, Checkbox, Segment, TextArea, Table } from 'semantic-ui-react';
+import { Input, Button, Dropdown, Checkbox, Segment, TextArea, Table, Loader, Message, TransitionablePortal,Header } from 'semantic-ui-react';
 import SugestInput from './SugestInput'
 import Geosuggest from 'react-geosuggest'
 import TimePicker from 'rc-time-picker'
 import moment from 'moment'
 import TableRow from 'semantic-ui-react'
+import css from './AddObject.css'
 
 class AddObject extends React.Component {
   constructor(props) {
@@ -19,7 +20,7 @@ class AddObject extends React.Component {
       cityArr: [],
       childLocationArr: [],
       childLocation: [],
-      city:"",
+      city: "",
       cityId: "",
       cityIdError: "",
       cityPart: "",
@@ -33,15 +34,19 @@ class AddObject extends React.Component {
       phoneDesc: "",
       phoneArr: [],
       shortDescription: "",
-      address: "",
-      lat: "",
-      lng: "",
       verified: false,
       display: "none",
       getUser: "",
       emailArr: [],
       count: 1,
+      zipCode: 0,
       workTime: {},
+      loading: false,
+      token:'',
+      lat:"",
+      lng:"",
+      address:"",
+      addressError:"",
       workTimeArr: [
 
         {
@@ -88,17 +93,24 @@ class AddObject extends React.Component {
         }
       ],
       isAlwaysOpened: false,
+      zipCodeError: false,
+      open:false,
+      confirmText:""
     }
   }
   componentWillMount() {
     this.getObjectCategories();
     this.getLocations();
+    this.setState({ loading: true })
   }
   handleInput = (event) => {
     const target = event.target;
     const value = target.value;
     const name = target.name;
     this.setState({ [name]: value });
+  }
+  handleGeoSugest = (value) => {
+    this.setState({address:value})
   }
   handleChange = (e, { name, value }) => this.setState({ [name]: value })
 
@@ -113,7 +125,7 @@ class AddObject extends React.Component {
     })
   }
   addNumber = (tel, desc) => {
-    let arr = this.state.phoneArr.push({ desc: desc, number: tel, id: this.state.count })
+    let arr = this.state.phoneArr.push({ desc: desc, number: tel })
     this.setState({
       phoneArr: this.state.phoneArr,
       count: this.state.count + 1
@@ -142,7 +154,6 @@ class AddObject extends React.Component {
           })
         }
       })
-      console.log("RESPONSE",response)
       this.setState({
         cityArr: arr,
         childLocationArr: arr1
@@ -152,8 +163,8 @@ class AddObject extends React.Component {
   getCityName = () => {
     let index1 = this.state.cityArr.findIndex(x => x.key == this.state.cityId)
     let name = this.state.cityArr[index1].text
-    this.setState ({
-      city:name
+    this.setState({
+      city: name
     })
   }
   getCityPart = (e, { value }) => {
@@ -175,11 +186,13 @@ class AddObject extends React.Component {
         })
       })
       this.setState({
-        categories: arr
+        categories: arr,
+        loading: false,
+        token: response.token.success
       })
     }
   }
-  objectToBase = async () => {
+  objectToBase = async (workTime) => {
     let response = await post.secure('/addObject', {
       addObject: {
         objectCl: {
@@ -194,14 +207,14 @@ class AddObject extends React.Component {
           websiteUrl: this.state.websiteUrl,
           popularBecauseOf: this.state.popular,
         },
-        objectLocations: {
-          lat: this.state.lat,
-          lng: this.state.lng,
-          adress:this.state.addres,
+        objectLocation: {
+          lat: parseFloat(this.state.lat),
+          lng: parseFloat(this.state.lng),
+          adress: this.state.address,
           city: this.state.city,
-          zipCode:this.state.zipCode,
+          zipCode: this.state.zipCode,
         },
-        workTime:this.state.workTime,
+        workTime,
         objectPhones: this.state.phoneArr,
         objectFile: {
           fileUrl: "kica",
@@ -328,36 +341,40 @@ class AddObject extends React.Component {
 
     })
     if (this.state.isAlwaysOpened === true) {
-      this.setState({ workTime: { isAlwaysOpened: this.state.isAlwaysOpened} })
+      return workTimeObj = { isAlwaysOpened: true }
     } else {
-      this.setState({ workTime: workTimeObj })
+      return workTimeObj
     }
   }
-  validation = (name, categorie, city, cityPart) => {
-    this.createWorkTime();
+  validation = (name, categorie, city, cityPart,address) => {
     let validate = false
     if (this.state.name === '') {
-      this.setState({ nameError: "Must enter object name!" })
+      this.setState({ nameError: "Morate uneti ime objekta!" })
     } else {
       this.setState({ nameError: "" })
     }
     if (this.state.objectCategorie === '') {
-      this.setState({ objectCategorieError: "Must choose object categorie!" })
+      this.setState({ objectCategorieError: "Morate izabrati kategoriju!" })
     } else {
       this.setState({ objectCategorieError: " " })
     }
     if (this.state.cityId === '') {
-      this.setState({ cityIdError: "Must choose city!" })
+      this.setState({ cityIdError: "Morate izabrati grad!" })
     } else {
       this.setState({ cityIdError: "" })
       this.getCityName();
     }
     if (this.state.cityPart === '') {
-      this.setState({ cityPartError: "Must choose city part" })
+      this.setState({ cityPartError: "Morate izabrati opstinu (deo grada)!" })
     } else {
       this.setState({ cityPartError: "" })
     }
-    if (name !== "" && categorie !== "" && city !== "" && cityPart !== "") {
+    if (this.state.address === '' || this.state.lng === "" || this.state.lat==="") {
+      this.setState({ addressError: "Morate uneti adresu sa parametrima Lat i Lng !" })
+    } else {
+      this.setState({ addressError: "" })
+    }
+    if (name !== "" && categorie !== "" && city !== "" && cityPart !== "" && address !== "") {
       validate = true
       this.setState({ display: "none" })
     } else {
@@ -368,11 +385,15 @@ class AddObject extends React.Component {
 
   }
   addObject = () => {
-    let validate = this.validation(this.state.name, this.state.objectCategorie, this.state.cityId, this.state.cityPart)
+    let validate = this.validation(this.state.name, this.state.objectCategorie, this.state.cityId, this.state.cityPart,this.state.address)
+    let workTime = this.createWorkTime()
     if (validate) {
-      this.objectToBase();
-    } else {
-      console.log(" NE MOZE UPIT", validate)
+      this.objectToBase(workTime);
+      setTimeout(function () { location.reload() }, 4000);
+      this.setState({
+        open:true,
+        confirmText:"Objekat uspesno dodat!"
+      })
     }
   }
   onSuggestSelect = (suggest) => {
@@ -455,140 +476,248 @@ class AddObject extends React.Component {
       })
     }
   }
-
+  isNumberKey = (event) => {
+    const onlyNums = event.target.value.replace(/[^0-9]/g, '')
+    if (onlyNums == "") {
+      event.target.value = ""
+    } else {
+      this.setState({
+        zipCode: parseInt(onlyNums),
+        zipCodeError: false
+      })
+    }
+  }
+  handleLat = (e) => {
+    const onlyNums = e.target.value.replace(/[^0-9.-]/g, '')
+      this.setState({
+        lat:onlyNums
+      })
+    }
+   
+ handleLng = (e) =>{
+    const onlyNums = e.target.value.replace(/[^0-9.-]/g, '')
+      this.setState({
+        lng:onlyNums
+      })
+    }
+  
   render() {
     console.log("STATE", this.state)
     return (
       <div>
-        <Input label='Name: ' name='name' error={this.state.nameError} onChange={this.handleInput} required /><br />
-        <span>Category: </span>
-        <Dropdown
-          error={this.state.objectCategorieError}
-          placeholder="Select categorie"
-          name="objectCategorie"
-          selection
-          options={this.state.categories}
-          onChange={this.handleChange}
-        /><br />
-        <span>Select city: </span>
-        <Dropdown
-          error={this.state.cityIdError}
-          placeholder="Select city"
-          name="cityId"
-          selection
-          options={this.state.cityArr}
-          onChange={this.getCityPart}
-        /><br />
-        <span>City part: </span>
-        <Dropdown
-          error={this.state.cityPartError}
-          placeholder="City part"
-          name="cityPart"
-          selection
-          options={this.state.childLocation}
-          onChange={this.handleChange}
-        /><br />
-        <span>Adress: </span>
-        <Geosuggest initialValue={this.state.address} onSuggestSelect={this.onSuggestSelect} /><br />
         <div>
-          <span>Person Id</span>
-          <Dropdown placeholder='Search for user' name="personId" onChange={this.handleChange} onSearchChange={this.handleUser} search selection options={this.state.emailArr} size='small' noResultsMessage="No users with that email" />
-          <Button icon='minus' onClick={this.clearUserId} /><br />
-        </div>
-        <div>
-          <span>Verified:</span>
-          <Checkbox
-            toggle name="verified" checked={this.state.checked} onChange={this.toggle} />
-        </div> <br />
-        <Checkbox checked={this.state.isAlwaysOpened} toggle onClick={() => this.isAlwaysOpenToggle()} />
-        <Table compact celled definition>
-          <Table.Header>
-            <Table.Row>
-              <Table.HeaderCell>Dan:</Table.HeaderCell>
-              <Table.HeaderCell>Start</Table.HeaderCell>
-              <Table.HeaderCell>End</Table.HeaderCell>
-              <Table.HeaderCell>Da li radi?</Table.HeaderCell>
-            </Table.Row>
-          </Table.Header>
-          {
-            this.state.workTimeArr.length ?
-              this.state.workTimeArr.map((item, key) => {
-                let openning = item.opening.slice(0, 2) + ":" + item.opening.slice(2, 4);
-                let closing = item.closing.slice(0, 2) + ":" + item.closing.slice(2, 4);
-                return (
-                  <Table.Body>
-                    <Table.Row >
-                      <Table.Cell>{item.name}</Table.Cell>
-                      <Table.Cell>
-                        <TimePicker
-                          defaultValue={moment(openning, 'HH:mm')}
-                          // value={moment(openning)}
-                          disabled={!this.state.isAlwaysOpened ? item.isWorking ? false : true : true}
-                          showSecond={false}
-                          onChange={(value) => this.editWorkingTime(value, key)} />
-                      </Table.Cell>
-                      <Table.Cell>
-                        <TimePicker
-                          disabled={!this.state.isAlwaysOpened ? item.isWorking ? false : true : true}
-                          defaultValue={moment(closing, 'HH:mm')}
-                          onChange={(value) => this.editWorkingTimeClose(value, key)}
-                          showSecond={false} />
-                      </Table.Cell>
-                      <Table.Cell>
-                        <Checkbox checked={item.isWorking} disabled={this.state.isAlwaysOpened ? true : false} toggle onClick={() => this.isWorkingToggle(key)}
-                        />
-                      </Table.Cell>
-                    </Table.Row>
-                  </Table.Body>
-                );
-              })
-              :
-              null
-          }
-          <Button primary onClick={() => this.editWorkingTimeBtn()}>Izmeni</Button>
-        </Table>
-        <span>Popular beacuse of:</span><br />
-        <TextArea autoHeight name='popular' onChange={this.handleInput} style={{ minHeight: '50px', minWidth: '300px' }} placeholder="Popular because of..." /><br />
-        <Input label='Image: ' name='image' onChange={this.handleInput} placeholder="Image url..." /><br />
-
-        <Input
-          action={<Input name="phoneDesc" placeholder="Description" onChange={this.handleInput} />}
-          label='Phone: '
-          name='phone'
-          placeholder="Number"
-          onChange={this.handleInput} />
-        <Button icon='plus' onClick={() => this.addNumber(this.state.phone, this.state.phoneDesc)} /><br />
-
-        {this.state.phoneArr.length ? this.state.phoneArr.map((item, index) => {
-          return (
-            <div>
-              <Input
-                action={<Input label="Phone Desc" disabled value={item.desc} />}
-                label={"Telephone No." + `${index + 1}`}
-                disabled
-                value={item.number} />
-              <Button icon='minus' onClick={() => this.removeNumber(item.id)} /><br />
-            </div>
-          )
-        }
-        ) : null}
-
-        <Input label='Web site: ' name='websiteUrl' onChange={this.handleInput} placeholder="Webiste url.." /><br />
-        <span>Short Description:</span><br />
-        <TextArea autoHeight name='shortDescription' onChange={this.handleInput} style={{ minHeight: '50px', minWidth: '300px' }} placeholder="Short description..." /><br />
-        <Button primary onClick={this.addObject}>Add</Button>
-        <div>
-          <Segment inverted color='red' compact secondary style={{ display: `${this.state.display}` }}>
-            <ul>
-              <li>{this.state.nameError}</li>
-              <li>{this.state.objectCategorieError}</li>
-              <li>{this.state.cityIdError}</li>
-              <li>{this.state.cityPartError}</li>
-            </ul>
+        <TransitionablePortal
+          closeOnTriggerClick
+          open={this.state.open}
+        >
+          <Segment style={{ left: '40%', position: 'fixed', top: '50%', zIndex: 1000 ,width:"500px",height:"auto",textAlign:"center",fontSize:"16px",backgroundColor:"#ed1c24",color:"#ffff"}}>
+            <Header style={{color:"#ffff"}}>{this.state.confirmText}</Header>
           </Segment>
+        </TransitionablePortal>
         </div>
+        {
+          this.state.token === false ? 'isteko token' : this.state.loading ? <div style={{ marginTop: "100px" }}><Loader size='large' active inline='centered' /></div> : 
+            <div>
+              <div className={css.section} >
+
+                <div className={css.header}>
+                  <span>OBAVEZNE  INFORMACIJE:</span>
+                </div>
+
+                <div className={css.content}>
+                  <div className={css.elementWraper}>
+                    <span className={css.labels}>Ime:</span>
+                    <Input name='name' error={this.state.nameError} onChange={this.handleInput} required placeholder="Unesite ime objekta.." />
+                  </div>
+                  <div className={css.elementWraper}>
+                    <span className={css.labels}>Kategorija: </span>
+                    <Dropdown
+                      error={this.state.objectCategorieError}
+                      placeholder="Izaberi kategoriju..."
+                      name="objectCategorie"
+                      selection
+                      options={this.state.categories}
+                      onChange={this.handleChange}
+                    />
+                  </div>
+                  <div className={css.elementWraper}>
+                    <span className={css.labels}>Grad: </span>
+                    <Dropdown
+                      error={this.state.cityIdError}
+                      placeholder="Izaberi grad.."
+                      name="cityId"
+                      selection
+                      options={this.state.cityArr}
+                      onChange={this.getCityPart}
+                    />
+                  </div>
+                  <div className={css.elementWraper}>
+                    <span className={css.labels}>Opstina: </span>
+                    <Dropdown
+                      error={this.state.cityPartError}
+                      placeholder="Izaberi opstinu"
+                      name="cityPart"
+                      selection
+                      options={this.state.childLocation}
+                      onChange={this.handleChange}
+                    />
+                  </div>
+                  <div className={css.elementWraper}>
+                    <span className={css.labels}>Vlasnik objekta</span>
+                    <Dropdown placeholder='Search for user' name="personId" onChange={this.handleChange} onSearchChange={this.handleUser} search selection options={this.state.emailArr} size='small' noResultsMessage="No users with that email" />
+                    <Button icon='minus' onClick={this.clearUserId} />
+                  </div>
+                </div>
+                <div className={css.addressDiv}>
+                    <div className={css.elementWraper}>
+                    <span className={css.labels}>Adresa: </span>
+                    <Geosuggest onChange={this.handleGeoSugest} onSuggestSelect={this.onSuggestSelect} initialValue={this.state.address}  />
+                    </div>
+                    <div className={css.elementWraper}>
+                    <span className={css.labels}>Lat: </span>
+                    <Input value={this.state.lat} onChange={this.handleLat} placeholder="Uneti Lat" />
+                    </div>
+                    <div className={css.elementWraper}>
+                    <span className={css.labels}>Lng: </span>
+                    <Input value={this.state.lng} onChange={this.handleLng} placeholder="Uneti Lng" />
+                  </div>
+                  </div>
+              </div>
+              <div className={css.section} >
+                <div className={css.header}>
+                  <span>DODATNE  INFORMACIJE:</span>
+                </div>
+                <div className={css.content}>
+                  <div className={css.elementWraper}>
+                    <span className={css.labels}>Postanski broj: </span>
+                    <Input onChange={this.isNumberKey} placeholder="Uneti broj" />
+                  </div>
+                  <div className={css.elementWraperTogles}>
+                    <span className={css.labels}>Proveren:</span>
+                    <Checkbox
+                      toggle name="verified" checked={this.state.checked} onChange={this.toggle} />
+                  </div>
+                </div>
+                <div className={css.phoneArr}>
+                  <span className={css.labels}>Telefon: </span>
+                  <Input
+                    action={<Input name="phoneDesc" placeholder="Vrsta telefona" onChange={this.handleInput} />}
+                    name='phone'
+                    placeholder="Broj"
+                    onChange={this.handleInput} />
+                  <Button icon='plus' onClick={() => this.addNumber(this.state.phone, this.state.phoneDesc)} />
+
+                  {this.state.phoneArr.length ? this.state.phoneArr.map((item, index) => {
+                    return (
+                      <div >
+                        <Input
+                          action={<Input label="Vrsta broja" disabled value={item.desc} />}
+                          label={"Telefon broj" + `${index + 1}`}
+                          disabled
+                          value={item.number} />
+                        <Button icon='minus' onClick={() => this.removeNumber(item.id)} />
+                      </div>
+                    )
+                  }
+                  ) : null}
+                </div>
+              </div>
+              <div className={css.section} >
+                <div className={css.header}>
+                  <span>RADNO VREME:</span>
+                </div>
+                <div className={css.elementWraperTogles}>
+                  <span className={css.labels}>Uvek otvoreno:</span>
+                  <Checkbox checked={this.state.isAlwaysOpened} toggle onClick={() => this.isAlwaysOpenToggle()} />
+                </div>
+                <Table compact celled definition>
+                  <Table.Header>
+                    <Table.Row>
+                      <Table.HeaderCell>Dan:</Table.HeaderCell>
+                      <Table.HeaderCell>Radi od:</Table.HeaderCell>
+                      <Table.HeaderCell>Radi do:</Table.HeaderCell>
+                      <Table.HeaderCell>Da li radi?</Table.HeaderCell>
+                    </Table.Row>
+                  </Table.Header>
+                  {
+                    this.state.workTimeArr.length ?
+                      this.state.workTimeArr.map((item, key) => {
+                        let openning = item.opening.slice(0, 2) + ":" + item.opening.slice(2, 4);
+                        let closing = item.closing.slice(0, 2) + ":" + item.closing.slice(2, 4);
+                        return (
+                          <Table.Body>
+                            <Table.Row >
+                              <Table.Cell>{item.name}</Table.Cell>
+                              <Table.Cell>
+                                <TimePicker
+                                  defaultValue={moment(openning, 'HH:mm')}
+                                  // value={moment(openning)}
+                                  disabled={!this.state.isAlwaysOpened ? item.isWorking ? false : true : true}
+                                  showSecond={false}
+                                  onChange={(value) => this.editWorkingTime(value, key)} />
+                              </Table.Cell>
+                              <Table.Cell>
+                                <TimePicker
+                                  disabled={!this.state.isAlwaysOpened ? item.isWorking ? false : true : true}
+                                  defaultValue={moment(closing, 'HH:mm')}
+                                  onChange={(value) => this.editWorkingTimeClose(value, key)}
+                                  showSecond={false} />
+                              </Table.Cell>
+                              <Table.Cell>
+                                <Checkbox checked={item.isWorking} disabled={this.state.isAlwaysOpened ? true : false} toggle onClick={() => this.isWorkingToggle(key)}
+                                />
+                              </Table.Cell>
+                            </Table.Row>
+                          </Table.Body>
+                        );
+                      })
+                      :
+                      null
+                  }
+                </Table>
+              </div>
+              <div className={css.section} >
+                <div className={css.header}>
+                  <span>OSTALE INFORMACIJE:</span>
+                </div>
+                <div className={css.content}>
+                  <div className={css.elementWraperTextBox}>
+                    <span className={css.labels}>Popular zbog:</span>
+                    <TextArea autoHeight name='popular' onChange={this.handleInput} style={{ minHeight: '50px', minWidth: '300px' }} placeholder="Zasto je popularan..." /><br />
+                  </div>
+                  <div className={css.elementWraper}>
+                    <span className={css.labels}>Slika:</span>
+                    <Input name='image' onChange={this.handleInput} placeholder="Url slike..." />
+                  </div>
+                  <div className={css.elementWraper}>
+                    <span className={css.labels}>Web sajt:</span>
+                    <Input name='websiteUrl' onChange={this.handleInput} placeholder="Url sajta.." />
+                  </div>
+                  <div className={css.elementWraperTextBox}>
+                    <span className={css.labels}>Kratak opis:</span>
+                    <TextArea autoHeight name='shortDescription' onChange={this.handleInput} style={{ minHeight: '50px', minWidth: '300px' }} placeholder="Uneti kratak opis..." />
+                  </div>
+                </div>
+              </div>
+              <div className={css.section} style={{ display: `${this.state.display}`, marginLeft: "45px" }}>
+                <Message negative style={{ display: `${this.state.display}`, width: "100%" }}>
+                  <Message.Header>Nisu popunjena sva obavezna polja:</Message.Header>
+                  <ul style={{ listStyleType: "none" }}>
+                    <li>{this.state.nameError}</li>
+                    <li>{this.state.objectCategorieError}</li>
+                    <li>{this.state.cityIdError}</li>
+                    <li>{this.state.cityPartError}</li>
+                    <li>{this.state.addressError}</li>
+                  </ul>
+
+                </Message>
+
+              </div>
+              <Button className={css.button} primary onClick={this.addObject}>Dodaj objekat</Button>
+            </div>
+        }
       </div>
-    )
+    );
   }
 }
 export default AddObject;
