@@ -61,6 +61,7 @@ class EditObject extends React.Component {
       emailArr: [],
       user: {},
       currentUser: {},
+      data:""
     };
   }
   objectEdit = e => {
@@ -378,21 +379,10 @@ class EditObject extends React.Component {
       [e.target.name]: [e.target.files[0]]
     });
   };
-
+  
   handleUpload = async(imgFile) => {
     const file = imgFile;
-    const setData = async(error, dat) => {
-      let e = await error;
-      if(e) {
-        console.log(e, "error")
-      }
-      else{
-        console.log(dat,"HAKOVANJEEEEEE")
-        this.setState({
-          imgPreview: dat,
-        })
-      }
-    }
+   
     console.log("FILEEEEE", file)
     await AWS.config.update({
       region: 'eu-central-1',
@@ -407,7 +397,7 @@ class EditObject extends React.Component {
       apiVersion: '2006-03-01',
       params: {Bucket: 'kadradi-slike'}
     });
-
+   
     const albumPhotosKey = encodeURIComponent('photo') + '/';
     const photoKey = albumPhotosKey + file.name;
     let data1 = ""; 
@@ -416,7 +406,12 @@ class EditObject extends React.Component {
       Key: photoKey,
       Body: file,
       ACL: 'public-read'
-    }, (e) => setData(e.err, e.data))
+    },function( err,data){
+      console.log("AAA")
+    }
+     
+      
+    )
   };
   // imgPreview = async () => {
   //  await this.setState({
