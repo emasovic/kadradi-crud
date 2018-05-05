@@ -8,6 +8,8 @@ import TableRow from 'semantic-ui-react';
 import moment from 'moment';
 import Geosuggest from 'react-geosuggest';
 import FileBase64 from 'react-file-base64';
+import AWS from 'aws-sdk'
+
 
 class EditObject extends React.Component {
   constructor(props) {
@@ -53,6 +55,9 @@ class EditObject extends React.Component {
       count: 1,
       deletedPhones: [],
       token: '',
+      file: "",
+      newImg: "",
+      imgPreview: "",
     };
   }
 
@@ -177,6 +182,7 @@ class EditObject extends React.Component {
         lat: response.objectById.objectLocation.lat,
         lng: response.objectById.objectLocation.lng,
         zipCode: response.objectById.objectLocation.zipCode,
+        imgPreview: response.objectById.objectFile.fileUrl,
       });
       let jsArr = JSON.parse(JSON.stringify(this.state.workTime));
       this.setState({
@@ -349,24 +355,62 @@ class EditObject extends React.Component {
       lng: suggest.location.lng,
     })
   }
+  handleInputChange = e => {
+    this.setState({
+      [e.target.name]: [e.target.files[0]]
+    });
+  };
+
+  handleUpload = async(imgFile) => {
+    const file = imgFile;
+    const setData = async(error, dat) => {
+      let e = await error;
+      if(e) {
+        console.log(e, "error")
+      }
+      else{
+        console.log(dat,"HAKOVANJEEEEEE")
+        this.setState({
+          imgPreview: dat,
+        })
+      }
+    }
+    console.log("FILEEEEE", file)
+    await AWS.config.update({
+      region: 'eu-central-1',
+      // credentials: new AWS.CognitoIdentityCredentials({
+      //   IdentityPoolId: 'us-east-1:267d12f8-d2c0-4207-81f7-a079bd631325',
+      // }),
+      accessKeyId: "AKIAJWJPWC6HGBPXQ4AQ",
+      secretAccessKey: "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",
+    });
+    
+    const s3 = new AWS.S3({
+      apiVersion: '2006-03-01',
+      params: {Bucket: 'kadradi-slike'}
+    });
+
+    const albumPhotosKey = encodeURIComponent('photo') + '/';
+    const photoKey = albumPhotosKey + file.name;
+    let data1 = ""; 
+    s3.upload({
+      ContentType: file.type,
+      Key: photoKey,
+      Body: file,
+      ACL: 'public-read'
+    }, (e) => setData(e.err, e.data))
+  };
+  // imgPreview = async () => {
+  //  await this.setState({
+  //     imgPreview: data.location,
+  //   })
+  // }
   getImage = (img) => {
     console.log("imggggg", img);
-    //    const config = {
-    //    bucketName: 'kadradi-slike',
-    //    region: 'eu-central-1',
-    //    accessKeyId: 'AKIAJWJPWC6HGBPXQ4AQ',
-    //    secretAccessKey: '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',
-    //  }
     this.setState({
-      objectImg: img
+      imgsFile: img.file,
     })
-    //  ReactS3.upload(img.file, config)
-    //   .then((data) => this.setState({
-    //     objectImage:{
-    //       fileUrl: data.location
-    //     }
-    //   })) 
-    //   .catch((err) => console.error(err)) 
+    this.handleUpload(img.file);
   }
   addPhone = (tel, desc) => {
     let niz = this.state.phonesAdd.push({
@@ -501,8 +545,10 @@ class EditObject extends React.Component {
   }
 
   render() {
-    console.log("AAAAAA", this.state.objectImage);
-    console.log("SEND EDIT", this.state.sendEditObject)
+    let a;
+    console.log("AAAAAA", a);
+    console.log("SEND EDIT", this.state.sendEditObject);
+    console.log("NEW IMAGE", this.state.newImg)
     // console.log("aaaaaaaaaaaaaaaaaaaaaaaaaa",this.state.objectImage);
     // console.log(this.state.city);
     // console.log(this.state.sendEditObject)
@@ -516,7 +562,7 @@ class EditObject extends React.Component {
               {/* <Input label='locationId: ' name='locationId' value={this.state.locationId} onChange={this.objectEdit} /><br /> */}
 
               <div className={Style.section} >
-                <div style={{width: '100%', height: '60px', background: 'blue'}}>
+                <div style={{width: '100%', height: '60px', background: 'blue', borderTopLeftRadius: '10px', borderTopRightRadius: '10px'}}>
                   <div class={{width: '50%', float:'left'}}>
                     <span>OSNOVNE INFORMACIJE:</span>
                   </div>
@@ -536,7 +582,7 @@ class EditObject extends React.Component {
                 <TextArea autoHeight name='shortDescription' value={this.state.shortDescription} onChange={this.objectEdit} style={{ minHeight: '50px', minWidth: '300px' }} /><br />
                 Verified:<Checkbox toggle checked={this.state.verified} onClick={() => this.isVerify()} /><br />
                 <Input label='WebSiteUrl: ' name='websiteUrl' value={this.state.websiteUrl} onChange={this.objectEdit} /><br />
-                <FileBase64 multiple={true} onDone={this.getImage.bind(this)} /><br />
+                <FileBase64 multiple={false} onDone={this.getImage.bind(this)} /><br />
                 popularBeacuseOf:<br />
                 <TextArea autoHeight name='popularBecauseOf' value={this.state.popularBecauseOf} onChange={this.objectEdit} style={{ minHeight: '50px', minWidth: '300px' }} /><br />
               </div>
@@ -563,7 +609,7 @@ class EditObject extends React.Component {
               <div className={Style.section} >
                 <FileBase64 multiple={false} onDone={this.getImage.bind(this)} />
                 <br />
-                <img src={this.state.objectImage.fileUrl} style={{ height: '250px', width: '250px' }} />
+                <img src={this.state.imgPreview} style={{ height: '250px', width: '250px' }} />
                 <br />
                 Opis slike:<br />
                 <TextArea autoHeight name='imgDesc' value={this.state.objectImage.desc} onChange={this.objectEdit} style={{ minHeight: '50px', minWidth: '300px' }} /><br />
