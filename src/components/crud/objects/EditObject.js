@@ -19,7 +19,9 @@ class EditObject extends React.Component {
       objectCategoriesArr: [],
       locationId: 0,
       name: '',
+      nameError: '',
       objectCategoryId: '',
+      categoryError: '',
       editObject: {},
       personId: '',
       shortDescription: '',
@@ -57,6 +59,7 @@ class EditObject extends React.Component {
       emailArr: [],
       user: {},
       currentUser: {},
+      confirmText: ''
     };
   }
   objectEdit = e => {
@@ -448,7 +451,46 @@ class EditObject extends React.Component {
   editImgDesc(e) {
     console.log("newVAlue", e.target.value)
   }
+  validation = (name, category, location) => {
+    let validate = false;
+    if(this.state.name === '') {
+      this.setState({
+        nameError: 'Morate uneti ime objekta!'
+      }) 
+      } else {
+        this.setState({
+          nameError: ''
+        })
+    }
+    if(this.state.objectCategoryId === '') {
+      this.setState({
+        categoryError: 'Morate uneti kategoriju objekta!'
+      }) 
+      } else {
+        this.setState({
+          categoryError: ''
+        })
+    }
+    if(this.state.locationId === '' || this.state.locationId === undefined) {
+      this.setState({
+        locationError: 'Morate uneti opstinu objekta!'
+      }) 
+      } else {
+        this.setState({
+          locationError: ''
+        })
+    }
+    if(name !== '' && category !== '' && location !== '' && location !== undefined ) {
+      validate = true
+    } else {
+      validate = false
+      
+    }
+    return validate
+  }
+  
   prepareToEditObject = async () => {
+    let validate = this.validation(this.state.name,this.state.objectCategoryId,this.state.locationId,)
     let { objToEdit } = this.state;
     let objectClArr = {};
     let objectWorkTimeArr = {};
@@ -546,22 +588,29 @@ class EditObject extends React.Component {
     // console.log('objectCl', objectClArr)
     // console.log('objectinfo', objectInfoArr)
     // console.log('loca', objectLocationArr)
-    this.setState({
-      sendEditObject: {
-        obj,
-        objectInfoArr,
-        objectClArr,
-        objectLocationArr,
-        objectPhonesArr
-      }
-    })
-    
+    if(validate) { 
+      this.setState({
+        sendEditObject: {
+          obj,
+          objectInfoArr,
+          objectClArr,
+          objectLocationArr,
+          objectPhonesArr,
+        },
+        confirmText: 'Objekat izmenjen!'
+      })
+    }
+    else {
+      this.setState({
+        confirmText: ''
+      })
+    }
   }
 
 
   render() {
-
     console.log("STATE", this.state)
+    console.log("typeof", this.state.user.length)
     return (
       <div>
         {
@@ -702,11 +751,16 @@ class EditObject extends React.Component {
                   }
                 </Table>
               </div>
+              <div className={Style.section} >
+                <div className={css.header}>
+                    <span>TELEFONI:</span>
+                </div>
+              <div style={{display:'flex',alignItems:'center',justifyContent:'space-around',marginBottom:'30px'}}>
               {
                 this.state.phones.length ?
                   this.state.phones.map((item, key) => {
                     return (
-                      <div key={key}>
+                      <div key={key} style={{display:'inline'}}>
                         <Input name='desc' value={item.desc} onChange={(e) => this.changePhones(e, item.id)} />
                         <Input name='number' value={item.number} onChange={(e) => this.changePhones(e, item.id)} />
                         <Button icon='minus' onClick={() => this.deletePhone(item.id)} />
@@ -714,23 +768,34 @@ class EditObject extends React.Component {
                     )
                   }) : null
               }
-              <Input name='descAdd' placeholder='description' onChange={this.objectEdit} />
-              <Input name='numberAdd' placeholder='number' onChange={this.objectEdit} />
-              <Button icon='plus' onClick={() => this.addPhone(this.state.numberAdd, this.state.descAdd)} /><br />
+              </div>
+              <div>
+                <span className={css.labels}>Dodaj novi telefon:</span>
+                <Input name='descAdd' placeholder='Opis' onChange={this.objectEdit} />
+                <Input name='numberAdd' placeholder='Broj' onChange={this.objectEdit} />
+                <Button icon='plus' onClick={() => this.addPhone(this.state.numberAdd, this.state.descAdd)} />
+              </div>
               {
                 this.state.phonesAdd.length ?
                   this.state.phonesAdd.map((item, index) => {
                     return (
                       <div key={index}>
                         {/* <Number index={index} value={item.number} desc={item.description} /> */}
-                        <Input label="Phone Desc" value={item.description} />
-                        <Input label="Phone number" value={item.number} />
+                        <Input label="Opis" value={item.description} />
+                        <Input label="Broj" value={item.number} />
                         <Button icon='minus' onClick={() => this.removePhone(item.id)} />
                       </div>
                     )
                   }) : null
               }
-              <Button primary onClick={() => this.prepareToEditObject()}>Save</Button>
+              
+            </div>
+            <div>{this.state.nameError}</div>
+            <div>{this.state.categoryError}</div>
+            <div>{this.state.locationError}</div>
+            <div>{this.state.confirmText}</div>
+            <Button primary onClick={() => this.prepareToEditObject()}>Save</Button>
+            
             </div>
         }
       </div>
