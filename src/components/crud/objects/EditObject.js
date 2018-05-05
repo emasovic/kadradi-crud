@@ -379,44 +379,68 @@ class EditObject extends React.Component {
     });
   };
 
-  handleUpload = async(imgFile) => {
+  handleUpload = async (imgFile) => {
     const file = imgFile;
-    const setData = async(error, dat) => {
-      let e = await error;
-      if(e) {
-        console.log(e, "error")
-      }
-      else{
-        console.log(dat,"HAKOVANJEEEEEE")
-        this.setState({
-          imgPreview: dat,
-        })
-      }
-    }
+    // const setData = async(error, dat) => {
+    //   let e = await error;
+    //   if(e) {
+    //     console.log(e, "error")
+    //   }
+    //   else{
+    //     console.log(dat,"HAKOVANJEEEEEE")
+    //     this.setState({
+    //       imgPreview: dat,
+    //     })
+    //   }
+    // }
     console.log("FILEEEEE", file)
-    await AWS.config.update({
+     AWS.config.update({
       region: 'eu-central-1',
       // credentials: new AWS.CognitoIdentityCredentials({
       //   IdentityPoolId: 'us-east-1:267d12f8-d2c0-4207-81f7-a079bd631325',
       // }),
       accessKeyId: "AKIAJWJPWC6HGBPXQ4AQ",
-      secretAccessKey: "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",
+      secretAccessKey: "Tp8aL0hR3tCF0DAbYmEpFm6CJWuOTrRYOSC/WsdC", //C
     });
     
     const s3 = new AWS.S3({
       apiVersion: '2006-03-01',
       params: {Bucket: 'kadradi-slike'}
     });
-
+    let data;
     const albumPhotosKey = encodeURIComponent('photo') + '/';
     const photoKey = albumPhotosKey + file.name;
     let data1 = ""; 
-    s3.upload({
+    let rez = s3.upload({
       ContentType: file.type,
       Key: photoKey,
       Body: file,
       ACL: 'public-read'
-    }, (e) => setData(e.err, e.data))
+    }).promise()
+    let a = {}
+    let img = await rez.then(function(data) {
+      console.log('Success');
+      // data = await data
+      return data
+    }).catch(function(err) {
+      return false
+    });
+    // , async (err, data) => {
+    //   if(err){
+    //     console.log(err)
+    //   }else{
+    //     data = await data
+    //     console.log("DATA", data)
+    //   }
+    // })
+    console.log("DATAAAA", img)
+    if(img === false){
+      alert("ERROR! Nesto nije u redu slika nije uspesno uplodovana!");
+    }else{
+      this.setState({
+        imgPreview: img.Location
+      })
+    }
   };
   // imgPreview = async () => {
   //  await this.setState({
@@ -604,7 +628,7 @@ class EditObject extends React.Component {
 
   render() {
     let a;
-    console.log("AAAAAA", a);
+    console.log("AAAAAA", this.state.imgPreview);
     console.log("SEND EDIT", this.state.sendEditObject);
     console.log("NEW IMAGE", this.state.newImg)
     // console.log("aaaaaaaaaaaaaaaaaaaaaaaaaa",this.state.objectImage);
