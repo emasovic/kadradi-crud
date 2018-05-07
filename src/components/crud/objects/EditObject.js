@@ -403,9 +403,6 @@ class EditObject extends React.Component {
     console.log("FILEEEEE", file)
      AWS.config.update({
       region: 'eu-central-1',
-      // credentials: new AWS.CognitoIdentityCredentials({
-      //   IdentityPoolId: 'us-east-1:267d12f8-d2c0-4207-81f7-a079bd631325',
-      // }),
       accessKeyId: "AKIAJWJPWC6HGBPXQ4AQ",
       secretAccessKey: "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", //C
     });
@@ -432,14 +429,6 @@ class EditObject extends React.Component {
     }).catch(function(err) {
       return false
     });
-    // , async (err, data) => {
-    //   if(err){
-    //     console.log(err)
-    //   }else{
-    //     data = await data
-    //     console.log("DATA", data)
-    //   }
-    // })
     console.log("DATAAAA", img)
     if(img === false){
       alert("ERROR! Nesto nije u redu slika nije uspesno uplodovana!");
@@ -454,6 +443,7 @@ class EditObject extends React.Component {
   //     imgPreview: data.location,
   //   })
   // }
+  
   getImage = (img) => {
     console.log("imggggg", img);
     this.setState({
