@@ -38,5 +38,21 @@ export default {
       send = JSON.parse(responseText)
     })
     return send;
-  }
+  },
+  async amazon(uri, payload) {
+    console.log("USAO U SECURE")
+    let send;
+    // payload.token = localStorage.getItem("token");
+    await fetch(uri, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      method: "post",
+      body: JSON.stringify(payload),
+    }).then((response) => response.text())
+      .then((responseText) => {
+        send = JSON.parse(responseText);
+        console.log("TEXT", send)
+      })
+    return send;
+  },
 }

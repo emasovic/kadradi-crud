@@ -8,6 +8,7 @@ import TableRow from 'semantic-ui-react';
 import moment from 'moment';
 import Geosuggest from 'react-geosuggest';
 import FileBase64 from 'react-file-base64';
+import AWS from 'aws-sdk'
 import css from './AddObject.css'
 
 class EditObject extends React.Component {
@@ -59,10 +60,14 @@ class EditObject extends React.Component {
       count: 1,
       deletedPhones: [],
       token: '',
+      file: "",
+      newImg: "",
+      imgPreview: "",
       emailArr: [],
       user: {},
       currentUser: {},
-      confirmText: ''
+      confirmText: '',
+      data:""
     };
   }
   objectEdit = e => {
@@ -192,6 +197,7 @@ class EditObject extends React.Component {
         lat: response.objectById.objectLocation.lat,
         lng: response.objectById.objectLocation.lng,
         zipCode: response.objectById.objectLocation.zipCode,
+        imgPreview: response.objectById.objectFile.fileUrl,
         user: response.objectById.owningPerson,
       });
       let jsArr = JSON.parse(JSON.stringify(this.state.workTime));
@@ -374,24 +380,86 @@ class EditObject extends React.Component {
       lng: suggest.location.lng,
     })
   }
+  handleInputChange = e => {
+    this.setState({
+      [e.target.name]: [e.target.files[0]]
+    });
+  };
+
+  handleUpload = async (imgFile) => {
+    const file = imgFile;
+    // const setData = async(error, dat) => {
+    //   let e = await error;
+    //   if(e) {
+    //     console.log(e, "error")
+    //   }
+    //   else{
+    //     console.log(dat,"HAKOVANJEEEEEE")
+    //     this.setState({
+    //       imgPreview: dat,
+    //     })
+    //   }
+    // }
+    console.log("FILEEEEE", file)
+     AWS.config.update({
+      region: 'eu-central-1',
+      // credentials: new AWS.CognitoIdentityCredentials({
+      //   IdentityPoolId: 'us-east-1:267d12f8-d2c0-4207-81f7-a079bd631325',
+      // }),
+      accessKeyId: "AKIAJWJPWC6HGBPXQ4AQ",
+      secretAccessKey: "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", //C
+    });
+    
+    const s3 = new AWS.S3({
+      apiVersion: '2006-03-01',
+      params: {Bucket: 'kadradi-slike'}
+    });
+    let data;
+    const albumPhotosKey = encodeURIComponent('photo') + '/';
+    const photoKey = albumPhotosKey + file.name;
+    let data1 = ""; 
+    let rez = s3.upload({
+      ContentType: file.type,
+      Key: photoKey,
+      Body: file,
+      ACL: 'public-read'
+    }).promise()
+    let a = {}
+    let img = await rez.then(function(data) {
+      console.log('Success');
+      // data = await data
+      return data
+    }).catch(function(err) {
+      return false
+    });
+    // , async (err, data) => {
+    //   if(err){
+    //     console.log(err)
+    //   }else{
+    //     data = await data
+    //     console.log("DATA", data)
+    //   }
+    // })
+    console.log("DATAAAA", img)
+    if(img === false){
+      alert("ERROR! Nesto nije u redu slika nije uspesno uplodovana!");
+    }else{
+      this.setState({
+        imgPreview: img.Location
+      })
+    }
+  };
+  // imgPreview = async () => {
+  //  await this.setState({
+  //     imgPreview: data.location,
+  //   })
+  // }
   getImage = (img) => {
     console.log("imggggg", img);
-    //    const config = {
-    //    bucketName: 'kadradi-slike',
-    //    region: 'eu-central-1',
-    //    accessKeyId: 'AKIAJWJPWC6HGBPXQ4AQ',
-    //    secretAccessKey: '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',
-    //  }
     this.setState({
-      objectImg: img
+      imgsFile: img.file,
     })
-    //  ReactS3.upload(img.file, config)
-    //   .then((data) => this.setState({
-    //     objectImage:{
-    //       fileUrl: data.location
-    //     }
-    //   })) 
-    //   .catch((err) => console.error(err)) 
+    this.handleUpload(img.file);
   }
   addPhone = (tel, desc) => {
     let niz = this.state.phonesAdd.push({
@@ -632,8 +700,15 @@ class EditObject extends React.Component {
 
 
   render() {
-    console.log("STATE", this.state)
-    console.log("typeof", this.state.user.length)
+    let a;
+    console.log("AAAAAA", this.state.imgPreview);
+    console.log("SEND EDIT", this.state.sendEditObject);
+    console.log("NEW IMAGE", this.state.newImg)
+    // console.log("aaaaaaaaaaaaaaaaaaaaaaaaaa",this.state.objectImage);
+    // console.log(this.state.city);
+    // console.log(this.state.sendEditObject)
+    // console.log("CHILDDD", this.state.childLocation)
+    // console.log('LOCATIONID', this.state.childLocation);
     return (
       <div>
         {
@@ -716,7 +791,7 @@ class EditObject extends React.Component {
                 </div>
                 <FileBase64 multiple={false} onDone={this.getImage.bind(this)} />
                 <br />
-                <img src={this.state.objectImage.fileUrl} style={{ height: '250px', width: '250px' }} />
+                <img src={this.state.imgPreview} style={{ height: '250px', width: '250px' }} />
                 <br />
                 Opis slike:<br />
                 <TextArea autoHeight name='imgDesc' value={this.state.objectImage.desc} onChange={this.objectEdit} style={{ minHeight: '50px', minWidth: '300px' }} /><br />
