@@ -61,6 +61,7 @@ class EditObject extends React.Component {
       emailArr: [],
       user: {},
       currentUser: {},
+      data:""
     };
   }
   objectEdit = e => {

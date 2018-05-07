@@ -6,6 +6,8 @@ import Geosuggest from 'react-geosuggest'
 import TimePicker from 'rc-time-picker'
 import moment from 'moment'
 import TableRow from 'semantic-ui-react'
+import AWS from 'aws-sdk'
+import FileBase64 from 'react-file-base64';
 import css from './AddObject.css'
 
 class AddObject extends React.Component {
@@ -47,6 +49,8 @@ class AddObject extends React.Component {
       lng:"",
       address:"",
       addressError:"",
+      imgPreview:"",
+      imgDescription:"",
       workTimeArr: [
 
         {
@@ -210,15 +214,15 @@ class AddObject extends React.Component {
         objectLocation: {
           lat: parseFloat(this.state.lat),
           lng: parseFloat(this.state.lng),
-          adress: this.state.address,
+          address: this.state.address,
           city: this.state.city,
           zipCode: this.state.zipCode,
         },
         workTime,
         objectPhones: this.state.phoneArr,
         objectFile: {
-          fileUrl: "kica",
-          desc: "babababa"
+          fileUrl:this.state.imgPreview,
+          desc:this.state.imgDescription
         }
       }
     })
@@ -346,7 +350,7 @@ class AddObject extends React.Component {
       return workTimeObj
     }
   }
-  validation = (name, categorie, city, cityPart,address) => {
+  validation = (name, categorie, city, cityPart,address,lat ,lng) => {
     let validate = false
     if (this.state.name === '') {
       this.setState({ nameError: "Morate uneti ime objekta!" })
@@ -369,12 +373,13 @@ class AddObject extends React.Component {
     } else {
       this.setState({ cityPartError: "" })
     }
-    if (this.state.address === '' || this.state.lng === "" || this.state.lat==="") {
-      this.setState({ addressError: "Morate uneti adresu sa parametrima Lat i Lng !" })
+    if (this.state.address === ' ' || this.state.lng === "" || this.state.lat==="") {
+      this.setState({ addressError: "Morate uneti adresu ili  Lat i Lng !" })
     } else {
       this.setState({ addressError: "" })
     }
-    if (name !== "" && categorie !== "" && city !== "" && cityPart !== "" && address !== "") {
+    if (name !== "" && categorie !== "" && city !== "" && cityPart !== "" && ((address !== " " && lat !=="" && lng !== "") || (address !== " ") || (lat !== "" && lng !== "")))
+    {
       validate = true
       this.setState({ display: "none" })
     } else {
@@ -385,7 +390,7 @@ class AddObject extends React.Component {
 
   }
   addObject = () => {
-    let validate = this.validation(this.state.name, this.state.objectCategorie, this.state.cityId, this.state.cityPart,this.state.address)
+    let validate = this.validation(this.state.name, this.state.objectCategorie, this.state.cityId, this.state.cityPart,this.state.address,this.state.lat,this.state.lng)
     let workTime = this.createWorkTime()
     if (validate) {
       this.objectToBase(workTime);
@@ -500,6 +505,50 @@ class AddObject extends React.Component {
         lng:onlyNums
       })
     }
+    handleUpload = async (imgFile) => {
+      const file = imgFile;
+       AWS.config.update({
+        region: 'eu-central-1',
+        accessKeyId: "AKIAJWJPWC6HGBPXQ4AQ",
+        secretAccessKey: "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", //C
+      });
+      
+      const s3 = new AWS.S3({
+        apiVersion: '2006-03-01',
+        params: {Bucket: 'kadradi-slike'}
+      });
+      let data;
+      const albumPhotosKey = encodeURIComponent('photo') + '/';
+      const photoKey = albumPhotosKey + file.name;
+      let data1 = ""; 
+      let rez = s3.upload({
+        ContentType: file.type,
+        Key: photoKey,
+        Body: file,
+        ACL: 'public-read'
+      }).promise()
+      let a = {}
+      let img = await rez.then(function(data) {
+        console.log('Success');
+        return data
+      }).catch(function(err) {
+        return false
+      });
+      
+      if(img === false){
+        alert("ERROR! Nesto nije u redu slika nije uspesno uplodovana!");
+      }else{
+        this.setState({
+          imgPreview: img.Location
+        })
+      }
+    };
+   getImage = (img) => {
+      this.setState({
+        imgsFile: img.file,
+      })
+      this.handleUpload(img.file);
+    }
   
   render() {
     console.log("STATE", this.state)
@@ -562,11 +611,6 @@ class AddObject extends React.Component {
                       onChange={this.handleChange}
                     />
                   </div>
-                  <div className={css.elementWraper}>
-                    <span className={css.labels}>Vlasnik objekta</span>
-                    <Dropdown placeholder='Search for user' name="personId" onChange={this.handleChange} onSearchChange={this.handleUser} search selection options={this.state.emailArr} size='small' noResultsMessage="No users with that email" />
-                    <Button icon='minus' onClick={this.clearUserId} />
-                  </div>
                 </div>
                 <div className={css.addressDiv}>
                     <div className={css.elementWraper}>
@@ -591,6 +635,11 @@ class AddObject extends React.Component {
                   <div className={css.elementWraper}>
                     <span className={css.labels}>Postanski broj: </span>
                     <Input onChange={this.isNumberKey} placeholder="Uneti broj" />
+                  </div>
+                  <div className={css.elementWraper}>
+                    <span className={css.labels}>Vlasnik objekta</span>
+                    <Dropdown placeholder='Search for user' name="personId" onChange={this.handleChange} onSearchChange={this.handleUser} search selection options={this.state.emailArr} size='small' noResultsMessage="No users with that email" />
+                    <Button icon='minus' onClick={this.clearUserId} />
                   </div>
                   <div className={css.elementWraperTogles}>
                     <span className={css.labels}>Proveren:</span>
@@ -686,16 +735,25 @@ class AddObject extends React.Component {
                     <TextArea autoHeight name='popular' onChange={this.handleInput} style={{ minHeight: '50px', minWidth: '300px' }} placeholder="Zasto je popularan..." /><br />
                   </div>
                   <div className={css.elementWraper}>
-                    <span className={css.labels}>Slika:</span>
-                    <Input name='image' onChange={this.handleInput} placeholder="Url slike..." />
-                  </div>
-                  <div className={css.elementWraper}>
                     <span className={css.labels}>Web sajt:</span>
                     <Input name='websiteUrl' onChange={this.handleInput} placeholder="Url sajta.." />
                   </div>
                   <div className={css.elementWraperTextBox}>
                     <span className={css.labels}>Kratak opis:</span>
                     <TextArea autoHeight name='shortDescription' onChange={this.handleInput} style={{ minHeight: '50px', minWidth: '300px' }} placeholder="Uneti kratak opis..." />
+                  </div>
+                </div>
+              </div>
+              <div className={css.section} >
+                <div className={css.content}>
+                  <div className={css.elementWraper}>
+                  <span className={css.labels}>Dodaj sliku:</span>
+                    <FileBase64 multiple={false} onDone={this.getImage.bind(this)} /><br/>
+                    <img src={this.state.imgPreview} style={{ height: '250px', width: '250px' }} />
+                  </div>
+                  <div className={css.elementWraperTextBox}>
+                    <span className={css.labels}>Opis slike:</span>
+                    <TextArea autoHeight name='imgDescription' onChange={this.handleInput} style={{ minHeight: '50px', minWidth: '300px' }} placeholder="Uneti kratak opis..." />
                   </div>
                 </div>
               </div>
