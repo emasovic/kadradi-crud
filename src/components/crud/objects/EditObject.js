@@ -20,13 +20,17 @@ class EditObject extends React.Component {
       objectCategoriesArr: [],
       locationId: 0,
       name: '',
+      nameError: '',
       objectCategoryId: '',
+      categoryError: '',
       editObject: {},
       personId: '',
       shortDescription: '',
       address: '',
+      addressError: '',
       lat: '',
       lng: '',
+      latLngError: '',
       verified: '',
       websiteUrl: '',
       city: '',
@@ -34,6 +38,7 @@ class EditObject extends React.Component {
       par: [],
       childLocation: [],
       newVal: 1,
+      cityError: '',
       testState: '',
       workTime: [],
       workTimeEdit: [],
@@ -61,6 +66,8 @@ class EditObject extends React.Component {
       emailArr: [],
       user: {},
       currentUser: {},
+      confirmText: '',
+      data:""
     };
   }
   objectEdit = e => {
@@ -505,7 +512,66 @@ class EditObject extends React.Component {
   editImgDesc(e) {
     console.log("newVAlue", e.target.value)
   }
+  handleGeoSugest = (value) => {
+    this.setState({address:value})
+  }
+  validation = (name, category, location, city, address, lat, lng) => {
+    let validate = false;
+    if(name === '') {
+      this.setState({
+        nameError: 'Morate uneti ime objekta!'
+      }) 
+      } else {
+        this.setState({
+          nameError: ''
+        })
+    }
+    if(category === '') {
+      this.setState({
+        categoryError: 'Morate uneti kategoriju objekta!'
+      }) 
+      } else {
+        this.setState({
+          categoryError: ''
+        })
+    }
+    if(location === '' || location === undefined) {
+      this.setState({
+        locationError: 'Morate uneti opstinu objekta!'
+      }) 
+      } else {
+        this.setState({
+          locationError: ''
+        })
+    }
+    if(city === '' || city === undefined) {
+      this.setState({
+        cityError: 'Morate uneti grad!'
+      }) 
+      } else {
+        this.setState({
+          cityError: ''
+        })
+    }
+    if(address === ' ' && lat === '' && lng === '') {
+      this.setState({
+        addressError: 'Morate uneti Adresu ili Lat i Lng!'
+      }) 
+      } else {
+        this.setState({
+          addressError: ''
+        })
+    }
+    if(name !== '' && category !== '' && location !== '' && location !== undefined && city !== '' && city !== undefined && ((address !== ' ' && lat !== '' && lng !== '' ) || (address !== ' ' ) || (lat !== '' && lng !== ''))) {
+      validate = true
+    } else {
+      validate = false
+    }
+    return validate
+  }
+  
   prepareToEditObject = async () => {
+    let validate = this.validation(this.state.name,this.state.objectCategoryId,this.state.locationId,this.state.newVal,this.state.address,this.state.lat,this.state.lng)
     let { objToEdit } = this.state;
     let objectClArr = {};
     let objectWorkTimeArr = {};
@@ -603,16 +669,23 @@ class EditObject extends React.Component {
     // console.log('objectCl', objectClArr)
     // console.log('objectinfo', objectInfoArr)
     // console.log('loca', objectLocationArr)
-    this.setState({
-      sendEditObject: {
-        obj,
-        objectInfoArr,
-        objectClArr,
-        objectLocationArr,
-        objectPhonesArr
-      }
-    })
-    
+    if(validate) { 
+      this.setState({
+        sendEditObject: {
+          obj,
+          objectInfoArr,
+          objectClArr,
+          objectLocationArr,
+          objectPhonesArr,
+        },
+        confirmText: 'Objekat izmenjen!'
+      })
+    }
+    else {
+      this.setState({
+        confirmText: ''
+      })
+    }
   }
 
 
@@ -678,7 +751,7 @@ class EditObject extends React.Component {
                 </div>
                 <div style={{display:'flex',alignItems:'center',justifyContent:'space-around',marginBottom:'30px'}}>
                   <span className={css.labels}>Izaberite ulicu:</span>
-                  <Geosuggest initialValue={this.state.address} onSuggestSelect={this.onSuggestSelect} />
+                  <Geosuggest onChange={this.handleGeoSugest} initialValue={this.state.address} onSuggestSelect={this.onSuggestSelect} />
                   <span className={css.labels}>Lat:</span>
                   <Input name='lat' value={this.state.lat} onChange={this.objectEdit} />
                   <span className={css.labels}>Lng:</span>
@@ -766,11 +839,16 @@ class EditObject extends React.Component {
                   }
                 </Table>
               </div>
+              <div className={Style.section} >
+                <div className={css.header}>
+                    <span>TELEFONI:</span>
+                </div>
+              <div style={{display:'flex',alignItems:'center',justifyContent:'space-around',marginBottom:'30px'}}>
               {
                 this.state.phones.length ?
                   this.state.phones.map((item, key) => {
                     return (
-                      <div key={key}>
+                      <div key={key} style={{display:'inline'}}>
                         <Input name='desc' value={item.desc} onChange={(e) => this.changePhones(e, item.id)} />
                         <Input name='number' value={item.number} onChange={(e) => this.changePhones(e, item.id)} />
                         <Button icon='minus' onClick={() => this.deletePhone(item.id)} />
@@ -778,23 +856,35 @@ class EditObject extends React.Component {
                     )
                   }) : null
               }
-              <Input name='descAdd' placeholder='description' onChange={this.objectEdit} />
-              <Input name='numberAdd' placeholder='number' onChange={this.objectEdit} />
-              <Button icon='plus' onClick={() => this.addPhone(this.state.numberAdd, this.state.descAdd)} /><br />
+              </div>
+              <div>
+                <span className={css.labels}>Dodaj novi telefon:</span>
+                <Input name='descAdd' placeholder='Opis' onChange={this.objectEdit} />
+                <Input name='numberAdd' placeholder='Broj' onChange={this.objectEdit} />
+                <Button icon='plus' onClick={() => this.addPhone(this.state.numberAdd, this.state.descAdd)} />
+              </div>
               {
                 this.state.phonesAdd.length ?
                   this.state.phonesAdd.map((item, index) => {
                     return (
                       <div key={index}>
                         {/* <Number index={index} value={item.number} desc={item.description} /> */}
-                        <Input label="Phone Desc" value={item.description} />
-                        <Input label="Phone number" value={item.number} />
+                        <Input label="Opis" value={item.description} />
+                        <Input label="Broj" value={item.number} />
                         <Button icon='minus' onClick={() => this.removePhone(item.id)} />
                       </div>
                     )
                   }) : null
               }
-              <Button primary onClick={() => this.prepareToEditObject()}>Save</Button>
+            </div>
+            <div>{this.state.nameError}</div>
+            <div>{this.state.categoryError}</div>
+            <div>{this.state.locationError}</div>
+            <div>{this.state.cityError}</div>
+            <div>{this.state.addressError}</div>
+            <div>{this.state.confirmText}</div>
+            <Button primary onClick={() => this.prepareToEditObject()}>Save</Button>
+            
             </div>
         }
       </div>
