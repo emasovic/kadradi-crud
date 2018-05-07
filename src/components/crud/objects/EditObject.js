@@ -26,8 +26,10 @@ class EditObject extends React.Component {
       personId: '',
       shortDescription: '',
       address: '',
+      addressError: '',
       lat: '',
       lng: '',
+      latLngError: '',
       verified: '',
       websiteUrl: '',
       city: '',
@@ -35,6 +37,7 @@ class EditObject extends React.Component {
       par: [],
       childLocation: [],
       newVal: 1,
+      cityError: '',
       testState: '',
       workTime: [],
       workTimeEdit: [],
@@ -451,9 +454,12 @@ class EditObject extends React.Component {
   editImgDesc(e) {
     console.log("newVAlue", e.target.value)
   }
-  validation = (name, category, location) => {
+  handleGeoSugest = (value) => {
+    this.setState({address:value})
+  }
+  validation = (name, category, location, city, address, lat, lng) => {
     let validate = false;
-    if(this.state.name === '') {
+    if(name === '') {
       this.setState({
         nameError: 'Morate uneti ime objekta!'
       }) 
@@ -462,7 +468,7 @@ class EditObject extends React.Component {
           nameError: ''
         })
     }
-    if(this.state.objectCategoryId === '') {
+    if(category === '') {
       this.setState({
         categoryError: 'Morate uneti kategoriju objekta!'
       }) 
@@ -471,7 +477,7 @@ class EditObject extends React.Component {
           categoryError: ''
         })
     }
-    if(this.state.locationId === '' || this.state.locationId === undefined) {
+    if(location === '' || location === undefined) {
       this.setState({
         locationError: 'Morate uneti opstinu objekta!'
       }) 
@@ -480,17 +486,34 @@ class EditObject extends React.Component {
           locationError: ''
         })
     }
-    if(name !== '' && category !== '' && location !== '' && location !== undefined ) {
+    if(city === '' || city === undefined) {
+      this.setState({
+        cityError: 'Morate uneti grad!'
+      }) 
+      } else {
+        this.setState({
+          cityError: ''
+        })
+    }
+    if(address === ' ' && lat === '' && lng === '') {
+      this.setState({
+        addressError: 'Morate uneti Adresu ili Lat i Lng!'
+      }) 
+      } else {
+        this.setState({
+          addressError: ''
+        })
+    }
+    if(name !== '' && category !== '' && location !== '' && location !== undefined && city !== '' && city !== undefined && ((address !== ' ' && lat !== '' && lng !== '' ) || (address !== ' ' ) || (lat !== '' && lng !== ''))) {
       validate = true
     } else {
       validate = false
-      
     }
     return validate
   }
   
   prepareToEditObject = async () => {
-    let validate = this.validation(this.state.name,this.state.objectCategoryId,this.state.locationId,)
+    let validate = this.validation(this.state.name,this.state.objectCategoryId,this.state.locationId,this.state.newVal,this.state.address,this.state.lat,this.state.lng)
     let { objToEdit } = this.state;
     let objectClArr = {};
     let objectWorkTimeArr = {};
@@ -663,7 +686,7 @@ class EditObject extends React.Component {
                 </div>
                 <div style={{display:'flex',alignItems:'center',justifyContent:'space-around',marginBottom:'30px'}}>
                   <span className={css.labels}>Izaberite ulicu:</span>
-                  <Geosuggest initialValue={this.state.address} onSuggestSelect={this.onSuggestSelect} />
+                  <Geosuggest onChange={this.handleGeoSugest} initialValue={this.state.address} onSuggestSelect={this.onSuggestSelect} />
                   <span className={css.labels}>Lat:</span>
                   <Input name='lat' value={this.state.lat} onChange={this.objectEdit} />
                   <span className={css.labels}>Lng:</span>
@@ -788,11 +811,12 @@ class EditObject extends React.Component {
                     )
                   }) : null
               }
-              
             </div>
             <div>{this.state.nameError}</div>
             <div>{this.state.categoryError}</div>
             <div>{this.state.locationError}</div>
+            <div>{this.state.cityError}</div>
+            <div>{this.state.addressError}</div>
             <div>{this.state.confirmText}</div>
             <Button primary onClick={() => this.prepareToEditObject()}>Save</Button>
             
