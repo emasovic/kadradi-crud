@@ -379,12 +379,6 @@ class EditObject extends React.Component {
       [e.target.name]: [e.target.files[0]]
     });
   };
-<<<<<<< HEAD
-  
-  handleUpload = async(imgFile) => {
-    const file = imgFile;
-   
-=======
 
   handleUpload = async (imgFile) => {
     const file = imgFile;
@@ -400,7 +394,6 @@ class EditObject extends React.Component {
     //     })
     //   }
     // }
->>>>>>> 7be91c1803300e98c88c3473382da6e4c52b0769
     console.log("FILEEEEE", file)
      AWS.config.update({
       region: 'eu-central-1',
@@ -415,11 +408,7 @@ class EditObject extends React.Component {
       apiVersion: '2006-03-01',
       params: {Bucket: 'kadradi-slike'}
     });
-<<<<<<< HEAD
-   
-=======
     let data;
->>>>>>> 7be91c1803300e98c88c3473382da6e4c52b0769
     const albumPhotosKey = encodeURIComponent('photo') + '/';
     const photoKey = albumPhotosKey + file.name;
     let data1 = ""; 
@@ -428,14 +417,6 @@ class EditObject extends React.Component {
       Key: photoKey,
       Body: file,
       ACL: 'public-read'
-<<<<<<< HEAD
-    },function( err,data){
-      console.log("AAA")
-    }
-     
-      
-    )
-=======
     }).promise()
     let a = {}
     let img = await rez.then(function(data) {
@@ -461,7 +442,6 @@ class EditObject extends React.Component {
         imgPreview: img.Location
       })
     }
->>>>>>> 7be91c1803300e98c88c3473382da6e4c52b0769
   };
   // imgPreview = async () => {
   //  await this.setState({
