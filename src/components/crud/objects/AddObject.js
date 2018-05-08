@@ -44,7 +44,7 @@ class AddObject extends React.Component {
       zipCode: 0,
       workTime: {},
       loading: false,
-      token:'',
+      token:"",
       lat:"",
       lng:"",
       address:"",
@@ -56,44 +56,44 @@ class AddObject extends React.Component {
         {
           name: "Ponedeljak",
           isWorking: false,
-          opening: "0900",
-          closing: "1700"
+          opening: "0000",
+          closing: "0000"
         },
         {
           name: "Utorak",
           isWorking: false,
-          opening: "0900",
-          closing: "1700"
+          opening: "0000",
+          closing: "0000"
         },
         {
           name: "Sreda",
           isWorking: false,
-          opening: "0900",
-          closing: "1700"
+          opening: "0000",
+          closing: "0000"
         },
         {
           name: "Cetvrtak",
           isWorking: false,
-          opening: "0900",
-          closing: "1700"
+          opening: "0000",
+          closing: "0000"
         },
         {
           name: "Petak",
           isWorking: false,
-          opening: "0900",
-          closing: "1700"
+          opening: "0000",
+          closing: "0000"
         },
         {
           name: "Subota",
           isWorking: false,
-          opening: "0900",
-          closing: "1700"
+          opening: "0000",
+          closing: "0000"
         },
         {
           name: "Nedelja",
           isWorking: false,
-          opening: "0900",
-          closing: "1700"
+          opening: "0000",
+          closing: "0000"
         }
       ],
       isAlwaysOpened: false,
@@ -189,10 +189,15 @@ class AddObject extends React.Component {
           value: item.id
         })
       })
+     
       this.setState({
         categories: arr,
         loading: false,
         token: response.token.success
+      })
+    }else{
+      this.setState({
+        token:response.token.success
       })
     }
   }
@@ -551,7 +556,6 @@ class AddObject extends React.Component {
     }
   
   render() {
-    console.log("STATE", this.state)
     return (
       <div>
         <div>
@@ -658,7 +662,7 @@ class AddObject extends React.Component {
 
                   {this.state.phoneArr.length ? this.state.phoneArr.map((item, index) => {
                     return (
-                      <div >
+                      <div>
                         <Input
                           action={<Input label="Vrsta broja" disabled value={item.desc} />}
                           label={"Telefon broj" + `${index + 1}`}
@@ -694,8 +698,8 @@ class AddObject extends React.Component {
                         let openning = item.opening.slice(0, 2) + ":" + item.opening.slice(2, 4);
                         let closing = item.closing.slice(0, 2) + ":" + item.closing.slice(2, 4);
                         return (
-                          <Table.Body>
-                            <Table.Row >
+                          <Table.Body key={key}>
+                            <Table.Row>
                               <Table.Cell>{item.name}</Table.Cell>
                               <Table.Cell>
                                 <TimePicker
