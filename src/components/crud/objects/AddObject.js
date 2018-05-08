@@ -44,7 +44,7 @@ class AddObject extends React.Component {
       zipCode: 0,
       workTime: {},
       loading: false,
-      token:'',
+      token:"",
       lat:"",
       lng:"",
       address:"",
@@ -189,10 +189,15 @@ class AddObject extends React.Component {
           value: item.id
         })
       })
+     
       this.setState({
         categories: arr,
         loading: false,
         token: response.token.success
+      })
+    }else{
+      this.setState({
+        token:response.token.success
       })
     }
   }
