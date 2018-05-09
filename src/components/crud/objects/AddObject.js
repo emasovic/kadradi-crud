@@ -41,7 +41,7 @@ class AddObject extends React.Component {
       getUser: "",
       emailArr: [],
       count: 1,
-      zipCode: 0,
+      zipCode: "",
       workTime: {},
       loading: false,
       token:"",
@@ -221,7 +221,7 @@ class AddObject extends React.Component {
           lng: parseFloat(this.state.lng),
           address: this.state.address,
           city: this.state.city,
-          zipCode: this.state.zipCode,
+          zipCode: parseInt(this.state.zipCode)
         },
         workTime,
         objectPhones: this.state.phoneArr,
@@ -378,7 +378,7 @@ class AddObject extends React.Component {
     } else {
       this.setState({ cityPartError: "" })
     }
-    if (this.state.address === ' ' || this.state.lng === "" || this.state.lat==="") {
+    if (this.state.address === ' ' && this.state.lng === "" && this.state.lat==="") {
       this.setState({ addressError: "Morate uneti adresu ili  Lat i Lng !" })
     } else {
       this.setState({ addressError: "" })
@@ -488,15 +488,10 @@ class AddObject extends React.Component {
   }
   isNumberKey = (event) => {
     const onlyNums = event.target.value.replace(/[^0-9]/g, '')
-    if (onlyNums == "") {
-      event.target.value = ""
-    } else {
-      this.setState({
-        zipCode: parseInt(onlyNums),
-        zipCodeError: false
-      })
+     this.setState({
+        zipCode: onlyNums,
+       })
     }
-  }
   handleLat = (e) => {
     const onlyNums = e.target.value.replace(/[^0-9.-]/g, '')
       this.setState({
@@ -534,7 +529,6 @@ class AddObject extends React.Component {
       }).promise()
       let a = {}
       let img = await rez.then(function(data) {
-        console.log('Success');
         return data
       }).catch(function(err) {
         return false
@@ -556,6 +550,7 @@ class AddObject extends React.Component {
     }
   
   render() {
+    console.log ("ZIP CODE ",this.state)
     return (
       <div>
         <div>
@@ -638,7 +633,7 @@ class AddObject extends React.Component {
                 <div className={css.content}>
                   <div className={css.elementWraper}>
                     <span className={css.labels}>Postanski broj: </span>
-                    <Input onChange={this.isNumberKey} placeholder="Uneti broj" />
+                    <Input onChange={this.isNumberKey} value={this.state.zipCode} placeholder="Uneti broj" />
                   </div>
                   <div className={css.elementWraper}>
                     <span className={css.labels}>Vlasnik objekta</span>
