@@ -43,6 +43,7 @@ class EditObject extends React.Component {
       workTime: [],
       workTimeEdit: [],
       phones: [],
+      editedPhones : [],
       popularBecauseOf: '',
       isAlwaysOpen: false,
       isAlwaysOpnenO: false,
@@ -67,7 +68,8 @@ class EditObject extends React.Component {
       user: {},
       currentUser: {},
       confirmText: '',
-      data:""
+      data:"",
+      editedPhones: [],
     };
   }
   objectEdit = e => {
@@ -94,11 +96,6 @@ class EditObject extends React.Component {
     if (e.target.name === 'shortDescription') {
       this.setState({
         shortDescription: e.target.value,
-      });
-    }
-    if (e.target.name === 'verified') {
-      this.setState({
-        verified: e.target.value,
       });
     }
     if (e.target.name === 'websiteUrl') {
@@ -199,6 +196,7 @@ class EditObject extends React.Component {
         zipCode: response.objectById.objectLocation.zipCode,
         imgPreview: response.objectById.objectFile.fileUrl,
         user: response.objectById.owningPerson,
+
       });
       let jsArr = JSON.parse(JSON.stringify(this.state.workTime));
 
@@ -342,25 +340,46 @@ class EditObject extends React.Component {
       })
     }
   }
+  deletePhone = (index) => {
+    let index1 = this.state.phones.findIndex(x => x.id == index)
+    let delArr = this.state.deletedPhones
+    let arr = this.state.phones
+    arr.splice(index1, 1)
+    delArr.push(index)
+    this.setState({
+      deletedPhones: delArr
+    })
+  }
   changePhones = (e, id) => {
     let arr = this.state.phones
+    let editedPhones = this.state.editedPhones
     if (e.target.name === 'number') {
       arr.map(item => {
         if (item.id == id) {
           item.number = e.target.value
         }
       })
-    } else {
+    } 
+    if (e.target.name === 'desc') {
       arr.map(item => {
         if (item.id == id) {
           item.desc = e.target.value
         }
       })
-    }
+    } 
     this.setState({
-      phones: arr
+      editedPhones: arr
     })
   }
+    // else {
+    //   arr.map(item => {
+    //     if (item.id == id) {
+    //       item.desc = e.target.value
+    //     }
+    //   })
+    // }
+ 
+    
   isVerify = () => {
     if (this.state.verified === true)
       this.setState({
@@ -480,16 +499,6 @@ class EditObject extends React.Component {
       phonesAdd: arr
     })
   }
-  deletePhone = (index) => {
-    let index1 = this.state.phones.findIndex(x => x.id == index)
-    let delArr = this.state.deletedPhones
-    let arr = this.state.phones
-    arr.splice(index1, 1)
-    delArr.push(index)
-    this.setState({
-      deletedPhones: delArr
-    })
-  }
   getUser = async (email) => {
     let response = await post.secure('/getUsers', { email })
     if (response.token.success) {
@@ -591,9 +600,13 @@ class EditObject extends React.Component {
     let objectClKeys = ['name', 'shortDescription', 'verified', 'personId', 'objectCategoryId', 'locationId'];
     let objectInfoKeys = ['websiteUrl', 'popularBecauseOf'];
     let objectLocationKeys = ['lat', 'lng', 'address', 'city', 'zipCode'];
-    let objectPhonesKeys = ['deletedPhones','phonesAdd'];
-    let obj = {};
+    let objectPhonesKeys = ['phones'];
+    let workTime = {};
     let newArr = this.state.workTimeEdit;
+    let deletePhones = this.state.deletedPhones;
+    let phonesAdd = this.state.phonesAdd;
+    
+
 
     objectClKeys.map(item => {
       if (objToEdit.objectCl[item] != this.state[item]) {
@@ -635,31 +648,31 @@ class EditObject extends React.Component {
       if (this.state.isAlwaysOpen) {
         console.log("NIJE JEDNAKO");
         if (this.state.isAlwaysOpen != this.state.isAlwaysOpnenO) {
-          obj = {
-            ...obj,
+          workTime = {
+            ...workTime,
             isAlwaysOpen: true,
           }
         }
       } else {
         if (item.open !== newArr[a].open || item.close !== newArr[a].close || item.isWorking !== newArr[a].isWorking) {
           let name = newArr[a].name;
-          obj = {
-            ...obj,
+          workTime = {
+            ...workTime,
             [name]: {
               open: newArr[a].open,
               close: newArr[a].close,
               isWorking: newArr[a].isWorking,
             }
           }
-          obj = {
-            ...obj,
+          workTime = {
+            ...workTime,
             isAlwaysOpen: false,
           }
         }
-        if (obj.length === 0) {
+        if (workTime.length === 0) {
           let name = newArr[a].name;
-          obj = {
-            ...obj,
+          workTime = {
+            ...workTime,
             [name]: {
               open: '01',
               close: '01',
@@ -673,7 +686,7 @@ class EditObject extends React.Component {
     let wrkTime = this.state.workTimeObj;
     objectWorkTimeArr = {
       ...objectWorkTimeArr,
-      obj
+      workTime
     }
 
     // console.log('objectCl', objectClArr)
@@ -682,33 +695,34 @@ class EditObject extends React.Component {
     if(validate) { 
       this.setState({
         sendEditObject: {
-          obj,
-          objectInfoArr,
+          workTime,
           objectClArr,
+          objectInfoArr,
           objectLocationArr,
           objectPhonesArr,
+          deletePhones,
+          phonesAdd
         },
         confirmText: 'Objekat izmenjen!'
       })
+      // this.updateObject()
     }
+
     else {
       this.setState({
         confirmText: ''
       })
     }
   }
-
+  // updateObject = async () => {
+  //   let response = await post.secure('/editObject', {
+  //     editObject: this.state.sendEditObject
+  //   })
+  // }
 
   render() {
+    console.log("STEJT", this.state);
     let a;
-    console.log("AAAAAA", this.state.imgPreview);
-    console.log("SEND EDIT", this.state.sendEditObject);
-    console.log("NEW IMAGE", this.state.newImg)
-    // console.log("aaaaaaaaaaaaaaaaaaaaaaaaaa",this.state.objectImage);
-    // console.log(this.state.city);
-    // console.log(this.state.sendEditObject)
-    // console.log("CHILDDD", this.state.childLocation)
-    // console.log('LOCATIONID', this.state.childLocation);
     return (
       <div>
         {
