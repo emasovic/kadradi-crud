@@ -911,7 +911,7 @@ const router = (new KoaRouter())
             workTimeObject = { ...workTimeObject, wtSatId: null }
           }
         }
-        if (workTime.ned) {
+        if (workTime.ned) { 
           if (workTime.ned.isWorking) {
             let wtSun = await db.models.wtSun.findOrCreate({ where: { opening: workTime.ned.opening, closing: workTime.ned.closing } })
             workTimeObject = { ...workTimeObject, wtSunId: wtSun[0].id }
