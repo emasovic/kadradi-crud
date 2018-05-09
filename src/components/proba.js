@@ -8,52 +8,47 @@ class Proba extends React.Component{
       editObject: {
         workTime: {
           isAlwaysOpened: false,
-          pon: {
+          ned: {
             isWorking: true,
             opening: '0050',
             closing: '0101',
           },
-          uto: {
-            isWorking: true,
-            opening: '0303',
-            closing: '0505',
-          },
         },
-        objectCl: {
-          name: 'SANEEEEEEEEEEEEE',
-          shortDescription: 'STEFAN PROBA1',
-          verified: true,
-          personId: 2,
-          objectCategoryId: 6,
-        },
-        objectLocation: {
-          lat: 40,
-          lng: 20,
-          adress: 'marsala tita',
-          city: 'beograd',
-          zipCode: 11309,
-        },
-        objectInfo: {
-          webSiteUrl: 'kadradi-frontend.ml',
-          hasRestaurant: false,
-          popularBecauseOf: 'nisam popularan',
-        },
-        objectFile: {
-          fileUrl: 'asldakdajdsaoskdpasd',
-          desc: 'sakdjpaskdpads'
-        },
-        objectPhones: [
-          {
-            id: 3,
-            desc: 'stefan',
-            number: '3333333'            
-          },
-          {
-            id: 2,
-            desc: 'stefan2',
-            number: '4444444'            
-          },
-        ], 
+        // objectCl: {
+        //   name: 'STEFAN',
+        //   shortDescription: 'STEFAN PROBA1',
+        //   verified: true,
+        //   personId: 2,
+        //   objectCategoryId: 6,
+        // },
+        // objectLocation: {
+        //   lat: 40,
+        //   lng: 20,
+        //   adress: 'marsala tita',
+        //   city: 'beograd',
+        //   zipCode: 11309,
+        // },
+        // objectInfo: {
+        //   webSiteUrl: 'kadradi-frontend.ml',
+        //   hasRestaurant: false,
+        //   popularBecauseOf: 'nisam popularan',
+        // },
+        // objectFile: {
+        //   fileUrl: 'asldakdajdsaoskdpasd',
+        //   desc: 'sakdjpaskdpads'
+        // },
+        // objectPhones: [
+        //   {
+        //     objectInfoId: 1,
+        //     desc: 'HAHAHA',
+        //     number: '3333333'            
+        //   },
+        //   {
+        //     objectInfoId: 1,
+        //     desc: 'AHAHAHHAHAHAH',
+        //     number: '4444444'            
+        //   },
+        // ],
         // deletePhones: [1]
       },
     });

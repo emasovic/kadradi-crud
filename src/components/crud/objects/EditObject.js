@@ -22,6 +22,7 @@ class EditObject extends React.Component {
       name: '',
       nameError: '',
       objectCategoryId: '',
+      objectId : '',
       categoryError: '',
       editObject: {},
       personId: '',
@@ -43,6 +44,7 @@ class EditObject extends React.Component {
       workTime: [],
       workTimeEdit: [],
       phones: [],
+      editedPhones : [],
       popularBecauseOf: '',
       isAlwaysOpen: false,
       isAlwaysOpnenO: false,
@@ -67,7 +69,8 @@ class EditObject extends React.Component {
       user: {},
       currentUser: {},
       confirmText: '',
-      data:""
+      data:"",
+      editedPhones: [],
     };
   }
   objectEdit = e => {
@@ -94,11 +97,6 @@ class EditObject extends React.Component {
     if (e.target.name === 'shortDescription') {
       this.setState({
         shortDescription: e.target.value,
-      });
-    }
-    if (e.target.name === 'verified') {
-      this.setState({
-        verified: e.target.value,
       });
     }
     if (e.target.name === 'websiteUrl') {
@@ -179,6 +177,7 @@ class EditObject extends React.Component {
         name: response.objectById.objectCl.name,
         objectCategoryId: response.objectById.objectCl.objectCategoryId,
         personId: response.objectById.objectCl.personId,
+        objectId: response.objectById.objectCl.id,
         shortDescription: response.objectById.objectCl.shortDescription,
         streetAddress: response.objectById.objectCl.streetAddress,
         childLocation: response.objectById.objectCl.locationId,
@@ -199,6 +198,7 @@ class EditObject extends React.Component {
         zipCode: response.objectById.objectLocation.zipCode,
         imgPreview: response.objectById.objectFile.fileUrl,
         user: response.objectById.owningPerson,
+
       });
       let jsArr = JSON.parse(JSON.stringify(this.state.workTime));
 
@@ -342,25 +342,46 @@ class EditObject extends React.Component {
       })
     }
   }
+  deletePhone = (index) => {
+    let index1 = this.state.phones.findIndex(x => x.id == index)
+    let delArr = this.state.deletedPhones
+    let arr = this.state.phones
+    arr.splice(index1, 1)
+    delArr.push(index)
+    this.setState({
+      deletedPhones: delArr
+    })
+  }
   changePhones = (e, id) => {
     let arr = this.state.phones
+    let editedPhones = this.state.editedPhones
     if (e.target.name === 'number') {
       arr.map(item => {
         if (item.id == id) {
           item.number = e.target.value
         }
       })
-    } else {
+    } 
+    if (e.target.name === 'desc') {
       arr.map(item => {
         if (item.id == id) {
           item.desc = e.target.value
         }
       })
-    }
+    } 
     this.setState({
-      phones: arr
+      editedPhones: arr
     })
   }
+    // else {
+    //   arr.map(item => {
+    //     if (item.id == id) {
+    //       item.desc = e.target.value
+    //     }
+    //   })
+    // }
+ 
+    
   isVerify = () => {
     if (this.state.verified === true)
       this.setState({
@@ -403,9 +424,6 @@ class EditObject extends React.Component {
     console.log("FILEEEEE", file)
      AWS.config.update({
       region: 'eu-central-1',
-      // credentials: new AWS.CognitoIdentityCredentials({
-      //   IdentityPoolId: 'us-east-1:267d12f8-d2c0-4207-81f7-a079bd631325',
-      // }),
       accessKeyId: "AKIAJWJPWC6HGBPXQ4AQ",
       secretAccessKey: "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", //C
     });
@@ -432,14 +450,6 @@ class EditObject extends React.Component {
     }).catch(function(err) {
       return false
     });
-    // , async (err, data) => {
-    //   if(err){
-    //     console.log(err)
-    //   }else{
-    //     data = await data
-    //     console.log("DATA", data)
-    //   }
-    // })
     console.log("DATAAAA", img)
     if(img === false){
       alert("ERROR! Nesto nije u redu slika nije uspesno uplodovana!");
@@ -454,6 +464,7 @@ class EditObject extends React.Component {
   //     imgPreview: data.location,
   //   })
   // }
+  
   getImage = (img) => {
     console.log("imggggg", img);
     this.setState({
@@ -461,15 +472,15 @@ class EditObject extends React.Component {
     })
     this.handleUpload(img.file);
   }
-  addPhone = (tel, desc) => {
+  addPhone = (tel, descript) => {
     let niz = this.state.phonesAdd.push({
-      description: desc,
+      desc: descript,
       number: tel,
-      id: this.state.count
+      objectInfoId: this.state.objectId
     })
     this.setState({
       phonesAdd: this.state.phonesAdd,
-      count: this.state.count + 1
+      // count: this.state.count + 1
     })
   }
   removePhone = (index) => {
@@ -478,16 +489,6 @@ class EditObject extends React.Component {
     arr.splice(index1, 1)
     this.setState({
       phonesAdd: arr
-    })
-  }
-  deletePhone = (index) => {
-    let index1 = this.state.phones.findIndex(x => x.id == index)
-    let delArr = this.state.deletedPhones
-    let arr = this.state.phones
-    arr.splice(index1, 1)
-    delArr.push(index)
-    this.setState({
-      deletedPhones: delArr
     })
   }
   getUser = async (email) => {
@@ -583,38 +584,43 @@ class EditObject extends React.Component {
   prepareToEditObject = async () => {
     let validate = this.validation(this.state.name,this.state.objectCategoryId,this.state.locationId,this.state.newVal,this.state.address,this.state.lat,this.state.lng)
     let { objToEdit } = this.state;
-    let objectClArr = {};
+    let objectCl = {};
     let objectWorkTimeArr = {};
-    let objectLocationArr = {};
-    let objectInfoArr = {};
+    let objectLocation = {};
+    let objectInfo = {};
     let objectPhonesArr = {};
     let objectClKeys = ['name', 'shortDescription', 'verified', 'personId', 'objectCategoryId', 'locationId'];
     let objectInfoKeys = ['websiteUrl', 'popularBecauseOf'];
     let objectLocationKeys = ['lat', 'lng', 'address', 'city', 'zipCode'];
-    let objectPhonesKeys = ['deletedPhones','phonesAdd'];
-    let obj = {};
+    let objectPhonesKeys = [];
+    let workTime = {};
     let newArr = this.state.workTimeEdit;
+    let deletePhones = this.state.deletedPhones;
+    let objectPhones = this.state.phonesAdd;
+    
+    
+
 
     objectClKeys.map(item => {
       if (objToEdit.objectCl[item] != this.state[item]) {
-        objectClArr = {
-          ...objectClArr,
+        objectCl = {
+          ...objectCl,
           [item]: this.state[item],
         };
       }
     })
     objectLocationKeys.map((item) => {
       if (objToEdit.objectLocation[item] != this.state[item]) {
-        objectLocationArr = {
-          ...objectLocationArr,
+        objectLocation = {
+          ...objectLocation,
           [item]: this.state[item],
         };
       }
     })
     objectInfoKeys.map((item) => {
       if (objToEdit.objectInfo[item] != this.state[item]) {
-        objectInfoArr = {
-          ...objectInfoArr,
+        objectInfo = {
+          ...objectInfo,
           [item]: this.state[item]
         }
       }
@@ -635,34 +641,34 @@ class EditObject extends React.Component {
       if (this.state.isAlwaysOpen) {
         console.log("NIJE JEDNAKO");
         if (this.state.isAlwaysOpen != this.state.isAlwaysOpnenO) {
-          obj = {
-            ...obj,
+          workTime = {
+            ...workTime,
             isAlwaysOpen: true,
           }
         }
       } else {
         if (item.open !== newArr[a].open || item.close !== newArr[a].close || item.isWorking !== newArr[a].isWorking) {
           let name = newArr[a].name;
-          obj = {
-            ...obj,
+          workTime = {
+            ...workTime,
             [name]: {
-              open: newArr[a].open,
-              close: newArr[a].close,
+              opening: newArr[a].open,
+              closing: newArr[a].close,
               isWorking: newArr[a].isWorking,
             }
           }
-          obj = {
-            ...obj,
+          workTime = {
+            ...workTime,
             isAlwaysOpen: false,
           }
         }
-        if (obj.length === 0) {
+        if (workTime.length === 0) {
           let name = newArr[a].name;
-          obj = {
-            ...obj,
+          workTime = {
+            ...workTime,
             [name]: {
-              open: '01',
-              close: '01',
+              opening: '01',
+              closing: '01',
               isWorking: true,
             }
           }
@@ -673,7 +679,7 @@ class EditObject extends React.Component {
     let wrkTime = this.state.workTimeObj;
     objectWorkTimeArr = {
       ...objectWorkTimeArr,
-      obj
+      workTime
     }
 
     // console.log('objectCl', objectClArr)
@@ -682,33 +688,38 @@ class EditObject extends React.Component {
     if(validate) { 
       this.setState({
         sendEditObject: {
-          obj,
-          objectInfoArr,
-          objectClArr,
-          objectLocationArr,
-          objectPhonesArr,
+          workTime,
+          objectCl,
+          objectInfo,
+          objectLocation,
+          deletePhones,
+          objectPhones
         },
         confirmText: 'Objekat izmenjen!'
       })
+      this.updateObject()
     }
+
     else {
       this.setState({
         confirmText: ''
       })
     }
   }
-
+  updateObject = async () => {
+    console.log('IZ UPDATA', this.state.sendEditObject)
+    // console.log('STEFAN', this.state.sendEditObject)
+    let response = await post.secure('/editObject', {
+      objectId: this.state.objectId,
+      editObject: this.state.sendEditObject
+    })
+    console.log('RESPONSE', response)
+  }
 
   render() {
+    console.log("STEJT", this.state);
+    console.log("SALJEM", this.state.sendEditObject);
     let a;
-    console.log("AAAAAA", this.state.imgPreview);
-    console.log("SEND EDIT", this.state.sendEditObject);
-    console.log("NEW IMAGE", this.state.newImg)
-    // console.log("aaaaaaaaaaaaaaaaaaaaaaaaaa",this.state.objectImage);
-    // console.log(this.state.city);
-    // console.log(this.state.sendEditObject)
-    // console.log("CHILDDD", this.state.childLocation)
-    // console.log('LOCATIONID', this.state.childLocation);
     return (
       <div>
         {
@@ -879,7 +890,7 @@ class EditObject extends React.Component {
                     return (
                       <div key={index}>
                         {/* <Number index={index} value={item.number} desc={item.description} /> */}
-                        <Input label="Opis" value={item.description} />
+                        <Input label="Opis" value={item.desc} />
                         <Input label="Broj" value={item.number} />
                         <Button icon='minus' onClick={() => this.removePhone(item.id)} />
                       </div>
