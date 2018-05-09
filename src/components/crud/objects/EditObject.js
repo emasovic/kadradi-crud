@@ -711,7 +711,7 @@ class EditObject extends React.Component {
   // }
 
   render() {
-    console.log("STEJT", this.state);
+    console.log("STEJT", this.state.workTime);
     let a;
     return (
       <div>

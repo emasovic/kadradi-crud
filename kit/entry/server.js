@@ -377,7 +377,7 @@ const router = (new KoaRouter())
 
   .post('/scrapCategories', async (ctx, next) => {
     const newToken = verifyToken(ctx.request.body.token);
-    if(newToken.success) {
+    if (newToken.success) {
       const categories = await db.models.objectCategories.findAll(
         { where: { googleType: { [Op.ne]: null } } }
       );
@@ -456,7 +456,7 @@ const router = (new KoaRouter())
       if (objectId) {
         const objectCl = await db.models.objectCl.find({ where: { id: objectId } });
         let owningPerson = {};
-        if(objectCl.personId) {
+        if (objectCl.personId) {
           owningPerson = await db.models.person.find({ where: { id: objectCl.personId }, attributes: ['id', 'email', 'firstName', 'lastName'] });
         }
         const objectCategories = await db.models.objectCategories.findAll({
@@ -475,7 +475,7 @@ const router = (new KoaRouter())
         })
         // OBJECTNFOID
 
-        const objectInfo = await db.models.objectInfo.find({ where: { objectClId: objectId }});
+        const objectInfo = await db.models.objectInfo.find({ where: { objectClId: objectId } });
 
         const objectPhones = await db.models.objectPhones.findAll({ where: { objectInfoId: objectInfo.id } });
 
@@ -594,7 +594,7 @@ const router = (new KoaRouter())
       ctx.body = JSON.stringify({ objectById: [], token: newToken })
     }
   })
-  
+
   /*
   ------------------------------
   OVO JE METODA ZA BRISANJE OBJEKATA
@@ -684,163 +684,163 @@ const router = (new KoaRouter())
       ctx.body = JSON.stringify({ deleted: false, token: newToken })
     }
   })
-     /*
-    ------------------------------
-    OVO JE METODA ZA IZLISTAVANJE KORISNIKA
-    ------------------------------
-  */
- .post('/getUsers', async (ctx, next) => {
-  const newToken = verifyToken(ctx.request.body.token)
-  if (newToken.success) {
-    const email = ctx.request.body.email;
-    if(email.length > 2) {
-      let persons = await db.models.person.findAll({ where: { email: {[Op.iRegexp]: email} }, attributes: ['id', 'email', 'firstName', 'lastName']});
-      ctx.body = JSON.stringify({ users: persons, token: newToken })
+  /*
+ ------------------------------
+ OVO JE METODA ZA IZLISTAVANJE KORISNIKA
+ ------------------------------
+*/
+  .post('/getUsers', async (ctx, next) => {
+    const newToken = verifyToken(ctx.request.body.token)
+    if (newToken.success) {
+      const email = ctx.request.body.email;
+      if (email.length > 2) {
+        let persons = await db.models.person.findAll({ where: { email: { [Op.iRegexp]: email } }, attributes: ['id', 'email', 'firstName', 'lastName'] });
+        ctx.body = JSON.stringify({ users: persons, token: newToken })
+      } else {
+        ctx.body = JSON.stringify({ users: [], token: newToken })
+      }
     } else {
       ctx.body = JSON.stringify({ users: [], token: newToken })
     }
-  } else {
-    ctx.body = JSON.stringify({ users: [], token: newToken })
-  }
-})
-   /*
-    ------------------------------
-    OVO JE METODA ZA DODAVANJE OBJEKATA
-    ------------------------------
-  */
-.post('/addObject', async (ctx, next) => {
-  const newToken = verifyToken(ctx.request.body.token);
+  })
+  /*
+   ------------------------------
+   OVO JE METODA ZA DODAVANJE OBJEKATA
+   ------------------------------
+ */
+  .post('/addObject', async (ctx, next) => {
+    const newToken = verifyToken(ctx.request.body.token);
 
-  let addObject = ctx.request.body.addObject;
+    let addObject = ctx.request.body.addObject;
 
 
-  let objectClArr = addObject.objectCl;
-  let objectInfoArr = addObject.objectInfo;
-  let objectLocationArr = addObject.objectLocation;
-  let objectPhonesArr = addObject.objectPhones;
-  let objectWorkTimeArr = addObject.objectWorkTime;
-  let objectFileArr = addObject.objectFile;
-  let workTime = addObject.workTime;
-  let objectInfoObj = {};
-  let objectLocationObj = {};
-  let objectFileObj = {};
-  let objectWorkTimeObj = {};
+    let objectClArr = addObject.objectCl;
+    let objectInfoArr = addObject.objectInfo;
+    let objectLocationArr = addObject.objectLocation;
+    let objectPhonesArr = addObject.objectPhones;
+    let objectWorkTimeArr = addObject.objectWorkTime;
+    let objectFileArr = addObject.objectFile;
+    let workTime = addObject.workTime;
+    let objectInfoObj = {};
+    let objectLocationObj = {};
+    let objectFileObj = {};
+    let objectWorkTimeObj = {};
 
-  if(newToken.success) {
+    if (newToken.success) {
       // sending all from objectCl in db
       const obId = await db.models.objectCl.create(objectClArr)
       // adding id into objects
-      objectInfoObj = {...objectInfoArr, objectClId: obId.id}
-      objectLocationObj = {...objectLocationArr, objectClId: obId.id}
-      objectFileObj = {...objectFileArr, objectClId: obId.id, objectFileCategoryId: 1}
-      objectWorkTimeObj = {...objectWorkTimeArr, objectClId: obId.id}
+      objectInfoObj = { ...objectInfoArr, objectClId: obId.id }
+      objectLocationObj = { ...objectLocationArr, objectClId: obId.id }
+      objectFileObj = { ...objectFileArr, objectClId: obId.id, objectFileCategoryId: 1 }
+      objectWorkTimeObj = { ...objectWorkTimeArr, objectClId: obId.id }
       // sending all from objectInfo in db
       let infoId = await db.models.objectInfo.create(objectInfoObj);
       // sending all from objectLocation in db
       let locationId = await db.models.objectLocation.create(objectLocationObj);
       // sending all from objectPhones in db
       objectPhonesArr.map(async item => {
-        item = {...item, objectInfoId: infoId.id}
+        item = { ...item, objectInfoId: infoId.id }
         await db.models.objectPhones.create(item);
       })
       // sending all from objectFile in db
       await db.models.objectFile.create(objectFileObj);
       // sending all from objectWorkTime in db
-      await db.models.objectWorkTime.create({objectClId: obId.id});
+      await db.models.objectWorkTime.create({ objectClId: obId.id });
 
       let workTimeObject = { isAlwaysOpened: false };
-      if(workTime.pon) {
-        if(workTime.pon.isWorking) {
-          let wtMon = await db.models.wtMon.findOrCreate({where: {opening: workTime.pon.opening, closing: workTime.pon.closing}})
-          workTimeObject = {...workTimeObject, wtMonId: wtMon[0].id}
+      if (workTime.pon) {
+        if (workTime.pon.isWorking) {
+          let wtMon = await db.models.wtMon.findOrCreate({ where: { opening: workTime.pon.opening, closing: workTime.pon.closing } })
+          workTimeObject = { ...workTimeObject, wtMonId: wtMon[0].id }
         } else {
-          workTimeObject = {...workTimeObject, wtMonId: null}
+          workTimeObject = { ...workTimeObject, wtMonId: null }
         }
       }
-      if(workTime.uto) {
-        if(workTime.uto.isWorking) {
-          let wtTue = await db.models.wtTue.findOrCreate({where: {opening: workTime.uto.opening, closing: workTime.uto.closing}})
-          workTimeObject = {...workTimeObject, wtTueId: wtTue[0].id}
+      if (workTime.uto) {
+        if (workTime.uto.isWorking) {
+          let wtTue = await db.models.wtTue.findOrCreate({ where: { opening: workTime.uto.opening, closing: workTime.uto.closing } })
+          workTimeObject = { ...workTimeObject, wtTueId: wtTue[0].id }
         } else {
-          workTimeObject = {...workTimeObject, wtTueId: null}
+          workTimeObject = { ...workTimeObject, wtTueId: null }
         }
       }
-      if(workTime.sre) {
-        if(workTime.sre.isWorking) {
-          let wtWed = await db.models.wtWed.findOrCreate({where: {opening: workTime.sre.opening, closing: workTime.sre.closing}})
-          workTimeObject = {...workTimeObject, wtWedId: wtWed[0].id}
+      if (workTime.sre) {
+        if (workTime.sre.isWorking) {
+          let wtWed = await db.models.wtWed.findOrCreate({ where: { opening: workTime.sre.opening, closing: workTime.sre.closing } })
+          workTimeObject = { ...workTimeObject, wtWedId: wtWed[0].id }
         } else {
-          workTimeObject = {...workTimeObject, wtWedId: null}
+          workTimeObject = { ...workTimeObject, wtWedId: null }
         }
       }
-      if(workTime.cet) {
-        if(workTime.cet.isWorking) {
-          let wtThu = await db.models.wtThu.findOrCreate({where: {opening: workTime.cet.opening, closing: workTime.cet.closing}})
-          workTimeObject = {...workTimeObject, wtThuId: wtThu[0].id}
+      if (workTime.cet) {
+        if (workTime.cet.isWorking) {
+          let wtThu = await db.models.wtThu.findOrCreate({ where: { opening: workTime.cet.opening, closing: workTime.cet.closing } })
+          workTimeObject = { ...workTimeObject, wtThuId: wtThu[0].id }
         } else {
-          workTimeObject = {...workTimeObject, wtThuId: null}
+          workTimeObject = { ...workTimeObject, wtThuId: null }
         }
       }
-      if(workTime.pet) {
-        if(workTime.pet.isWorking) {
-          let wtFri = await db.models.wtFri.findOrCreate({where: {opening: workTime.pet.opening, closing: workTime.pet.closing}})
-          workTimeObject = {...workTimeObject, wtFriId: wtFri[0].id}
+      if (workTime.pet) {
+        if (workTime.pet.isWorking) {
+          let wtFri = await db.models.wtFri.findOrCreate({ where: { opening: workTime.pet.opening, closing: workTime.pet.closing } })
+          workTimeObject = { ...workTimeObject, wtFriId: wtFri[0].id }
         } else {
-          workTimeObject = {...workTimeObject, wtFriId: null}
+          workTimeObject = { ...workTimeObject, wtFriId: null }
         }
       }
-      if(workTime.sub) {
-        if(workTime.sub.isWorking) {
-          let wtSat = await db.models.wtSat.findOrCreate({where: {opening: workTime.sub.opening, closing: workTime.sub.closing}})
-          workTimeObject = {...workTimeObject, wtSatId: wtSat[0].id}
+      if (workTime.sub) {
+        if (workTime.sub.isWorking) {
+          let wtSat = await db.models.wtSat.findOrCreate({ where: { opening: workTime.sub.opening, closing: workTime.sub.closing } })
+          workTimeObject = { ...workTimeObject, wtSatId: wtSat[0].id }
         } else {
-          workTimeObject = {...workTimeObject, wtSatId: null}
+          workTimeObject = { ...workTimeObject, wtSatId: null }
         }
       }
-      if(workTime.ned) {
-        if(workTime.ned.isWorking) {
-          let wtSun = await db.models.wtSun.findOrCreate({where: {opening: workTime.ned.opening, closing: workTime.ned.closing}}) 
-          workTimeObject = {...workTimeObject, wtSunId: wtSun[0].id}
+      if (workTime.ned) {
+        if (workTime.ned.isWorking) {
+          let wtSun = await db.models.wtSun.findOrCreate({ where: { opening: workTime.ned.opening, closing: workTime.ned.closing } })
+          workTimeObject = { ...workTimeObject, wtSunId: wtSun[0].id }
         } else {
-          workTimeObject = {...workTimeObject, wtSunId: null}
+          workTimeObject = { ...workTimeObject, wtSunId: null }
         }
       }
-      if(workTime.isAlwaysOpened) {
+      if (workTime.isAlwaysOpened) {
         let obj = { isAlwaysOpened: true, wtMonId: 1, wtTueId: 1, wtWedId: 1, wtThuId: 1, wtFriId: 1, wtSatId: 1, wtSunId: 1 }
-        await db.models.objectWorkTime.update(obj, {where: {objectClId: obId.id}})
+        await db.models.objectWorkTime.update(obj, { where: { objectClId: obId.id } })
       } else {
-        await db.models.objectWorkTime.update(workTimeObject, {where: {objectClId: obId.id}})
+        await db.models.objectWorkTime.update(workTimeObject, { where: { objectClId: obId.id } })
       }
       // let updateObjectCl = {
       //   locationId: locationId.id,
       // }
       // await db.models.objectCl.update(updateObjectCl, {where: {id: obId.id}})
-      ctx.body = JSON.stringify({ createdNewObject: true, token: newToken})
+      ctx.body = JSON.stringify({ createdNewObject: true, token: newToken })
 
 
       // ctx.body = JSON.stringify({ createdNewObject: false, token: newToken})
 
 
-  } else {
-    ctx.body = JSON.stringify({ createdNewObject: false, token: newToken})
-  }
-})
-///////////////////////////////////
-.post('/stefan', async (ctx, next) => {
-  const newToken = verifyToken(ctx.request.body.token)
-  if(newToken.success) {
-    let stefan;
-    if(ctx.request.body.stefan) {
-      console.log('usao')
-      stefan = ctx.request.body.stefan
+    } else {
+      ctx.body = JSON.stringify({ createdNewObject: false, token: newToken })
     }
-  ctx.body = JSON.stringify({ stefan: 'car', token: newToken })
-  } else {
-    ctx.body = JSON.stringify({  token: newToken})
-  }
-})
+  })
+  ///////////////////////////////////
+  .post('/stefan', async (ctx, next) => {
+    const newToken = verifyToken(ctx.request.body.token)
+    if (newToken.success) {
+      let stefan;
+      if (ctx.request.body.stefan) {
+        console.log('usao')
+        stefan = ctx.request.body.stefan
+      }
+      ctx.body = JSON.stringify({ stefan: 'car', token: newToken })
+    } else {
+      ctx.body = JSON.stringify({ token: newToken })
+    }
+  })
 
-///////////////////////////////////
+  ///////////////////////////////////
   /*
     ------------------------------
     OVO JE METODA ZA EDITOVANJE OBJEKATA
@@ -858,8 +858,10 @@ const router = (new KoaRouter())
       const objectLocationArr = editObject.objectLocation;
       const objectPhonesArr = editObject.objectPhones;
       const deletePhones = editObject.deletePhones;
-        let workTimeObject = { isAlwaysOpened: false };
-        await db.models.objectWorkTime.findOrCreate({ where: { objectClId: objectId } })
+      let workTimeObject = { isAlwaysOpened: false };
+      await db.models.objectWorkTime.findOrCreate({ where: { objectClId: objectId } })
+
+      if(workTime) {
         if (workTime.pon) {
           if (workTime.pon.isWorking) {
             let wtMon = await db.models.wtMon.findOrCreate({ where: { opening: workTime.pon.opening, closing: workTime.pon.closing } })
@@ -922,31 +924,27 @@ const router = (new KoaRouter())
         } else {
           await db.models.objectWorkTime.update(workTimeObject, { where: { objectClId: objectId } })
         }
-        if(objectClArr) {
-          await db.models.objectCl.update(objectClArr, { where: { id: objectId } })
-        }
-        if(objectInfoArr) {
-          await db.models.objectInfo.update(objectInfoArr, { where: { id: objectId } })
-        }
-        if(objectLocationArr) {
-          await db.models.objectLocation.update(objectLocationArr, { where: { id: objectId } })
-        }
-        if(!_.isEmpty(objectPhonesArr)) {
-          objectPhonesArr.map(async item => {
-            await db.models.objectPhones.update(item, { where: { id: item.id } })
-          })
-        }
-        if(!_.isEmpty(deletePhones)) {
-          deletePhones.map(async item => {
-            await db.models.objectPhones.destroy({ where: { id: item } })
-          })
-        }
-        if(!_.isEmpty(Phones)) {
-          deletePhones.map(async item => {
-            await db.models.objectPhones.destroy({ where: { id: item } })
-          })
-        }
-        ctx.body = JSON.stringify({ token: newToken })
+      }
+      if (objectClArr) {
+        await db.models.objectCl.update(objectClArr, { where: { id: objectId } })
+      }
+      if (objectInfoArr) {
+        await db.models.objectInfo.update(objectInfoArr, { where: { id: objectId } })
+      }
+      if (objectLocationArr) {
+        await db.models.objectLocation.update(objectLocationArr, { where: { id: objectId } })
+      }
+      if (!_.isEmpty(objectPhonesArr)) {
+        objectPhonesArr.map(async item => {
+          await db.models.objectPhones.update(item, { where: { id: item.id } })
+        })
+      }
+      if (!_.isEmpty(deletePhones)) {
+        deletePhones.map(async item => {
+          await db.models.objectPhones.destroy({ where: { id: item } })
+        })
+      }
+      ctx.body = JSON.stringify({ token: newToken })
     } else {
       ctx.body = JSON.stringify({ token: newToken })
     }
@@ -997,9 +995,9 @@ const router = (new KoaRouter())
       let korisnici = [];
       let objekti = [];
       await Promise.all(requests.map(async item => {
-        const user = await db.models.person.find({where: {id: item.personId}}, {attributes: ['id', 'firstName', 'lastName', 'email']})
-        const object = await db.models.objectCl.find({where: {id: item.objectClId}})
-        rikvestovi.push({user, object, requestId: item.id})
+        const user = await db.models.person.find({ where: { id: item.personId } }, { attributes: ['id', 'firstName', 'lastName', 'email'] })
+        const object = await db.models.objectCl.find({ where: { id: item.objectClId } })
+        rikvestovi.push({ user, object, requestId: item.id })
       }))
       ctx.body = JSON.stringify({ requests: rikvestovi, token: newToken })
     } else {
@@ -1249,7 +1247,7 @@ const router = (new KoaRouter())
               } else {
                 const objectInfoDb = await db.models.objectInfo.create({ objectClId: newObject.id })
               }
-              
+
 
             } else {
               db.models.objectCl.destroy({ where: { id: newObject.id } })
