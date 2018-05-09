@@ -22,6 +22,7 @@ class EditObject extends React.Component {
       name: '',
       nameError: '',
       objectCategoryId: '',
+      objectId : '',
       categoryError: '',
       editObject: {},
       personId: '',
@@ -176,6 +177,7 @@ class EditObject extends React.Component {
         name: response.objectById.objectCl.name,
         objectCategoryId: response.objectById.objectCl.objectCategoryId,
         personId: response.objectById.objectCl.personId,
+        objectId: response.objectById.objectCl.id,
         shortDescription: response.objectById.objectCl.shortDescription,
         streetAddress: response.objectById.objectCl.streetAddress,
         childLocation: response.objectById.objectCl.locationId,
@@ -590,11 +592,12 @@ class EditObject extends React.Component {
     let objectClKeys = ['name', 'shortDescription', 'verified', 'personId', 'objectCategoryId', 'locationId'];
     let objectInfoKeys = ['websiteUrl', 'popularBecauseOf'];
     let objectLocationKeys = ['lat', 'lng', 'address', 'city', 'zipCode'];
-    let objectPhonesKeys = ['phones'];
+    let objectPhonesKeys = [];
     let workTime = {};
     let newArr = this.state.workTimeEdit;
     let deletePhones = this.state.deletedPhones;
     let phonesAdd = this.state.phonesAdd;
+    
     
 
 
@@ -689,13 +692,12 @@ class EditObject extends React.Component {
           objectClArr,
           objectInfoArr,
           objectLocationArr,
-          objectPhonesArr,
           deletePhones,
           phonesAdd
         },
         confirmText: 'Objekat izmenjen!'
       })
-      // this.updateObject()
+      this.updateObject()
     }
 
     else {
@@ -704,14 +706,18 @@ class EditObject extends React.Component {
       })
     }
   }
-  // updateObject = async () => {
-  //   let response = await post.secure('/editObject', {
-  //     editObject: this.state.sendEditObject
-  //   })
-  // }
+  updateObject =  () => {
+    console.log('STEFAN', this.state.sendEditObject)
+    // let response = await post.secure('/editObject', {
+    //   objectId: this.state.objectId,
+    //   editObject: this.state.sendEditObject
+    // })
+  }
 
   render() {
     console.log("STEJT", this.state.workTime);
+    console.log("STEJT", this.state);
+    console.log("SALJEM", this.state.sendEditObject);
     let a;
     return (
       <div>
