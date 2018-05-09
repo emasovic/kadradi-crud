@@ -858,6 +858,7 @@ const router = (new KoaRouter())
       const objectLocationArr = editObject.objectLocation;
       const objectPhonesArr = editObject.objectPhones;
       const deletePhones = editObject.deletePhones;
+      const objectFile = editObject.objectFile;
       let workTimeObject = { isAlwaysOpened: false };
       console.log('STEFAAAAAAAAAAAAAAAAn', editObject)
       await db.models.objectWorkTime.findOrCreate({ where: { objectClId: objectId } })
@@ -930,6 +931,10 @@ const router = (new KoaRouter())
         console.log("NAMEEEEE", objectClArr)
         await db.models.objectCl.update(objectClArr, { where: { id: objectId } })
       }
+      if (objectClArr) {
+        console.log("NAMEEEEE", objectClArr)
+        await db.models.objectCl.update(objectClArr, { where: { id: objectId } })
+      }
       if (objectInfoArr) {
         await db.models.objectInfo.update(objectInfoArr, { where: { id: objectId } })
       }
@@ -938,7 +943,7 @@ const router = (new KoaRouter())
       }
       if (!_.isEmpty(objectPhonesArr)) {
         objectPhonesArr.map(async item => {
-          await db.models.objectPhones.update(item, { where: { id: item.id } })
+          await db.models.objectPhones.create(item)
         })
       }
       if (!_.isEmpty(deletePhones)) {
@@ -946,9 +951,9 @@ const router = (new KoaRouter())
           await db.models.objectPhones.destroy({ where: { id: item } })
         })
       }
-      ctx.body = JSON.stringify({ token: newToken })
+      ctx.body = JSON.stringify({ success: true, token: newToken })
     } else {
-      ctx.body = JSON.stringify({ token: newToken })
+      ctx.body = JSON.stringify({ success: false, token: newToken })
     }
   })
 
