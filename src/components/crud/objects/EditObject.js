@@ -476,7 +476,6 @@ class EditObject extends React.Component {
     let niz = this.state.phonesAdd.push({
       desc: descript,
       number: tel,
-      // id: this.state.count
       objectInfoId: this.state.objectId
     })
     this.setState({
@@ -653,8 +652,8 @@ class EditObject extends React.Component {
           workTime = {
             ...workTime,
             [name]: {
-              open: newArr[a].open,
-              close: newArr[a].close,
+              opening: newArr[a].open,
+              closing: newArr[a].close,
               isWorking: newArr[a].isWorking,
             }
           }
@@ -668,8 +667,8 @@ class EditObject extends React.Component {
           workTime = {
             ...workTime,
             [name]: {
-              open: '01',
-              close: '01',
+              opening: '01',
+              closing: '01',
               isWorking: true,
             }
           }
@@ -714,6 +713,7 @@ class EditObject extends React.Component {
       objectId: this.state.objectId,
       editObject: this.state.sendEditObject
     })
+    console.log('RESPONSE', response)
   }
 
   render() {
@@ -890,7 +890,7 @@ class EditObject extends React.Component {
                     return (
                       <div key={index}>
                         {/* <Number index={index} value={item.number} desc={item.description} /> */}
-                        <Input label="Opis" value={item.description} />
+                        <Input label="Opis" value={item.desc} />
                         <Input label="Broj" value={item.number} />
                         <Button icon='minus' onClick={() => this.removePhone(item.id)} />
                       </div>
