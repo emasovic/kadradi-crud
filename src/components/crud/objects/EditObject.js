@@ -706,15 +706,16 @@ class EditObject extends React.Component {
       })
     }
   }
-  updateObject =  () => {
+  updateObject = async () => {
     console.log('STEFAN', this.state.sendEditObject)
-    // let response = await post.secure('/editObject', {
-    //   objectId: this.state.objectId,
-    //   editObject: this.state.sendEditObject
-    // })
+    let response = await post.secure('/editObject', {
+      objectId: this.state.objectId,
+      editObject: this.state.sendEditObject
+    })
   }
 
   render() {
+    console.log("STEJT", this.state.workTime);
     console.log("STEJT", this.state);
     console.log("SALJEM", this.state.sendEditObject);
     let a;
