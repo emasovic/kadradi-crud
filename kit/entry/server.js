@@ -903,17 +903,17 @@ const router = (new KoaRouter())
             workTimeObject = { ...workTimeObject, wtFriId: null }
           }
         }
-        if (workTime.sub) {
-          if (workTime.sub.isWorking) {
-            let wtSat = await db.models.wtSat.findOrCreate({ where: { opening: workTime.sub.opening, closing: workTime.sub.closing } })
+        if (workTime.Sub) {
+          if (workTime.Sub.isWorking) {
+            let wtSat = await db.models.wtSat.findOrCreate({ where: { opening: workTime.Sub.opening, closing: workTime.Sub.closing } })
             workTimeObject = { ...workTimeObject, wtSatId: wtSat[0].id }
           } else {
             workTimeObject = { ...workTimeObject, wtSatId: null }
           }
         }
-        if (workTime.ned) {
-          if (workTime.ned.isWorking) {
-            let wtSun = await db.models.wtSun.findOrCreate({ where: { opening: workTime.ned.opening, closing: workTime.ned.closing } })
+        if (workTime.Ned) {
+          if (workTime.Ned.isWorking) {
+            let wtSun = await db.models.wtSun.findOrCreate({ where: { opening: workTime.Ned.opening, closing: workTime.Ned.closing } })
             workTimeObject = { ...workTimeObject, wtSunId: wtSun[0].id }
           } else {
             workTimeObject = { ...workTimeObject, wtSunId: null }
@@ -938,7 +938,7 @@ const router = (new KoaRouter())
       }
       if (!_.isEmpty(objectPhonesArr)) {
         objectPhonesArr.map(async item => {
-          await db.models.objectPhones.create(item)
+          await db.models.objectPhones.update(item, { where: { id: item.id } })
         })
       }
       if (!_.isEmpty(deletePhones)) {

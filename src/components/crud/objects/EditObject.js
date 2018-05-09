@@ -652,8 +652,8 @@ class EditObject extends React.Component {
           workTime = {
             ...workTime,
             [name]: {
-              open: newArr[a].open,
-              close: newArr[a].close,
+              opening: newArr[a].open,
+              closing: newArr[a].close,
               isWorking: newArr[a].isWorking,
             }
           }
@@ -667,8 +667,8 @@ class EditObject extends React.Component {
           workTime = {
             ...workTime,
             [name]: {
-              open: '01',
-              close: '01',
+              opening: '01',
+              closing: '01',
               isWorking: true,
             }
           }
@@ -713,6 +713,7 @@ class EditObject extends React.Component {
       objectId: this.state.objectId,
       editObject: this.state.sendEditObject
     })
+    console.log('RESPONSE', response)
   }
 
   render() {
