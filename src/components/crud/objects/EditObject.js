@@ -476,7 +476,6 @@ class EditObject extends React.Component {
     let niz = this.state.phonesAdd.push({
       desc: descript,
       number: tel,
-      // id: this.state.count
       objectInfoId: this.state.objectId
     })
     this.setState({
@@ -890,7 +889,7 @@ class EditObject extends React.Component {
                     return (
                       <div key={index}>
                         {/* <Number index={index} value={item.number} desc={item.description} /> */}
-                        <Input label="Opis" value={item.description} />
+                        <Input label="Opis" value={item.desc} />
                         <Input label="Broj" value={item.number} />
                         <Button icon='minus' onClick={() => this.removePhone(item.id)} />
                       </div>
