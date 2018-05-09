@@ -6,14 +6,14 @@ class Proba extends React.Component{
     let response = await post.secure('/editObject', {
       objectId: 1,
       editObject: {
-        workTime: {
-          isAlwaysOpened: false,
-          ned: {
-            isWorking: true,
-            opening: '0050',
-            closing: '0101',
-          },
-        },
+        // workTime: {
+        //   isAlwaysOpened: false,
+        //   ned: {
+        //     isWorking: true,
+        //     opening: '0050',
+        //     closing: '0101',
+        //   },
+        // },
         // objectCl: {
         //   name: 'STEFAN',
         //   shortDescription: 'STEFAN PROBA1',
@@ -34,21 +34,22 @@ class Proba extends React.Component{
         //   popularBecauseOf: 'nisam popularan',
         // },
         // objectFile: {
+        //   objectClId: 1,
         //   fileUrl: 'asldakdajdsaoskdpasd',
         //   desc: 'sakdjpaskdpads'
         // },
-        // objectPhones: [
-        //   {
-        //     objectInfoId: 1,
-        //     desc: 'HAHAHA',
-        //     number: '3333333'            
-        //   },
-        //   {
-        //     objectInfoId: 1,
-        //     desc: 'AHAHAHHAHAHAH',
-        //     number: '4444444'            
-        //   },
-        // ],
+        objectPhones: [
+          {
+            objectInfoId: 1,
+            desc: 'HAHAHA',
+            number: '3333333'            
+          },
+          {
+            objectInfoId: 1,
+            desc: 'AHAHAHHAHAHAH',
+            number: '4444444'            
+          },
+        ],
         // deletePhones: [1]
       },
     });
