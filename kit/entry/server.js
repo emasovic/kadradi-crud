@@ -859,6 +859,7 @@ const router = (new KoaRouter())
       const objectPhonesArr = editObject.objectPhones;
       const deletePhones = editObject.deletePhones;
       let workTimeObject = { isAlwaysOpened: false };
+      console.log('STEFAAAAAAAAAAAAAAAAn', editObject)
       await db.models.objectWorkTime.findOrCreate({ where: { objectClId: objectId } })
 
       if(workTime) {
