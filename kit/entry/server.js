@@ -937,7 +937,7 @@ const router = (new KoaRouter())
       }
       if (!_.isEmpty(objectPhonesArr)) {
         objectPhonesArr.map(async item => {
-          await db.models.objectPhones.update(item, { where: { id: item.id } })
+          await db.models.objectPhones.create(item)
         })
       }
       if (!_.isEmpty(deletePhones)) {
