@@ -863,41 +863,41 @@ const router = (new KoaRouter())
       await db.models.objectWorkTime.findOrCreate({ where: { objectClId: objectId } })
 
       if(workTime) {
-        if (workTime.pon) {
-          if (workTime.pon.isWorking) {
-            let wtMon = await db.models.wtMon.findOrCreate({ where: { opening: workTime.pon.opening, closing: workTime.pon.closing } })
+        if (workTime.Pon) {
+          if (workTime.Pon.isWorking) {
+            let wtMon = await db.models.wtMon.findOrCreate({ where: { opening: workTime.Pon.opening, closing: workTime.Pon.closing } })
             workTimeObject = { ...workTimeObject, wtMonId: wtMon[0].id }
           } else {
             workTimeObject = { ...workTimeObject, wtMonId: null }
           }
         }
-        if (workTime.uto) {
-          if (workTime.uto.isWorking) {
-            let wtTue = await db.models.wtTue.findOrCreate({ where: { opening: workTime.uto.opening, closing: workTime.uto.closing } })
+        if (workTime.Uto) {
+          if (workTime.Uto.isWorking) {
+            let wtTue = await db.models.wtTue.findOrCreate({ where: { opening: workTime.Uto.opening, closing: workTime.Uto.closing } })
             workTimeObject = { ...workTimeObject, wtTueId: wtTue[0].id }
           } else {
             workTimeObject = { ...workTimeObject, wtTueId: null }
           }
         }
-        if (workTime.sre) {
-          if (workTime.sre.isWorking) {
-            let wtWed = await db.models.wtWed.findOrCreate({ where: { opening: workTime.sre.opening, closing: workTime.sre.closing } })
+        if (workTime.Sre) {
+          if (workTime.Sre.isWorking) {
+            let wtWed = await db.models.wtWed.findOrCreate({ where: { opening: workTime.Sre.opening, closing: workTime.Sre.closing } })
             workTimeObject = { ...workTimeObject, wtWedId: wtWed[0].id }
           } else {
             workTimeObject = { ...workTimeObject, wtWedId: null }
           }
         }
-        if (workTime.cet) {
-          if (workTime.cet.isWorking) {
-            let wtThu = await db.models.wtThu.findOrCreate({ where: { opening: workTime.cet.opening, closing: workTime.cet.closing } })
+        if (workTime.Cet) {
+          if (workTime.Cet.isWorking) {
+            let wtThu = await db.models.wtThu.findOrCreate({ where: { opening: workTime.Cet.opening, closing: workTime.Cet.closing } })
             workTimeObject = { ...workTimeObject, wtThuId: wtThu[0].id }
           } else {
             workTimeObject = { ...workTimeObject, wtThuId: null }
           }
         }
-        if (workTime.pet) {
-          if (workTime.pet.isWorking) {
-            let wtFri = await db.models.wtFri.findOrCreate({ where: { opening: workTime.pet.opening, closing: workTime.pet.closing } })
+        if (workTime.Pet) {
+          if (workTime.Pet.isWorking) {
+            let wtFri = await db.models.wtFri.findOrCreate({ where: { opening: workTime.Pet.opening, closing: workTime.Pet.closing } })
             workTimeObject = { ...workTimeObject, wtFriId: wtFri[0].id }
           } else {
             workTimeObject = { ...workTimeObject, wtFriId: null }
