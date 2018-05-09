@@ -472,15 +472,16 @@ class EditObject extends React.Component {
     })
     this.handleUpload(img.file);
   }
-  addPhone = (tel, desc) => {
+  addPhone = (tel, descript) => {
     let niz = this.state.phonesAdd.push({
-      description: desc,
+      desc: descript,
       number: tel,
-      id: this.state.count
+      // id: this.state.count
+      objectInfoId: this.state.objectId
     })
     this.setState({
       phonesAdd: this.state.phonesAdd,
-      count: this.state.count + 1
+      // count: this.state.count + 1
     })
   }
   removePhone = (index) => {
@@ -584,10 +585,10 @@ class EditObject extends React.Component {
   prepareToEditObject = async () => {
     let validate = this.validation(this.state.name,this.state.objectCategoryId,this.state.locationId,this.state.newVal,this.state.address,this.state.lat,this.state.lng)
     let { objToEdit } = this.state;
-    let objectClArr = {};
+    let objectCl = {};
     let objectWorkTimeArr = {};
-    let objectLocationArr = {};
-    let objectInfoArr = {};
+    let objectLocation = {};
+    let objectInfo = {};
     let objectPhonesArr = {};
     let objectClKeys = ['name', 'shortDescription', 'verified', 'personId', 'objectCategoryId', 'locationId'];
     let objectInfoKeys = ['websiteUrl', 'popularBecauseOf'];
@@ -596,31 +597,31 @@ class EditObject extends React.Component {
     let workTime = {};
     let newArr = this.state.workTimeEdit;
     let deletePhones = this.state.deletedPhones;
-    let phonesAdd = this.state.phonesAdd;
+    let objectPhones = this.state.phonesAdd;
     
     
 
 
     objectClKeys.map(item => {
       if (objToEdit.objectCl[item] != this.state[item]) {
-        objectClArr = {
-          ...objectClArr,
+        objectCl = {
+          ...objectCl,
           [item]: this.state[item],
         };
       }
     })
     objectLocationKeys.map((item) => {
       if (objToEdit.objectLocation[item] != this.state[item]) {
-        objectLocationArr = {
-          ...objectLocationArr,
+        objectLocation = {
+          ...objectLocation,
           [item]: this.state[item],
         };
       }
     })
     objectInfoKeys.map((item) => {
       if (objToEdit.objectInfo[item] != this.state[item]) {
-        objectInfoArr = {
-          ...objectInfoArr,
+        objectInfo = {
+          ...objectInfo,
           [item]: this.state[item]
         }
       }
@@ -689,11 +690,11 @@ class EditObject extends React.Component {
       this.setState({
         sendEditObject: {
           workTime,
-          objectClArr,
-          objectInfoArr,
-          objectLocationArr,
+          objectCl,
+          objectInfo,
+          objectLocation,
           deletePhones,
-          phonesAdd
+          objectPhones
         },
         confirmText: 'Objekat izmenjen!'
       })
@@ -707,7 +708,8 @@ class EditObject extends React.Component {
     }
   }
   updateObject = async () => {
-    console.log('STEFAN', this.state.sendEditObject)
+    console.log('IZ UPDATA', this.state.sendEditObject)
+    // console.log('STEFAN', this.state.sendEditObject)
     let response = await post.secure('/editObject', {
       objectId: this.state.objectId,
       editObject: this.state.sendEditObject
@@ -715,7 +717,6 @@ class EditObject extends React.Component {
   }
 
   render() {
-    console.log("STEJT", this.state.workTime);
     console.log("STEJT", this.state);
     console.log("SALJEM", this.state.sendEditObject);
     let a;
