@@ -860,7 +860,6 @@ const router = (new KoaRouter())
       const deletePhones = editObject.deletePhones;
       const objectFile = editObject.objectFile;
       let workTimeObject = { isAlwaysOpened: false };
-      console.log('STEFAAAAAAAAAAAAAAAAn', editObject)
       await db.models.objectWorkTime.findOrCreate({ where: { objectClId: objectId } })
 
       if(workTime) {
@@ -931,9 +930,8 @@ const router = (new KoaRouter())
         console.log("NAMEEEEE", objectClArr)
         await db.models.objectCl.update(objectClArr, { where: { id: objectId } })
       }
-      if (objectClArr) {
-        console.log("NAMEEEEE", objectClArr)
-        await db.models.objectCl.update(objectClArr, { where: { id: objectId } })
+      if (objectFile) {
+        await db.models.objectFile.update(objectFile, { where: { id: objectFile.id } })
       }
       if (objectInfoArr) {
         await db.models.objectInfo.update(objectInfoArr, { where: { id: objectId } })

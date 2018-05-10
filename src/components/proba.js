@@ -33,23 +33,24 @@ class Proba extends React.Component{
         //   hasRestaurant: false,
         //   popularBecauseOf: 'nisam popularan',
         // },
-        // objectFile: {
-        //   objectClId: 1,
-        //   fileUrl: 'asldakdajdsaoskdpasd',
-        //   desc: 'sakdjpaskdpads'
-        // },
-        objectPhones: [
-          {
-            objectInfoId: 1,
-            desc: 'HAHAHA',
-            number: '3333333'            
-          },
-          {
-            objectInfoId: 1,
-            desc: 'AHAHAHHAHAHAH',
-            number: '4444444'            
-          },
-        ],
+        objectFile: {
+          id: 17,
+          objectClId: 9,
+          fileUrl: 'STA',
+          desc: 'KURAC'
+        },
+        // objectPhones: [
+        //   {
+        //     objectInfoId: 1,
+        //     desc: 'HAHAHA',
+        //     number: '3333333'            
+        //   },
+        //   {
+        //     objectInfoId: 1,
+        //     desc: 'AHAHAHHAHAHAH',
+        //     number: '4444444'            
+        //   },
+        // ],
         // deletePhones: [1]
       },
     });
