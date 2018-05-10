@@ -71,6 +71,9 @@ class EditObject extends React.Component {
       confirmText: '',
       data:"",
       editedPhones: [],
+      objectFile: {},
+      imgDesc: "",
+      
     };
   }
   objectEdit = e => {
@@ -141,11 +144,8 @@ class EditObject extends React.Component {
     }
     if (e.target.name === 'imgDesc') {
       this.setState({
-        objectImage: {
-          desc: e.target.value,
-          fileUrl: this.state.objectImage.fileUrl,
-          id: this.state.objectImage.id,
-        }
+        imgDesc: e.target.value,
+        
       })
     }
   }
@@ -198,6 +198,7 @@ class EditObject extends React.Component {
         zipCode: response.objectById.objectLocation.zipCode,
         imgPreview: response.objectById.objectFile.fileUrl,
         user: response.objectById.owningPerson,
+        imgDesc: response.objectById.objectFile.desc
 
       });
       let jsArr = JSON.parse(JSON.stringify(this.state.workTime));
@@ -352,27 +353,27 @@ class EditObject extends React.Component {
       deletedPhones: delArr
     })
   }
-  changePhones = (e, id) => {
-    let arr = this.state.phones
-    let editedPhones = this.state.editedPhones
-    if (e.target.name === 'number') {
-      arr.map(item => {
-        if (item.id == id) {
-          item.number = e.target.value
-        }
-      })
-    } 
-    if (e.target.name === 'desc') {
-      arr.map(item => {
-        if (item.id == id) {
-          item.desc = e.target.value
-        }
-      })
-    } 
-    this.setState({
-      editedPhones: arr
-    })
-  }
+  // changePhones = (e, id) => {
+  //   let arr = this.state.phones
+  //   let editedPhones = this.state.editedPhones
+  //   if (e.target.name === 'number') {
+  //     arr.map(item => {
+  //       if (item.id == id) {
+  //         item.number = e.target.value
+  //       }
+  //     })
+  //   } 
+  //   if (e.target.name === 'desc') {
+  //     arr.map(item => {
+  //       if (item.id == id) {
+  //         item.desc = e.target.value
+  //       }
+  //     })
+  //   } 
+  //   this.setState({
+  //     editedPhones: arr
+  //   })
+  // }
     // else {
     //   arr.map(item => {
     //     if (item.id == id) {
@@ -588,19 +589,14 @@ class EditObject extends React.Component {
     let objectWorkTimeArr = {};
     let objectLocation = {};
     let objectInfo = {};
-    let objectPhonesArr = {};
     let objectClKeys = ['name', 'shortDescription', 'verified', 'personId', 'objectCategoryId', 'locationId'];
     let objectInfoKeys = ['websiteUrl', 'popularBecauseOf'];
     let objectLocationKeys = ['lat', 'lng', 'address', 'city', 'zipCode'];
-    let objectPhonesKeys = [];
     let workTime = {};
     let newArr = this.state.workTimeEdit;
     let deletePhones = this.state.deletedPhones;
     let objectPhones = this.state.phonesAdd;
     
-    
-
-
     objectClKeys.map(item => {
       if (objToEdit.objectCl[item] != this.state[item]) {
         objectCl = {
@@ -621,14 +617,6 @@ class EditObject extends React.Component {
       if (objToEdit.objectInfo[item] != this.state[item]) {
         objectInfo = {
           ...objectInfo,
-          [item]: this.state[item]
-        }
-      }
-    })
-    objectPhonesKeys.map((item) => {
-      if (objToEdit.objectPhones[item] != this.state[item]) {
-        objectPhonesArr = {
-          ...objectPhonesArr,
           [item]: this.state[item]
         }
       }
@@ -676,6 +664,37 @@ class EditObject extends React.Component {
       }
     })
 
+    let objectFile = {};
+    if(this.state.imgPreview !== this.state.objectImage.fileUrl){
+      let imgUrl = this.state.imgPreview;
+      objectFile = {
+          ...objectFile,
+          fileUrl: imgUrl,
+        }
+    }
+
+    if(this.state.imgDesc !== this.state.objectImage.desc){
+      let desc1 = this.state.imgDesc;
+      objectFile = {
+          ...objectFile,
+          desc: desc1,
+        }
+    }
+    
+    if(Object.keys(objectFile).length){
+      objectFile = {
+        ...objectFile,
+        id: this.state.objectImage.id,
+        objectClId: this.state.objectId,
+      }
+      this.setState({
+        objectFile: objectFile,
+      })
+    }else{
+      console.log(2);
+    }
+
+
     let wrkTime = this.state.workTimeObj;
     objectWorkTimeArr = {
       ...objectWorkTimeArr,
@@ -693,7 +712,8 @@ class EditObject extends React.Component {
           objectInfo,
           objectLocation,
           deletePhones,
-          objectPhones
+          objectPhones,
+          objectFile,
         },
         confirmText: 'Objekat izmenjen!'
       })
@@ -717,6 +737,7 @@ class EditObject extends React.Component {
   }
 
   render() {
+    console.log("IMAGE", this.state.objectFile)
     console.log("STEJT", this.state);
     console.log("SALJEM", this.state.sendEditObject);
     let a;
@@ -741,7 +762,16 @@ class EditObject extends React.Component {
                   onChange={this.setCategoryObj}
                   options={this.state.objToEdit.objectCategoriesArr} />
                 {/* <Input label='personId: ' name='personId' value={this.state.personId} onChange={this.objectEdit} /><br /> */}
+                <span className={css.labels}>Veb sajt:</span>
+                <Input name='websiteUrl' value={this.state.websiteUrl} onChange={this.objectEdit} style={{width:'350px'}}/>
+                <span className={css.labels}>Proveren:</span>
+                <Checkbox toggle checked={this.state.verified} onClick={() => this.isVerify()} />
+                </div>
+                {/* <FileBase64 multiple={true} onDone={this.getImage.bind(this)} /><br /> */}
+                <div style={{display:'flex',alignItems:'center',justifyContent:'space-around'}}>
                 <span className={css.labels}>Vlasnik objekta:</span>
+                <span>{this.state.user.firstName + ' ' + this.state.user.lastName }</span>
+                <span className={css.labels}>Izmeni vlasnika:</span>
                 <Dropdown 
                 name="personId" 
                 onChange={this.handleChange} 
@@ -753,13 +783,6 @@ class EditObject extends React.Component {
                 size='small' 
                 noResultsMessage="No users with that email" 
               />
-                <span className={css.labels}>Proveren:</span>
-                <Checkbox toggle checked={this.state.verified} onClick={() => this.isVerify()} />
-                </div>
-                {/* <FileBase64 multiple={true} onDone={this.getImage.bind(this)} /><br /> */}
-                <div style={{display:'flex',alignItems:'center',justifyContent:'space-around'}}>
-                <span className={css.labels}>Veb sajt:</span>
-                <Input name='websiteUrl' value={this.state.websiteUrl} onChange={this.objectEdit} style={{width:'350px'}}/>
                 <span className={css.labels}>Popularan zbog:</span>
                 <TextArea autoHeight name='popularBecauseOf' value={this.state.popularBecauseOf} onChange={this.objectEdit} style={{ minHeight: '50px', minWidth: '300px' }} />
                 <span className={css.labels}>Kratak opis:</span>
@@ -805,7 +828,7 @@ class EditObject extends React.Component {
                 <img src={this.state.imgPreview} style={{ height: '250px', width: '250px' }} />
                 <br />
                 Opis slike:<br />
-                <TextArea autoHeight name='imgDesc' value={this.state.objectImage.desc} onChange={this.objectEdit} style={{ minHeight: '50px', minWidth: '300px' }} /><br />
+                <TextArea autoHeight name='imgDesc' value={this.state.imgDesc} onChange={this.objectEdit} style={{ minHeight: '50px', minWidth: '300px' }} /><br />
                 <br />
               </div>
               <div className={Style.section}>
