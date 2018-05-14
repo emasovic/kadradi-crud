@@ -1,6 +1,6 @@
 import React from 'react';
 import post from '../../fetch/post';
-import { Table, Input, Button, Dropdown, Checkbox, TextArea, Loader } from 'semantic-ui-react';
+import { Table, Input, Button, Dropdown, Checkbox, TextArea, Loader, Modal, Header } from 'semantic-ui-react';
 import { stat } from 'fs';
 import TimePicker from 'rc-time-picker';
 import Style from './objectsEdit.css';
@@ -71,83 +71,14 @@ class EditObject extends React.Component {
       confirmText: '',
       data:"",
       editedPhones: [],
+      objectFile: {},
+      imgDesc: "",
     };
   }
   objectEdit = e => {
-    if (e.target.name === 'locationId') {
-      this.setState({
-        locationId: e.target.value,
-      });
-    }
-    if (e.target.name === 'name') {
-      this.setState({
-        name: e.target.value,
-      });
-    }
-    if (e.target.name === 'objectCategoryId') {
-      this.setState({
-        objectCategoryId: e.target.value,
-      });
-    }
-    if (e.target.name === 'personId') {
-      this.setState({
-        personId: e.target.value,
-      });
-    }
-    if (e.target.name === 'shortDescription') {
-      this.setState({
-        shortDescription: e.target.value,
-      });
-    }
-    if (e.target.name === 'websiteUrl') {
-      this.setState({
-        websiteUrl: e.target.value
-      })
-    }
-    if (e.target.name === 'city') {
-      this.setState({
-        city: e.target.value,
-      });
-    }
-    if (e.target.name === 'popularBecauseOf') {
-      this.setState({
-        popularBecauseOf: e.target.value
-      })
-    }
-    if (e.target.name === 'lat') {
-      this.setState({
-        lat: e.target.value
-      })
-    }
-    if (e.target.name === 'lng') {
-      this.setState({
-        lng: e.target.value
-      })
-    }
-    if (e.target.name === 'zipCode') {
-      this.setState({
-        zipCode: e.target.value
-      })
-    }
-    if (e.target.name === 'descAdd') {
-      this.setState({
-        descAdd: e.target.value
-      })
-    }
-    if (e.target.name === 'numberAdd') {
-      this.setState({
-        numberAdd: e.target.value
-      })
-    }
-    if (e.target.name === 'imgDesc') {
-      this.setState({
-        objectImage: {
-          desc: e.target.value,
-          fileUrl: this.state.objectImage.fileUrl,
-          id: this.state.objectImage.id,
-        }
-      })
-    }
+    this.setState({
+      [e.target.name]: e.target.value
+    })
   }
   componentWillMount() {
     this.getObjectById();
@@ -198,6 +129,7 @@ class EditObject extends React.Component {
         zipCode: response.objectById.objectLocation.zipCode,
         imgPreview: response.objectById.objectFile.fileUrl,
         user: response.objectById.owningPerson,
+        imgDesc: response.objectById.objectFile.desc
 
       });
       let jsArr = JSON.parse(JSON.stringify(this.state.workTime));
@@ -213,23 +145,15 @@ class EditObject extends React.Component {
         ]
       })
       this.setParentObj(response.objectById.locations);
-      this.setCurrentParrent(response.objectById.locations);
-      // console.log('JEL GA IMA OVDE bRE?', response.objectById.locations);
-      console.log('RESPONSE', response);
+      this.setCurrentParrent(response.objectById.locations)
     } else {
-      console.log('stajebreovo', response.token.success);
     }
-    console.log('RESPONSE', response);
   }
-
-
   setCategoryObj = async (e, { value }) => {
     this.setState({
       objectCategoryId: value,
     });
-    console.log("value", value)
   }
-
   setParentObj = parrent => {
     let obArr = [];
     let nekiObj = {
@@ -352,36 +276,6 @@ class EditObject extends React.Component {
       deletedPhones: delArr
     })
   }
-  changePhones = (e, id) => {
-    let arr = this.state.phones
-    let editedPhones = this.state.editedPhones
-    if (e.target.name === 'number') {
-      arr.map(item => {
-        if (item.id == id) {
-          item.number = e.target.value
-        }
-      })
-    } 
-    if (e.target.name === 'desc') {
-      arr.map(item => {
-        if (item.id == id) {
-          item.desc = e.target.value
-        }
-      })
-    } 
-    this.setState({
-      editedPhones: arr
-    })
-  }
-    // else {
-    //   arr.map(item => {
-    //     if (item.id == id) {
-    //       item.desc = e.target.value
-    //     }
-    //   })
-    // }
- 
-    
   isVerify = () => {
     if (this.state.verified === true)
       this.setState({
@@ -393,7 +287,6 @@ class EditObject extends React.Component {
       })
   }
   onSuggestSelect = (suggest) => {
-    console.log('suggest', suggest)
     let street = suggest.description.split(",");
     this.setState({
       address: street[0],
@@ -409,19 +302,6 @@ class EditObject extends React.Component {
 
   handleUpload = async (imgFile) => {
     const file = imgFile;
-    // const setData = async(error, dat) => {
-    //   let e = await error;
-    //   if(e) {
-    //     console.log(e, "error")
-    //   }
-    //   else{
-    //     console.log(dat,"HAKOVANJEEEEEE")
-    //     this.setState({
-    //       imgPreview: dat,
-    //     })
-    //   }
-    // }
-    console.log("FILEEEEE", file)
      AWS.config.update({
       region: 'eu-central-1',
       accessKeyId: "AKIAJWJPWC6HGBPXQ4AQ",
@@ -444,13 +324,11 @@ class EditObject extends React.Component {
     }).promise()
     let a = {}
     let img = await rez.then(function(data) {
-      console.log('Success');
       // data = await data
       return data
     }).catch(function(err) {
       return false
     });
-    console.log("DATAAAA", img)
     if(img === false){
       alert("ERROR! Nesto nije u redu slika nije uspesno uplodovana!");
     }else{
@@ -459,14 +337,7 @@ class EditObject extends React.Component {
       })
     }
   };
-  // imgPreview = async () => {
-  //  await this.setState({
-  //     imgPreview: data.location,
-  //   })
-  // }
-  
   getImage = (img) => {
-    console.log("imggggg", img);
     this.setState({
       imgsFile: img.file,
     })
@@ -479,8 +350,7 @@ class EditObject extends React.Component {
       objectInfoId: this.state.objectId
     })
     this.setState({
-      phonesAdd: this.state.phonesAdd,
-      // count: this.state.count + 1
+      phonesAdd: this.state.phonesAdd
     })
   }
   removePhone = (index) => {
@@ -519,9 +389,6 @@ class EditObject extends React.Component {
       personId:null,
       emailArr:[]
     })
-  }
-  editImgDesc(e) {
-    console.log("newVAlue", e.target.value)
   }
   handleGeoSugest = (value) => {
     this.setState({address:value})
@@ -564,7 +431,7 @@ class EditObject extends React.Component {
           cityError: ''
         })
     }
-    if(address === ' ' && lat === '' && lng === '') {
+    if((address === ' ' && lat === '' && lng === '') || (address === ' ' && lat === '' || lng === ''))  {
       this.setState({
         addressError: 'Morate uneti Adresu ili Lat i Lng!'
       }) 
@@ -588,19 +455,14 @@ class EditObject extends React.Component {
     let objectWorkTimeArr = {};
     let objectLocation = {};
     let objectInfo = {};
-    let objectPhonesArr = {};
     let objectClKeys = ['name', 'shortDescription', 'verified', 'personId', 'objectCategoryId', 'locationId'];
     let objectInfoKeys = ['websiteUrl', 'popularBecauseOf'];
     let objectLocationKeys = ['lat', 'lng', 'address', 'city', 'zipCode'];
-    let objectPhonesKeys = [];
     let workTime = {};
     let newArr = this.state.workTimeEdit;
     let deletePhones = this.state.deletedPhones;
     let objectPhones = this.state.phonesAdd;
     
-    
-
-
     objectClKeys.map(item => {
       if (objToEdit.objectCl[item] != this.state[item]) {
         objectCl = {
@@ -625,21 +487,12 @@ class EditObject extends React.Component {
         }
       }
     })
-    objectPhonesKeys.map((item) => {
-      if (objToEdit.objectPhones[item] != this.state[item]) {
-        objectPhonesArr = {
-          ...objectPhonesArr,
-          [item]: this.state[item]
-        }
-      }
-    })
     this.state.workTime.map(item => {
       let a = this.state.workTime.indexOf(item);
       let flag1 = this.state.isAlwaysOpen;
       let flag2 = this.state.isAlwaysOpnenO;
 
       if (this.state.isAlwaysOpen) {
-        console.log("NIJE JEDNAKO");
         if (this.state.isAlwaysOpen != this.state.isAlwaysOpnenO) {
           workTime = {
             ...workTime,
@@ -676,15 +529,38 @@ class EditObject extends React.Component {
       }
     })
 
+    let objectFile = {};
+    if(this.state.imgPreview !== this.state.objectImage.fileUrl){
+      let imgUrl = this.state.imgPreview;
+      objectFile = {
+          ...objectFile,
+          fileUrl: imgUrl,
+        }
+    }
+
+    if(this.state.imgDesc !== this.state.objectImage.desc){
+      let desc1 = this.state.imgDesc;
+      objectFile = {
+          ...objectFile,
+          desc: desc1,
+        }
+    }
+    
+    if(Object.keys(objectFile).length){
+      objectFile = {
+        ...objectFile,
+        id: this.state.objectImage.id,
+        objectClId: this.state.objectId,
+      }
+      this.setState({
+        objectFile: objectFile,
+      })
+    }
     let wrkTime = this.state.workTimeObj;
     objectWorkTimeArr = {
       ...objectWorkTimeArr,
       workTime
     }
-
-    // console.log('objectCl', objectClArr)
-    // console.log('objectinfo', objectInfoArr)
-    // console.log('loca', objectLocationArr)
     if(validate) { 
       this.setState({
         sendEditObject: {
@@ -693,9 +569,10 @@ class EditObject extends React.Component {
           objectInfo,
           objectLocation,
           deletePhones,
-          objectPhones
+          objectPhones,
+          objectFile,
         },
-        confirmText: 'Objekat izmenjen!'
+        // confirmText: 'Objekat izmenjen!'
       })
       this.updateObject()
     }
@@ -707,26 +584,18 @@ class EditObject extends React.Component {
     }
   }
   updateObject = async () => {
-    console.log('IZ UPDATA', this.state.sendEditObject)
-    // console.log('STEFAN', this.state.sendEditObject)
     let response = await post.secure('/editObject', {
       objectId: this.state.objectId,
       editObject: this.state.sendEditObject
     })
-    console.log('RESPONSE', response)
   }
-
   render() {
-    console.log("STEJT", this.state);
-    console.log("SALJEM", this.state.sendEditObject);
     let a;
     return (
       <div>
         {
-          this.state.token === false ? 'isteko token' : this.state.loading ? <div style={{ marginTop: "100px" }}><Loader size='large' active inline='centered' /></div> :
+          this.state.token === false ? 'Potrebno je da se ulogujete ponovo!' : this.state.loading ? <div style={{ marginTop: "100px" }}><Loader size='large' active inline='centered' /></div> :
             <div>
-              {/* <Input label='locationId: ' name='locationId' value={this.state.locationId} onChange={this.objectEdit} /><br /> */}
-
               <div className={Style.section} >
                   <div className={css.header}>
                     <span>OSNOVNE INFORMACIJE:</span>
@@ -740,8 +609,15 @@ class EditObject extends React.Component {
                   selection
                   onChange={this.setCategoryObj}
                   options={this.state.objToEdit.objectCategoriesArr} />
-                {/* <Input label='personId: ' name='personId' value={this.state.personId} onChange={this.objectEdit} /><br /> */}
+                <span className={css.labels}>Veb sajt:</span>
+                <Input name='websiteUrl' value={this.state.websiteUrl} onChange={this.objectEdit} style={{width:'350px'}}/>
+                <span className={css.labels}>Proveren:</span>
+                <Checkbox toggle checked={this.state.verified} onClick={() => this.isVerify()} />
+                </div>
+                <div style={{display:'flex',alignItems:'center',justifyContent:'space-around',marginBottom:'30px'}}>
                 <span className={css.labels}>Vlasnik objekta:</span>
+                <span>{this.state.user.firstName + ' ' + this.state.user.lastName }</span>
+                <span className={css.labels}>Izmeni vlasnika:</span>
                 <Dropdown 
                 name="personId" 
                 onChange={this.handleChange} 
@@ -753,13 +629,6 @@ class EditObject extends React.Component {
                 size='small' 
                 noResultsMessage="No users with that email" 
               />
-                <span className={css.labels}>Proveren:</span>
-                <Checkbox toggle checked={this.state.verified} onClick={() => this.isVerify()} />
-                </div>
-                {/* <FileBase64 multiple={true} onDone={this.getImage.bind(this)} /><br /> */}
-                <div style={{display:'flex',alignItems:'center',justifyContent:'space-around'}}>
-                <span className={css.labels}>Veb sajt:</span>
-                <Input name='websiteUrl' value={this.state.websiteUrl} onChange={this.objectEdit} style={{width:'350px'}}/>
                 <span className={css.labels}>Popularan zbog:</span>
                 <TextArea autoHeight name='popularBecauseOf' value={this.state.popularBecauseOf} onChange={this.objectEdit} style={{ minHeight: '50px', minWidth: '300px' }} />
                 <span className={css.labels}>Kratak opis:</span>
@@ -777,10 +646,10 @@ class EditObject extends React.Component {
                   <Input name='lat' value={this.state.lat} onChange={this.objectEdit} />
                   <span className={css.labels}>Lng:</span>
                   <Input name='lng' value={this.state.lng} onChange={this.objectEdit} />
-                  <span className={css.labels}>Zip kod:</span>
-                  <Input name='zipCode' value={this.state.zipCode} onChange={this.objectEdit} />
                 </div>
-                <div style={{display:'flex',alignItems:'center',justifyContent:'space-around'}}>
+                <div style={{display:'flex',alignItems:'center',justifyContent:'space-around',marginBottom:'30px'}}>
+                <span className={css.labels}>Zip kod:</span>
+                  <Input name='zipCode' value={this.state.zipCode} onChange={this.objectEdit} />
                 <span className={css.labels}>Opstina: </span>
                 <Dropdown
                   selection
@@ -805,7 +674,7 @@ class EditObject extends React.Component {
                 <img src={this.state.imgPreview} style={{ height: '250px', width: '250px' }} />
                 <br />
                 Opis slike:<br />
-                <TextArea autoHeight name='imgDesc' value={this.state.objectImage.desc} onChange={this.objectEdit} style={{ minHeight: '50px', minWidth: '300px' }} /><br />
+                <TextArea autoHeight name='imgDesc' value={this.state.imgDesc} onChange={this.objectEdit} style={{ minHeight: '50px', minWidth: '300px' }} /><br />
                 <br />
               </div>
               <div className={Style.section}>
@@ -898,14 +767,29 @@ class EditObject extends React.Component {
                   }) : null
               }
             </div>
-            <div>{this.state.nameError}</div>
+            {/* <div>{this.state.nameError}</div>
             <div>{this.state.categoryError}</div>
             <div>{this.state.locationError}</div>
             <div>{this.state.cityError}</div>
             <div>{this.state.addressError}</div>
             <div>{this.state.confirmText}</div>
-            <Button primary onClick={() => this.prepareToEditObject()}>Save</Button>
-            
+            <Button primary onClick={() => this.prepareToEditObject()}>Save</Button> */}
+            <Modal trigger={<Button primary onClick={() => this.prepareToEditObject()}>Save</Button>} closeIcon>
+              <Modal.Actions>
+              <Header icon='archive' content='Da li ste sigurni da zelite da izmenite objekat?' />
+              {
+                this.state.sendEditObject !== '' && this.state.nameError === '' && this.state.categoryError === '' && this.state.locationError === '' && this.state.cityError === '' && this.state.addressError === '' ? 
+                  <Button primary onClick={() => this.prepareToEditObject()}>Save</Button> : 
+                  <div>
+                    <div>{this.state.nameError}</div>
+                    <div>{this.state.categoryError}</div>
+                    <div>{this.state.locationError}</div>
+                    <div>{this.state.cityError}</div>
+                    <div>{this.state.addressError}</div>
+                  </div>
+              }
+              </Modal.Actions>
+               </Modal>
             </div>
         }
       </div>
