@@ -164,3 +164,9 @@ li.rc-time-picker-panel-select-option-disabled:hover {
   .geosuggest__input-wrapper, .geosuggest {
     display: inline;
   }
+.ui modal transition visible active {
+  display: grid!important;
+}
+.visible.transition {
+  display: grid!important;
+}

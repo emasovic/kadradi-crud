@@ -928,12 +928,10 @@ const router = (new KoaRouter())
         }
       }
       if (objectClArr) {
-        console.log("NAMEEEEE", objectClArr)
         await db.models.objectCl.update(objectClArr, { where: { id: objectId } })
       }
-      if (objectClArr) {
-        console.log("NAMEEEEE", objectClArr)
-        await db.models.objectCl.update(objectClArr, { where: { id: objectId } })
+      if (objectFile) {
+        await db.models.objectFile.update(objectFile, { where: { id: objectFile.id } })
       }
       if (objectInfoArr) {
         await db.models.objectInfo.update(objectInfoArr, { where: { id: objectId } })
